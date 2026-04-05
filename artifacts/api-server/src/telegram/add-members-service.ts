@@ -28,7 +28,7 @@
  */
 
 import { Api } from "telegram";
-import { getClient } from "./client-manager.js";
+import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job, type MemberRecord } from "./jobs.js";
 import { loadMembersFile, saveMembersFile } from "./members-files.js";
 import { loadAccounts, upsertAccount, resetDailyCountsIfNeeded } from "./session-store.js";
@@ -77,19 +77,22 @@ export async function runAddMembers(job: Job) {
   };
 
   const accountId = job.accountId!;
+  const sessionString = (job.config as any).sessionString as string | undefined;
+  const inlineMembers = (job.config as any).members as MemberRecord[] | undefined;
   logger.info({ jobId: job.id, mode, targetGroup, delaySeconds, maxPerDay }, "Starting add-members v2");
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });
 
-  // ── Account setup ──────────────────────────────────────────────────────────
+  // ── Account setup (supports both server-stored and phone-stored sessions) ───
 
+  let dailyAdded = 0;
   let accountData = loadAccounts().find((a) => a.id === accountId);
-  if (!accountData) {
-    updateJob(job.id, { status: "failed", error: "Account not found", completedAt: new Date().toISOString() });
-    return;
+  if (accountData) {
+    accountData = resetDailyCountsIfNeeded(accountData);
+    dailyAdded = accountData.dailyAdded;
   }
-  accountData = resetDailyCountsIfNeeded(accountData);
+  // If not found in server store, use 0 daily (phone manages its own tracking)
 
-  const remainingToday = Math.max(0, maxPerDay - accountData.dailyAdded);
+  const remainingToday = Math.max(0, maxPerDay - dailyAdded);
   if (remainingToday === 0) {
     updateJob(job.id, {
       status: "failed",
@@ -103,7 +106,10 @@ export async function runAddMembers(job: Job) {
 
   let membersToAdd: MemberRecord[] = [];
 
-  if (mode === "from-file" && fileId) {
+  if (inlineMembers && inlineMembers.length > 0) {
+    // Members sent directly from phone (phone-stored files)
+    membersToAdd = inlineMembers.filter((m) => m.status === "pending");
+  } else if (mode === "from-file" && fileId) {
     const file = loadMembersFile(fileId);
     if (!file) {
       updateJob(job.id, { status: "failed", error: `File ${fileId} not found`, completedAt: new Date().toISOString() });
@@ -167,7 +173,9 @@ export async function runAddMembers(job: Job) {
   let targetEntity: any;
 
   try {
-    client = await getClient(accountId);
+    client = sessionString
+      ? await getClientFromSession(sessionString, accountId)
+      : await getClient(accountId);
     targetEntity = await resolveEntity(client, targetGroup);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

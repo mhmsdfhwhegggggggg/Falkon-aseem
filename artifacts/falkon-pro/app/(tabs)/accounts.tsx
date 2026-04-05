@@ -14,6 +14,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { useAccountsStore } from '@/lib/accounts-store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,15 +72,15 @@ export default function AccountsScreen() {
   const [addedCount, setAddedCount] = useState(0);
   const [errorCount, setErrorCount] = useState(0);
 
-  // ── tRPC ────────────────────────────────────────────────────────────────────
-  const accountsQ = trpc.accounts.list.useQuery(undefined, { refetchInterval: 5000 });
+  // ── Local Store (sessions & files stored on device) ─────────────────────────
+  const localStore = useAccountsStore();
+
+  // ── tRPC (auth only — server does not store sessions) ────────────────────────
   const startAuthMut = trpc.accounts.startAuth.useMutation();
   const confirmAuthMut = trpc.accounts.confirmAuth.useMutation();
   const resendMut = trpc.accounts.resendCode.useMutation();
-  const removeMut = trpc.accounts.remove.useMutation();
-  const setActiveMut = trpc.accounts.setActive.useMutation();
 
-  const accounts = accountsQ.data?.accounts ?? [];
+  const accounts = localStore.accounts;
   const filtered = accounts.filter(
     (a) => !search || a.phone.includes(search) || a.username.toLowerCase().includes(search.toLowerCase())
   );
@@ -107,13 +108,31 @@ export default function AccountsScreen() {
     }
   }, [phone]);
 
+  // ── Helper: save account + session to device after successful auth ────────────
+  const saveAuthResult = useCallback(async (result: any) => {
+    const today = new Date().toISOString().split('T')[0]!;
+    const account = {
+      id: `acc_${result.userId}`,
+      phone: result.phone,
+      firstName: result.firstName || '',
+      lastName: result.lastName || '',
+      username: result.username || '',
+      userId: result.userId,
+      addedAt: new Date().toISOString(),
+      isActive: true,
+      dailyAdded: 0,
+      lastReset: today,
+    };
+    await localStore.addAccount(account, result.sessionString || '');
+  }, [localStore]);
+
   const handleSingleVerifyCode = useCallback(async () => {
     if (!code.trim()) return Alert.alert('خطأ', 'أدخل كود التحقق');
     setAuthLoading(true);
     try {
-      await confirmAuthMut.mutateAsync({ sessionId, code: code.trim() });
+      const result = await confirmAuthMut.mutateAsync({ sessionId, code: code.trim() });
+      await saveAuthResult(result);
       setAuthStep('success');
-      accountsQ.refetch();
       setTimeout(() => { setAuthStep('idle'); resetSingle(); }, 2000);
     } catch (err: any) {
       const msg = err.message || '';
@@ -125,22 +144,22 @@ export default function AccountsScreen() {
     } finally {
       setAuthLoading(false);
     }
-  }, [sessionId, code]);
+  }, [sessionId, code, saveAuthResult]);
 
   const handleSingleVerifyPassword = useCallback(async () => {
     if (!password.trim()) return Alert.alert('خطأ', 'أدخل كلمة مرور 2FA');
     setAuthLoading(true);
     try {
-      await confirmAuthMut.mutateAsync({ sessionId, code: code.trim(), password: password.trim() });
+      const result = await confirmAuthMut.mutateAsync({ sessionId, code: code.trim(), password: password.trim() });
+      await saveAuthResult(result);
       setAuthStep('success');
-      accountsQ.refetch();
       setTimeout(() => { setAuthStep('idle'); resetSingle(); }, 2000);
     } catch (err: any) {
       Alert.alert('خطأ', err.message || 'كلمة مرور خاطئة');
     } finally {
       setAuthLoading(false);
     }
-  }, [sessionId, code, password]);
+  }, [sessionId, code, password, saveAuthResult]);
 
   // ── Bulk flow ────────────────────────────────────────────────────────────────
 
@@ -170,7 +189,6 @@ export default function AccountsScreen() {
   const sendCodeForIndex = async (q: QueuedPhone[], idx: number) => {
     if (idx >= q.length) {
       setAuthStep('bulk_done');
-      accountsQ.refetch();
       return;
     }
 
@@ -206,13 +224,12 @@ export default function AccountsScreen() {
 
     setBulkLoading(true);
     try {
-      await confirmAuthMut.mutateAsync({ sessionId: current.sessionId, code: bulkCode.trim() });
+      const result = await confirmAuthMut.mutateAsync({ sessionId: current.sessionId, code: bulkCode.trim() });
+      await saveAuthResult(result);
       const updated = [...queue];
       updated[queueIdx] = { ...updated[queueIdx]!, status: 'done' };
       setQueue(updated);
       setAddedCount((c) => c + 1);
-      accountsQ.refetch();
-      // Move to next
       await sendCodeForIndex(updated, queueIdx + 1);
     } catch (err: any) {
       const msg = err.message || '';
@@ -228,7 +245,7 @@ export default function AccountsScreen() {
     } finally {
       setBulkLoading(false);
     }
-  }, [queue, queueIdx, bulkCode]);
+  }, [queue, queueIdx, bulkCode, saveAuthResult]);
 
   const handleBulkVerify2FA = useCallback(async () => {
     if (!bulkPassword.trim()) return Alert.alert('خطأ', 'أدخل كلمة مرور 2FA');
@@ -237,16 +254,16 @@ export default function AccountsScreen() {
 
     setBulkLoading(true);
     try {
-      await confirmAuthMut.mutateAsync({
+      const result = await confirmAuthMut.mutateAsync({
         sessionId: current.sessionId,
         code: bulkCode.trim(),
         password: bulkPassword.trim(),
       });
+      await saveAuthResult(result);
       const updated = [...queue];
       updated[queueIdx] = { ...updated[queueIdx]!, status: 'done' };
       setQueue(updated);
       setAddedCount((c) => c + 1);
-      accountsQ.refetch();
       setNeeds2FA(false);
       await sendCodeForIndex(updated, queueIdx + 1);
     } catch (err: any) {
@@ -254,7 +271,7 @@ export default function AccountsScreen() {
     } finally {
       setBulkLoading(false);
     }
-  }, [queue, queueIdx, bulkCode, bulkPassword]);
+  }, [queue, queueIdx, bulkCode, bulkPassword, saveAuthResult]);
 
   const skipCurrentBulk = useCallback(async () => {
     const updated = [...queue];
@@ -268,28 +285,20 @@ export default function AccountsScreen() {
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
   const handleRemove = (id: string) => {
-    Alert.alert('حذف الحساب', 'هل أنت متأكد من حذف هذا الحساب؟', [
+    Alert.alert('حذف الحساب', 'هل أنت متأكد من حذف هذا الحساب؟\nسيُحذف من الجهاز نهائياً.', [
       { text: 'إلغاء', style: 'cancel' },
       {
         text: 'حذف',
         style: 'destructive',
         onPress: async () => {
-          try {
-            await removeMut.mutateAsync({ id });
-            accountsQ.refetch();
-          } catch (err: any) {
-            Alert.alert('خطأ', err.message);
-          }
+          await localStore.removeAccount(id);
         },
       },
     ]);
   };
 
   const handleToggleActive = async (id: string, current: boolean) => {
-    try {
-      await setActiveMut.mutateAsync({ id, isActive: !current });
-      accountsQ.refetch();
-    } catch {}
+    await localStore.setActive(id, !current);
   };
 
   // ── Modal ────────────────────────────────────────────────────────────────────
@@ -569,7 +578,7 @@ export default function AccountsScreen() {
         </View>
 
         {/* Account list */}
-        {accountsQ.isLoading ? (
+        {localStore.isLoading ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
             <ActivityIndicator color={p.primary} size="large" />
           </View>

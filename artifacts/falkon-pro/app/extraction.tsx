@@ -15,6 +15,8 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
 import { router } from 'expo-router';
 import { trpc } from '@/lib/trpc';
+import { useAccountsStore } from '@/lib/accounts-store';
+import { useMembersStore } from '@/lib/members-store';
 
 type ExtractionMode = 'members' | 'admins' | 'subscribers' | 'contacts';
 
@@ -54,8 +56,13 @@ export default function ExtractionScreen() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const accountsQuery = trpc.accounts.list.useQuery();
+  const localAccounts = useAccountsStore();
+  const membersStore = useMembersStore();
   const startMut = trpc.extraction.start.useMutation();
+  const resultQuery = trpc.extraction.result.useQuery(
+    { jobId: jobId! },
+    { enabled: false }
+  );
 
   const statusQuery = trpc.extraction.status.useQuery(
     { jobId: jobId! },
@@ -65,24 +72,47 @@ export default function ExtractionScreen() {
   useEffect(() => {
     if (!statusQuery.data) return;
     const { status } = statusQuery.data;
-    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+    if (status === 'completed') {
+      setIsRunning(false);
+      // Fetch full members data and save to phone
+      resultQuery.refetch().then(async (res) => {
+        if (res.data?.members && res.data.members.length > 0) {
+          const groupName = targetGroup.replace(/^@/, '').replace(/https?:\/\/t\.me\//, '').replace(/\//g, '_').substring(0, 40);
+          const name = `${groupName}_${new Date().toISOString().split('T')[0]}`;
+          const phoneMembers = res.data.members.map((m: any) => ({
+            id: `m_${m.userId}_${Date.now()}`,
+            userId: m.userId,
+            username: m.username || '',
+            firstName: m.firstName || '',
+            lastName: m.lastName || '',
+            phone: m.phone || '',
+            isOnline: m.isOnline || false,
+            lastSeen: m.lastSeen,
+            status: 'pending' as const,
+            source: targetGroup,
+            extractedAt: new Date().toISOString(),
+          }));
+          await membersStore.createFile(name, phoneMembers, targetGroup);
+        }
+      });
+    } else if (status === 'failed' || status === 'cancelled') {
       setIsRunning(false);
     }
-  }, [statusQuery.data]);
+  }, [statusQuery.data?.status]);
 
-  const accounts = accountsQuery.data?.accounts ?? [];
-  const activeAccounts = accounts.filter((a) => a.isActive);
+  const activeAccounts = localAccounts.activeAccounts;
 
   const handleStart = async () => {
     if (!targetGroup.trim()) {
       return Alert.alert('Missing Input', 'Enter a group username, link, or ID');
     }
     if (activeAccounts.length === 0) {
-      return Alert.alert('No Account', 'Add and activate a Telegram account first from the Accounts tab');
+      return Alert.alert('لا يوجد حساب', 'أضف حساب Telegram نشط من تبويب الحسابات أولاً');
     }
 
     const total = parseInt(limit, 10) || 500;
-    const accountId = activeAccounts[0]!.id;
+    const account = activeAccounts[0]!;
+    const sessionString = await localAccounts.getSession(account.id);
 
     try {
       setIsRunning(true);
@@ -92,7 +122,8 @@ export default function ExtractionScreen() {
         filterActive,
         excludeBots,
         mode,
-        accountId,
+        accountId: account.id,
+        sessionString: sessionString || undefined,
       });
       setJobId(result.jobId);
     } catch (err: any) {

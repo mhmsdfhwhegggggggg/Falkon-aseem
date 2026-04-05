@@ -11,7 +11,7 @@
  */
 
 import { Api } from "telegram";
-import { getClient } from "./client-manager.js";
+import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job, type MemberRecord } from "./jobs.js";
 import { createMembersFile } from "./members-files.js";
 import { resolveEntity, setCachedEntity } from "./entity-cache.js";
@@ -76,6 +76,7 @@ export async function runExtraction(job: Job) {
   };
 
   const accountId = job.accountId!;
+  const sessionString = (job.config as any).sessionString as string | undefined;
   const filters: ExtractionFilters = { excludeBots, filterActive, hasUsername, hasPhone: false };
 
   logger.info({ jobId: job.id, group, limit, filters }, "Starting extraction v2");
@@ -90,7 +91,9 @@ export async function runExtraction(job: Job) {
   }
 
   try {
-    const client = await getClient(accountId);
+    const client = sessionString
+      ? await getClientFromSession(sessionString, accountId)
+      : await getClient(accountId);
     const entity = await resolveEntity(client, group);
 
     const members: MemberRecord[] = [];

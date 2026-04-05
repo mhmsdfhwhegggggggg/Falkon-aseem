@@ -6,25 +6,28 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  ActivityIndicator,
-  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
-import { trpc } from '@/lib/trpc';
+import { useMembersStore } from '@/lib/members-store';
 
 export default function MembersFilesScreen() {
   const scheme = useColorScheme();
   const palette = colors[scheme];
   const [search, setSearch] = useState('');
+  const membersStore = useMembersStore();
 
-  const filesQuery = trpc.membersFiles.list.useQuery(undefined, { refetchInterval: 5000 });
-  const deleteMut = trpc.membersFiles.delete.useMutation({ onSuccess: () => filesQuery.refetch() });
-
-  const files = filesQuery.data?.files ?? [];
+  const files = membersStore.files.map((f) => ({
+    id: f.id,
+    name: f.name,
+    memberCount: f.totalCount,
+    addedCount: f.addedCount,
+    sourceGroup: f.sourceGroup || '',
+    createdAt: f.createdAt,
+  }));
   const filtered = files.filter((f) =>
     !search || f.name.toLowerCase().includes(search.toLowerCase()) || f.sourceGroup.toLowerCase().includes(search.toLowerCase())
   );
@@ -33,12 +36,12 @@ export default function MembersFilesScreen() {
   const totalAdded = files.reduce((a, f) => a + f.addedCount, 0);
 
   const handleDelete = (id: string, name: string) => {
-    Alert.alert('Delete File', `Delete "${name}"? This cannot be undone.`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('حذف الملف', `حذف "${name}"؟ لا يمكن التراجع عن هذا.`, [
+      { text: 'إلغاء', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'حذف',
         style: 'destructive',
-        onPress: () => deleteMut.mutate({ id }),
+        onPress: () => membersStore.deleteFile(id),
       },
     ]);
   };

@@ -1,21 +1,20 @@
 /**
- * CLIENT MANAGER v2.0 — Enhanced Connection Pool
- * ================================================
+ * CLIENT MANAGER v3.0 — Stateless Session Support
+ * =================================================
  * Manages Telegram client connections with:
- * 1. Auto-reconnect on disconnect (with backoff)
- * 2. Connection health pinging (keep-alive)
- * 3. Per-account connection metrics
- * 4. Graceful shutdown support
- * 5. Proxy support per account (future-ready)
+ * 1. Stateless mode: accept session string per-request (phone-stored sessions)
+ * 2. Auto-reconnect on disconnect (with backoff)
+ * 3. Connection health pinging (keep-alive)
+ * 4. Per-account connection metrics
+ * 5. Graceful shutdown support
  */
 
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions/index.js";
-import { loadAccounts, getAccount, upsertAccount, type StoredAccount } from "./session-store.js";
 import { logger } from "../lib/logger.js";
 
-const API_ID = parseInt(process.env["TELEGRAM_API_ID"] || "0");
-const API_HASH = process.env["TELEGRAM_API_HASH"] || "";
+export const API_ID = parseInt(process.env["TELEGRAM_API_ID"] || "0");
+export const API_HASH = process.env["TELEGRAM_API_HASH"] || "";
 
 if (!API_ID || !API_HASH) {
   throw new Error("TELEGRAM_API_ID and TELEGRAM_API_HASH must be set");
@@ -38,7 +37,7 @@ const CONNECTION_OPTIONS = {
   requestRetries: 3,
   retryDelay: 1000,
   autoReconnect: true,
-  floodSleepThreshold: 60, // auto-sleep on flood < 60s
+  floodSleepThreshold: 60,
   deviceModel: "Desktop",
   systemVersion: "Windows 10",
   appVersion: "4.9.4",
@@ -56,14 +55,13 @@ function startPing(managed: ManagedClient): void {
         logger.warn({ accountId: managed.accountId }, "Client disconnected, reconnecting...");
         await managed.client.connect();
       }
-      // Lightweight ping — get connection state
       await managed.client.getMe();
       managed.lastUsed = Date.now();
     } catch (err: unknown) {
       managed.errors++;
       logger.warn({ accountId: managed.accountId, err: err instanceof Error ? err.message : String(err) }, "Ping failed");
     }
-  }, 5 * 60 * 1000); // every 5 minutes
+  }, 5 * 60 * 1000);
 }
 
 function stopPing(managed: ManagedClient): void {
@@ -73,7 +71,7 @@ function stopPing(managed: ManagedClient): void {
   }
 }
 
-// ─── Get or create client ─────────────────────────────────────────────────────
+// ─── Get or create client from pool (legacy: looks up stored session) ─────────
 
 export async function getClient(accountId: string): Promise<TelegramClient> {
   const existing = pool.get(accountId);
@@ -84,24 +82,57 @@ export async function getClient(accountId: string): Promise<TelegramClient> {
       existing.requestCount++;
       return existing.client;
     }
-    // Reconnect
     try {
       await existing.client.connect();
       existing.lastUsed = Date.now();
       existing.requestCount++;
-      logger.info({ accountId }, "Client reconnected");
       return existing.client;
-    } catch (err) {
-      logger.error({ accountId }, "Reconnect failed, creating fresh client");
+    } catch {
       stopPing(existing);
       pool.delete(accountId);
     }
   }
 
+  // Try to load from session-store (legacy path)
+  const { getAccount } = await import("./session-store.js");
   const account = getAccount(accountId);
   if (!account) throw new Error(`Account ${accountId} not found`);
 
-  const session = new StringSession(account.sessionString);
+  return createAndPoolClient(accountId, account.sessionString);
+}
+
+// ─── NEW: Get client from session string (stateless / phone-stored sessions) ──
+
+export async function getClientFromSession(
+  sessionString: string,
+  accountId: string,
+): Promise<TelegramClient> {
+  const existing = pool.get(accountId);
+
+  if (existing) {
+    if (existing.client.connected) {
+      existing.lastUsed = Date.now();
+      existing.requestCount++;
+      return existing.client;
+    }
+    try {
+      await existing.client.connect();
+      existing.lastUsed = Date.now();
+      existing.requestCount++;
+      return existing.client;
+    } catch {
+      stopPing(existing);
+      pool.delete(accountId);
+    }
+  }
+
+  return createAndPoolClient(accountId, sessionString);
+}
+
+// ─── Internal: create, connect, pool ──────────────────────────────────────────
+
+async function createAndPoolClient(accountId: string, sessionString: string): Promise<TelegramClient> {
+  const session = new StringSession(sessionString);
   const client = new TelegramClient(session, API_ID, API_HASH, CONNECTION_OPTIONS);
 
   await client.connect();
@@ -122,6 +153,21 @@ export async function getClient(accountId: string): Promise<TelegramClient> {
   return client;
 }
 
+// ─── Create fresh (unauthenticated) client for auth flow ──────────────────────
+
+export function createFreshClient(): TelegramClient {
+  const session = new StringSession("");
+  return new TelegramClient(session, API_ID, API_HASH, {
+    connectionRetries: 5,
+    deviceModel: "Desktop",
+    systemVersion: "Windows 10",
+    appVersion: "4.9.4",
+    langCode: "en",
+  });
+}
+
+// ─── Disconnect ───────────────────────────────────────────────────────────────
+
 export async function disconnectClient(accountId: string): Promise<void> {
   const managed = pool.get(accountId);
   if (managed) {
@@ -139,17 +185,6 @@ export async function disconnectAll(): Promise<void> {
     pool.delete(id);
   }
   logger.info("All clients disconnected");
-}
-
-export function createFreshClient(): TelegramClient {
-  const session = new StringSession("");
-  return new TelegramClient(session, API_ID, API_HASH, {
-    connectionRetries: 5,
-    deviceModel: "Desktop",
-    systemVersion: "Windows 10",
-    appVersion: "4.9.4",
-    langCode: "en",
-  });
 }
 
 export function getPoolMetrics() {
@@ -187,5 +222,3 @@ setInterval(() => {
     }
   }
 }, 10 * 60 * 1000);
-
-export { API_ID, API_HASH };

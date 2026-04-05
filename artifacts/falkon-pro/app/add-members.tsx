@@ -15,6 +15,8 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
+import { useAccountsStore } from '@/lib/accounts-store';
+import { useMembersStore } from '@/lib/members-store';
 
 type AddMode = 'from-file' | 'by-username' | 'by-id';
 
@@ -52,8 +54,8 @@ export default function AddMembersScreen() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const accountsQuery = trpc.accounts.list.useQuery();
-  const filesQuery = trpc.membersFiles.list.useQuery();
+  const localAccounts = useAccountsStore();
+  const membersStore = useMembersStore();
   const startMut = trpc.addMembers.start.useMutation();
 
   const statusQuery = trpc.addMembers.status.useQuery(
@@ -69,9 +71,16 @@ export default function AddMembersScreen() {
     }
   }, [statusQuery.data]);
 
-  const accounts = accountsQuery.data?.accounts ?? [];
-  const activeAccounts = accounts.filter((a) => a.isActive);
-  const files = filesQuery.data?.files ?? [];
+  const activeAccounts = localAccounts.activeAccounts;
+  // Use phone-stored members files
+  const files = membersStore.files.map((f) => ({
+    id: f.id,
+    name: f.name,
+    memberCount: f.totalCount,
+    addedCount: f.addedCount,
+    sourceGroup: f.sourceGroup,
+    createdAt: f.createdAt,
+  }));
 
   const parseLines = (text: string) =>
     text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
@@ -81,7 +90,7 @@ export default function AddMembersScreen() {
       return Alert.alert('Missing Input', 'Enter a target group username or link');
     }
     if (activeAccounts.length === 0) {
-      return Alert.alert('No Account', 'Add and activate a Telegram account first from the Accounts tab');
+      return Alert.alert('لا يوجد حساب', 'أضف حساب Telegram نشط من تبويب الحسابات أولاً');
     }
     if (mode === 'from-file' && !selectedFileId) {
       return Alert.alert('No File', 'Select a members file to add from');
@@ -90,20 +99,41 @@ export default function AddMembersScreen() {
       return Alert.alert('No Input', 'Enter at least one username or ID');
     }
 
-    const accountId = activeAccounts[0]!.id;
+    const account = activeAccounts[0]!;
+    const sessionString = await localAccounts.getSession(account.id);
     const lines = parseLines(textInput);
+
+    // If using phone-stored file, send members inline
+    let inlineMembers: any[] | undefined;
+    if (mode === 'from-file' && selectedFileId) {
+      const file = membersStore.files.find((f) => f.id === selectedFileId);
+      if (file) {
+        inlineMembers = file.members.filter((m) => m.status === 'pending').map((m) => ({
+          userId: m.userId || '',
+          username: m.username || '',
+          firstName: m.firstName || '',
+          lastName: m.lastName || '',
+          isOnline: m.isOnline || false,
+          phone: m.phone,
+          lastSeen: m.lastSeen,
+          status: 'pending' as const,
+        }));
+      }
+    }
 
     try {
       setIsRunning(true);
       const result = await startMut.mutateAsync({
         targetGroup: targetGroup.trim(),
-        mode,
-        fileId: mode === 'from-file' ? selectedFileId : undefined,
+        mode: inlineMembers ? 'from-phone' : mode,
+        members: inlineMembers,
+        fileId: !inlineMembers && mode === 'from-file' ? selectedFileId : undefined,
         usernames: mode === 'by-username' ? lines : undefined,
         userIds: mode === 'by-id' ? lines : undefined,
         delaySeconds: delay,
         maxPerDay,
-        accountId,
+        accountId: account.id,
+        sessionString: sessionString || undefined,
       });
       setJobId(result.jobId);
     } catch (err: any) {

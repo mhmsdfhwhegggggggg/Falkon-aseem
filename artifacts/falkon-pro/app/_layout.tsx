@@ -18,6 +18,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { WindowManagerProvider } from "@/lib/window-manager";
 import { MembersStoreProvider } from "@/lib/members-store";
+import { AccountsStoreProvider } from "@/lib/accounts-store";
 import { TaskRunnerProvider } from "@/lib/task-runner";
 import { DevAuthProvider } from "@/lib/dev-auth";
 
@@ -82,6 +83,7 @@ export default function RootLayout() {
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
               <DevAuthProvider>
+                <AccountsStoreProvider>
                 <MembersStoreProvider>
                   <TaskRunnerProvider>
                     <WindowManagerProvider>
@@ -93,6 +95,7 @@ export default function RootLayout() {
                     </WindowManagerProvider>
                   </TaskRunnerProvider>
                 </MembersStoreProvider>
+                </AccountsStoreProvider>
               </DevAuthProvider>
             </ThemeProvider>
           </QueryClientProvider>
