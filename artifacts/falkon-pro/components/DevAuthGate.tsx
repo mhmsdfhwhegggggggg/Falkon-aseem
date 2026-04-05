@@ -231,7 +231,7 @@ export default function DevAuthGate({ children, title = 'Developer Access', subt
                   </View>
                 ) : null}
 
-                {attemptsLeft < MAX_ATTEMPTS && (
+                {attemptsLeft < 3 && (
                   <View style={{ backgroundColor: palette.warning + '15', borderRadius: 8, padding: 8, flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                     <MaterialIcons name="warning" size={14} color={palette.warning} />
                     <Text style={{ color: palette.warning, fontSize: 11, fontWeight: '600' }}>

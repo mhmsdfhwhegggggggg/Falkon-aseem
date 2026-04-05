@@ -8,7 +8,7 @@ export function LicenseGuard({ children }: { children: React.ReactNode }) {
   const firstSegment = pathname.split('/').filter(Boolean)[0] || '';
   const licenseCheckEnabled = process.env.EXPO_PUBLIC_ENABLE_LICENSE_CHECK !== 'false';
 
-  const { data: licenseStatus, isLoading } = trpc.license.getUserLicenses.useQuery({} as any, {
+  const { data: licenseStatus, isLoading } = trpc.license.validate.useQuery({ hwid: 'device' }, {
     enabled: firstSegment !== 'license-activation' && firstSegment !== 'oauth' && licenseCheckEnabled,
     retry: false,
   } as any);

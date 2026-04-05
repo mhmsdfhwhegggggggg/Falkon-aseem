@@ -10,14 +10,22 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@trpc/server": "11.10.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
+    "better-sqlite3": "^12.8.0",
+    "bufferutil": "^4.1.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2",
     "drizzle-orm": "catalog:",
     "express": "^5",
     "pino": "^9",
-    "pino-http": "^10"
+    "pino-http": "^10",
+    "superjson": "^2.2.6",
+    "telegram": "^2.26.22",
+    "utf-8-validate": "^6.0.6",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

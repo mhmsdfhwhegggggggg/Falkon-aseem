@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
-  Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -14,143 +14,96 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
 import { router } from 'expo-router';
-import { useMembersStore, type Member } from '@/lib/members-store';
-import { useTaskRunner } from '@/lib/task-runner';
+import { trpc } from '@/lib/trpc';
 
-type ExtractionMode = 'group_members' | 'group_admins' | 'channel_subscribers' | 'contacts';
+type ExtractionMode = 'members' | 'admins' | 'subscribers' | 'contacts';
 
 const MODES = [
-  { id: 'group_members', label: 'Group Members', icon: 'group' as const, desc: 'All members of a group' },
-  { id: 'group_admins', label: 'Group Admins', icon: 'admin-panel-settings' as const, desc: 'Admins & moderators only' },
-  { id: 'channel_subscribers', label: 'Channel Subscribers', icon: 'campaign' as const, desc: 'Channel subscriber list' },
-  { id: 'contacts', label: 'My Contacts', icon: 'contacts' as const, desc: 'Your Telegram contacts' },
+  { id: 'members' as const, label: 'Group Members', icon: 'group' as const, desc: 'All members of a group' },
+  { id: 'admins' as const, label: 'Group Admins', icon: 'admin-panel-settings' as const, desc: 'Admins & moderators only' },
+  { id: 'subscribers' as const, label: 'Channel Subscribers', icon: 'campaign' as const, desc: 'Channel subscriber list' },
+  { id: 'contacts' as const, label: 'My Contacts', icon: 'contacts' as const, desc: 'Your Telegram contacts' },
 ];
 
-function generateMockMember(index: number, group: string): Member {
-  const id = `m_${Date.now()}_${index}`;
-  const hasUsername = Math.random() > 0.3;
-  const hasUserId = true;
-  return {
-    id,
-    userId: `${100000000 + Math.floor(Math.random() * 900000000)}`,
-    username: hasUsername ? `user_${Math.floor(Math.random() * 99999)}` : undefined,
-    firstName: ['Ahmed', 'Mohamed', 'Ali', 'Sara', 'Nour', 'Layla', 'Omar', 'Hassan', 'Fatima', 'Yousef'][index % 10],
-    lastName: ['Al-Rashid', 'Abdullah', 'Hassan', 'Ibrahim', 'Khalid', 'Mansour'][index % 6],
-    isBot: Math.random() < 0.02,
-    isOnline: Math.random() > 0.7,
-    lastSeen: new Date(Date.now() - Math.random() * 7 * 24 * 3600000).toISOString(),
-    status: 'pending',
-    source: group,
-    extractedAt: new Date().toISOString(),
-  };
-}
+const Toggle = ({ value, onToggle, label, desc, palette }: any) => (
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+    <View style={{ flex: 1 }}>
+      <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600' }}>{label}</Text>
+      {desc && <Text style={{ color: palette.muted, fontSize: 11, marginTop: 1 }}>{desc}</Text>}
+    </View>
+    <TouchableOpacity
+      style={{ width: 44, height: 26, borderRadius: 13, backgroundColor: value ? palette.primary : palette.border, justifyContent: 'center', paddingHorizontal: 2 }}
+      onPress={onToggle}
+    >
+      <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff', alignSelf: value ? 'flex-end' : 'flex-start' }} />
+    </TouchableOpacity>
+  </View>
+);
 
 export default function ExtractionScreen() {
   const scheme = useColorScheme();
   const palette = colors[scheme];
-  const { createFile } = useMembersStore();
-  const { createTask, updateTask, logTask } = useTaskRunner();
 
   const [targetGroup, setTargetGroup] = useState('');
   const [limit, setLimit] = useState('500');
-  const [mode, setMode] = useState<ExtractionMode>('group_members');
-  const [filterOnline, setFilterOnline] = useState(false);
-  const [filterBots, setFilterBots] = useState(true);
+  const [mode, setMode] = useState<ExtractionMode>('members');
+  const [filterActive, setFilterActive] = useState(false);
+  const [excludeBots, setExcludeBots] = useState(true);
   const [fileName, setFileName] = useState('');
 
+  const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [extracted, setExtracted] = useState(0);
-  const [logs, setLogs] = useState<Array<{ msg: string; type: 'info' | 'success' | 'error' | 'warning' }>>([]);
-  const [savedFileId, setSavedFileId] = useState<string | null>(null);
-  const intervalRef = useRef<any>(null);
 
-  const addLog = (msg: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
-    setLogs((prev) => [{ msg, type }, ...prev].slice(0, 100));
-  };
+  const accountsQuery = trpc.accounts.list.useQuery();
+  const startMut = trpc.extraction.start.useMutation();
+
+  const statusQuery = trpc.extraction.status.useQuery(
+    { jobId: jobId! },
+    { enabled: !!jobId && isRunning, refetchInterval: 2000 }
+  );
+
+  useEffect(() => {
+    if (!statusQuery.data) return;
+    const { status } = statusQuery.data;
+    if (status === 'completed' || status === 'failed' || status === 'cancelled') {
+      setIsRunning(false);
+    }
+  }, [statusQuery.data]);
+
+  const accounts = accountsQuery.data?.accounts ?? [];
+  const activeAccounts = accounts.filter((a) => a.isActive);
 
   const handleStart = async () => {
     if (!targetGroup.trim()) {
-      Alert.alert('Missing Input', 'Please enter a group username or link');
-      return;
+      return Alert.alert('Missing Input', 'Enter a group username, link, or ID');
     }
+    if (activeAccounts.length === 0) {
+      return Alert.alert('No Account', 'Add and activate a Telegram account first from the Accounts tab');
+    }
+
     const total = parseInt(limit, 10) || 500;
-    const name = fileName.trim() || `${targetGroup}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}`;
+    const accountId = activeAccounts[0]!.id;
 
-    setIsRunning(true);
-    setProgress(0);
-    setExtracted(0);
-    setLogs([]);
-    setSavedFileId(null);
-
-    const taskId = createTask({
-      type: 'extraction',
-      title: `Extract: ${targetGroup}`,
-      total,
-      config: { targetGroup, limit: total, mode, filterOnline, filterBots },
-    });
-
-    addLog(`Starting extraction from ${targetGroup}...`, 'info');
-    addLog(`Mode: ${MODES.find((m) => m.id === mode)?.label}`, 'info');
-    addLog(`Limit: ${total} members`, 'info');
-
-    const members: Member[] = [];
-    let count = 0;
-
-    intervalRef.current = setInterval(async () => {
-      const batchSize = Math.floor(Math.random() * 15) + 5;
-      for (let i = 0; i < batchSize && count < total; i++) {
-        const member = generateMockMember(count, targetGroup);
-        if (filterBots && member.isBot) continue;
-        if (filterOnline && !member.isOnline) continue;
-        members.push(member);
-        count++;
-      }
-      setExtracted(count);
-      setProgress(Math.min(Math.round((count / total) * 100), 100));
-
-      if (count % 50 === 0 || count >= total) {
-        addLog(`Extracted ${count}/${total} members`, 'info');
-        updateTask(taskId, { processed: count, total, succeeded: count });
-        logTask(taskId, `Extracted ${count}/${total} members`);
-      }
-
-      if (count >= total) {
-        clearInterval(intervalRef.current);
-        addLog(`✓ Extraction complete! ${count} members extracted`, 'success');
-        addLog(`Saving to file: "${name}"...`, 'info');
-        const file = await createFile(name, members, targetGroup);
-        setSavedFileId(file.id);
-        addLog(`✓ Saved as "${name}" (${count} members)`, 'success');
-        updateTask(taskId, { status: 'completed', processed: count, succeeded: count, outputFileId: file.id });
-        setIsRunning(false);
-      }
-    }, 300);
-  };
-
-  const handleStop = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    try {
+      setIsRunning(true);
+      const result = await startMut.mutateAsync({
+        group: targetGroup.trim(),
+        limit: total,
+        filterActive,
+        excludeBots,
+        mode,
+        accountId,
+      });
+      setJobId(result.jobId);
+    } catch (err: any) {
+      setIsRunning(false);
+      Alert.alert('Error', err.message || 'Failed to start extraction');
     }
-    setIsRunning(false);
-    addLog('Extraction stopped by user', 'warning');
   };
 
-  const Toggle = ({ value, onToggle, label, desc }: any) => (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600' }}>{label}</Text>
-        {desc && <Text style={{ color: palette.muted, fontSize: 11, marginTop: 1 }}>{desc}</Text>}
-      </View>
-      <TouchableOpacity
-        style={{ width: 44, height: 26, borderRadius: 13, backgroundColor: value ? palette.primary : palette.border, justifyContent: 'center', paddingHorizontal: 2 }}
-        onPress={onToggle}
-      >
-        <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: '#fff', alignSelf: value ? 'flex-end' : 'flex-start' }} />
-      </TouchableOpacity>
-    </View>
-  );
+  const job = statusQuery.data;
+  const progress = job?.total ? Math.round((job.progress / job.total) * 100) : 0;
+  const savedFileId = job?.savedFileId;
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.background }}>
@@ -172,27 +125,33 @@ export default function ExtractionScreen() {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
-          {/* Progress Card (shown when running) */}
-          {(isRunning || savedFileId) && (
-            <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: isRunning ? palette.primary + '60' : palette.success + '60', marginBottom: 16 }}>
+
+          {/* Account Status */}
+          <View style={{ backgroundColor: palette.surface, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: activeAccounts.length > 0 ? palette.success + '50' : palette.error + '50', marginBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <MaterialIcons name={activeAccounts.length > 0 ? 'check-circle' : 'error'} size={18} color={activeAccounts.length > 0 ? palette.success : palette.error} />
+            <Text style={{ color: activeAccounts.length > 0 ? palette.success : palette.error, fontSize: 13, fontWeight: '600', flex: 1 }}>
+              {activeAccounts.length > 0
+                ? `Using account: ${activeAccounts[0]!.firstName || activeAccounts[0]!.phone} (${activeAccounts.length} total)`
+                : 'No account connected — add one in the Accounts tab'}
+            </Text>
+          </View>
+
+          {/* Progress Card */}
+          {jobId && job && (
+            <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: isRunning ? palette.primary + '60' : (job.status === 'completed' ? palette.success + '60' : palette.error + '60'), marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
                 <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>
-                  {isRunning ? 'Extracting...' : '✓ Extraction Complete'}
+                  {isRunning ? 'Extracting...' : job.status === 'completed' ? '✓ Extraction Complete' : `✗ ${job.status}`}
                 </Text>
-                <Text style={{ color: palette.primary, fontSize: 14, fontWeight: '800' }}>{extracted} / {limit}</Text>
+                <Text style={{ color: palette.primary, fontSize: 14, fontWeight: '800' }}>{job.progress} / {job.total || '?'}</Text>
               </View>
-              <View style={{ height: 6, backgroundColor: palette.border, borderRadius: 3, marginBottom: 12 }}>
-                <View style={{ height: 6, borderRadius: 3, backgroundColor: isRunning ? palette.primary : palette.success, width: `${progress}%` }} />
+              <View style={{ height: 6, backgroundColor: palette.border, borderRadius: 3, marginBottom: 8 }}>
+                <View style={{ height: 6, borderRadius: 3, backgroundColor: isRunning ? palette.primary : (job.status === 'completed' ? palette.success : palette.error), width: `${progress}%` }} />
               </View>
-              <ScrollView style={{ maxHeight: 100 }} showsVerticalScrollIndicator={false}>
-                {logs.map((log, i) => (
-                  <Text key={i} style={{ color: log.type === 'success' ? palette.success : log.type === 'error' ? palette.error : log.type === 'warning' ? palette.warning : palette.muted, fontSize: 11, lineHeight: 18 }}>
-                    [{log.type.toUpperCase()}] {log.msg}
-                  </Text>
-                ))}
-              </ScrollView>
+              {isRunning && <ActivityIndicator color={palette.primary} size="small" style={{ marginBottom: 8 }} />}
+              {job.error && <Text style={{ color: palette.error, fontSize: 12 }}>{job.error}</Text>}
               {savedFileId && (
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
                   <TouchableOpacity
                     style={{ flex: 1, backgroundColor: palette.primary, borderRadius: 10, padding: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
                     onPress={() => router.push({ pathname: '/members-file', params: { id: savedFileId } } as any)}
@@ -224,19 +183,20 @@ export default function ExtractionScreen() {
                 placeholderTextColor={palette.muted}
                 style={{ flex: 1, color: palette.foreground, fontSize: 14, paddingVertical: 12 }}
                 autoCapitalize="none"
+                editable={!isRunning}
               />
             </View>
           </View>
 
-          {/* Extraction Mode */}
+          {/* Mode */}
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
             <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>Extraction Mode</Text>
             <View style={{ gap: 8 }}>
               {MODES.map((m) => (
                 <TouchableOpacity
                   key={m.id}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, backgroundColor: mode === m.id ? palette.primary + '15' : 'transparent', borderWidth: 1, borderColor: mode === m.id ? palette.primary : palette.border }}
-                  onPress={() => setMode(m.id as ExtractionMode)}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, backgroundColor: mode === m.id ? palette.primary + '15' : 'transparent', borderWidth: 1, borderColor: mode === m.id ? palette.primary : palette.border, opacity: isRunning ? 0.5 : 1 }}
+                  onPress={() => !isRunning && setMode(m.id)}
                 >
                   <MaterialIcons name={m.icon} size={18} color={mode === m.id ? palette.primary : palette.muted} />
                   <View style={{ flex: 1 }}>
@@ -252,75 +212,41 @@ export default function ExtractionScreen() {
           {/* Settings */}
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14, gap: 14 }}>
             <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>Settings</Text>
-
             <View>
               <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600', marginBottom: 6 }}>Extraction Limit</Text>
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {['100', '500', '1000', '5000', 'All'].map((v) => (
                   <TouchableOpacity
                     key={v}
-                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: limit === v ? palette.primary : palette.background, borderWidth: 1, borderColor: limit === v ? palette.primary : palette.border, alignItems: 'center' }}
-                    onPress={() => setLimit(v === 'All' ? '99999' : v)}
+                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: limit === (v === 'All' ? '99999' : v) ? palette.primary : palette.background, borderWidth: 1, borderColor: limit === (v === 'All' ? '99999' : v) ? palette.primary : palette.border, alignItems: 'center', opacity: isRunning ? 0.5 : 1 }}
+                    onPress={() => !isRunning && setLimit(v === 'All' ? '99999' : v)}
                   >
-                    <Text style={{ color: limit === v ? '#fff' : palette.muted, fontSize: 11, fontWeight: '700' }}>{v}</Text>
+                    <Text style={{ color: limit === (v === 'All' ? '99999' : v) ? '#fff' : palette.muted, fontSize: 11, fontWeight: '700' }}>{v}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              <TextInput
-                value={limit}
-                onChangeText={setLimit}
-                placeholder="Custom number..."
-                placeholderTextColor={palette.muted}
-                keyboardType="numeric"
-                style={{ marginTop: 8, backgroundColor: palette.background, borderRadius: 10, padding: 10, color: palette.foreground, borderWidth: 1, borderColor: palette.border, fontSize: 13 }}
-              />
             </View>
-
             <View style={{ height: 1, backgroundColor: palette.border }} />
-            <Toggle value={filterOnline} onToggle={() => setFilterOnline(!filterOnline)} label="Active Members Only" desc="Skip members inactive for 30+ days" />
+            <Toggle value={filterActive} onToggle={() => setFilterActive(!filterActive)} label="Active Members Only" desc="Skip members inactive for 30+ days" palette={palette} />
             <View style={{ height: 1, backgroundColor: palette.border }} />
-            <Toggle value={filterBots} onToggle={() => setFilterBots(!filterBots)} label="Exclude Bots" desc="Skip bot accounts from extraction" />
+            <Toggle value={excludeBots} onToggle={() => setExcludeBots(!excludeBots)} label="Exclude Bots" desc="Skip bot accounts from extraction" palette={palette} />
           </View>
 
-          {/* Save As */}
-          <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 16 }}>
-            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 8 }}>Save As File</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: palette.background, borderRadius: 10, borderWidth: 1, borderColor: palette.border, paddingHorizontal: 12, gap: 8 }}>
-              <MaterialIcons name="folder" size={16} color={palette.muted} />
-              <TextInput
-                value={fileName}
-                onChangeText={setFileName}
-                placeholder={targetGroup ? `${targetGroup}_extracted` : 'File name (auto-generated if empty)'}
-                placeholderTextColor={palette.muted}
-                style={{ flex: 1, color: palette.foreground, fontSize: 13, paddingVertical: 10 }}
-              />
-            </View>
-            <Text style={{ color: palette.muted, fontSize: 11, marginTop: 6 }}>Members will be saved automatically after extraction</Text>
-          </View>
-
-          {/* Action Buttons */}
+          {/* Action */}
           {!isRunning ? (
-            <TouchableOpacity
-              style={{ borderRadius: 14, overflow: 'hidden' }}
-              onPress={handleStart}
-            >
-              <LinearGradient
-                colors={['#6D28D9', '#8B5CF6']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                style={{ padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}
-              >
-                <MaterialIcons name="download" size={20} color="#fff" />
-                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>Start Extraction</Text>
+            <TouchableOpacity style={{ borderRadius: 14, overflow: 'hidden' }} onPress={handleStart} disabled={startMut.isPending}>
+              <LinearGradient colors={['#6D28D9', '#8B5CF6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
+                {startMut.isPending ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="download" size={20} color="#fff" />}
+                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>
+                  {startMut.isPending ? 'Starting...' : 'Start Extraction'}
+                </Text>
               </LinearGradient>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity
-              style={{ backgroundColor: palette.error + '20', borderRadius: 14, padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: palette.error + '40' }}
-              onPress={handleStop}
-            >
-              <MaterialIcons name="stop" size={20} color={palette.error} />
-              <Text style={{ color: palette.error, fontSize: 15, fontWeight: '800' }}>Stop Extraction</Text>
-            </TouchableOpacity>
+            <View style={{ backgroundColor: palette.primary + '10', borderRadius: 14, padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: palette.primary + '40' }}>
+              <ActivityIndicator color={palette.primary} />
+              <Text style={{ color: palette.primary, fontSize: 15, fontWeight: '800' }}>Extracting... ({progress}%)</Text>
+            </View>
           )}
         </ScrollView>
       </SafeAreaView>
