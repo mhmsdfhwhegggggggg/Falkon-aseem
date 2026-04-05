@@ -71,6 +71,7 @@ const addMembersRouter = router({
       fileId: z.string().optional(), usernames: z.array(z.string()).optional(),
       userIds: z.array(z.string()).optional(), delaySeconds: z.number().optional(),
       maxPerDay: z.number().optional(), accountId: z.string(),
+      warmup: z.boolean().optional(), priority: z.enum(["low", "normal", "high"]).optional(),
     }))
     .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),
 
@@ -140,6 +141,28 @@ const licenseRouter = router({
     .query((): { valid: boolean; tier: string } => ({ valid: true, tier: 'professional' })),
 });
 
+const systemRouter = router({
+  health: publicProcedure.query((): {
+    workerPool: { running: number; queued: number; maxConcurrency: number; totalCompleted: number; totalFailed: number };
+    accountHealth: Record<string, { score: number; circuitOpen: boolean; dailyCount: number; floodCount: number; peerFloodCount: number; warmupMode: boolean }>;
+    entityCache: { entity: { size: number; maxSize: number }; negative: { size: number; maxSize: number } };
+    uptime: number;
+    memoryMB: number;
+    timestamp: string;
+  } => ({
+    workerPool: { running: 0, queued: 0, maxConcurrency: 10, totalCompleted: 0, totalFailed: 0 },
+    accountHealth: {},
+    entityCache: { entity: { size: 0, maxSize: 500 }, negative: { size: 0, maxSize: 200 } },
+    uptime: 0,
+    memoryMB: 0,
+    timestamp: new Date().toISOString(),
+  })),
+
+  setPoolSize: publicProcedure
+    .input(z.object({ concurrency: z.number().min(1).max(50) }))
+    .mutation((): { success: boolean; concurrency: number } => ({ success: true, concurrency: 10 })),
+});
+
 export const appRouter = router({
   accounts: accountsRouter,
   extraction: extractionRouter,
@@ -148,6 +171,7 @@ export const appRouter = router({
   jobs: jobsRouter,
   stats: statsRouter,
   license: licenseRouter,
+  system: systemRouter,
 });
 
 export type AppRouter = typeof appRouter;

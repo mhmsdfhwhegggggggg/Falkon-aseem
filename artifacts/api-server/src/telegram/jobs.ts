@@ -14,6 +14,7 @@ export interface MemberRecord {
   lastName: string;
   isOnline: boolean;
   phone?: string;
+  lastSeen?: string;
   status: "pending" | "added" | "failed" | "flood" | "already_member" | "privacy";
   error?: string;
 }
@@ -33,7 +34,9 @@ export interface Job {
     extracted?: number;
     added?: number;
     failed?: number;
+    skipped?: number;
     errors?: string[];
+    accountHealth?: number;
   };
   error?: string;
   accountId?: string;

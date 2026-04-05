@@ -7,6 +7,10 @@ import { createJob, getJob, loadJobs, updateJob } from "./jobs.js";
 import { runExtraction } from "./extraction-service.js";
 import { runAddMembers } from "./add-members-service.js";
 import { loadMembersIndex, loadMembersFile, deleteMembersFile } from "./members-files.js";
+import { workerPool } from "./worker-pool.js";
+import { getHealthReport } from "./anti-ban.js";
+import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
+import { getPoolMetrics } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
 
 const t = initTRPC.create({ transformer: superjson });
@@ -85,8 +89,13 @@ const extractionRouter = router({
         mode: input.mode,
       }, input.accountId);
 
-      runExtraction(job).catch((err) => {
-        logger.error({ jobId: job.id, err }, "Extraction job failed");
+      workerPool.enqueue({
+        id: job.id,
+        accountId: input.accountId,
+        priority: "normal",
+        timeoutMs: 30 * 60 * 1000, // 30 min max
+        addedAt: Date.now(),
+        fn: () => runExtraction(job).then(() => {}),
       });
 
       return { jobId: job.id, status: "queued" };
@@ -121,6 +130,8 @@ const addMembersRouter = router({
       delaySeconds: z.number().min(5).max(300).default(30),
       maxPerDay: z.number().min(1).max(200).default(40),
       accountId: z.string(),
+      warmup: z.boolean().default(false),
+      priority: z.enum(["low", "normal", "high"]).default("normal"),
     }))
     .mutation(async ({ input }) => {
       const account = getAccount(input.accountId);
@@ -134,10 +145,16 @@ const addMembersRouter = router({
         userIds: input.userIds,
         delaySeconds: input.delaySeconds,
         maxPerDay: input.maxPerDay,
+        warmup: input.warmup,
       }, input.accountId);
 
-      runAddMembers(job).catch((err) => {
-        logger.error({ jobId: job.id, err }, "Add-members job failed");
+      workerPool.enqueue({
+        id: job.id,
+        accountId: input.accountId,
+        priority: input.priority,
+        timeoutMs: 6 * 60 * 60 * 1000, // 6 hours max (long running)
+        addedAt: Date.now(),
+        fn: () => runAddMembers(job),
       });
 
       return { jobId: job.id, status: "queued" };
@@ -242,6 +259,32 @@ const statsRouter = router({
     }),
 });
 
+const systemRouter = router({
+  health: procedure.query(() => {
+    const poolMetrics = workerPool.metrics();
+    const accountHealth = getHealthReport();
+    const entityCache = getEntityCacheStats();
+    const clientPool = getPoolMetrics();
+
+    return {
+      workerPool: poolMetrics,
+      accountHealth,
+      entityCache,
+      clientPool,
+      uptime: process.uptime(),
+      memoryMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      timestamp: new Date().toISOString(),
+    };
+  }),
+
+  setPoolSize: procedure
+    .input(z.object({ concurrency: z.number().min(1).max(50) }))
+    .mutation(({ input }) => {
+      workerPool.setMaxConcurrency(input.concurrency);
+      return { success: true, concurrency: input.concurrency };
+    }),
+});
+
 const licenseRouter = router({
   activate: procedure
     .input(z.object({ key: z.string(), hwid: z.string().optional() }))
@@ -269,6 +312,7 @@ export const appRouter = router({
   jobs: jobsRouter,
   stats: statsRouter,
   license: licenseRouter,
+  system: systemRouter,
 });
 
 export type AppRouter = typeof appRouter;

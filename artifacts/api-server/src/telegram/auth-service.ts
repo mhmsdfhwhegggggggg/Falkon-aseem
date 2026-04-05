@@ -1,9 +1,9 @@
-import { TelegramClient } from "telegram";
+import { TelegramClient, Api } from "telegram";
+import { computeCheck } from "telegram/Password.js";
 import { StringSession } from "telegram/sessions/index.js";
 import { createFreshClient, API_ID, API_HASH } from "./client-manager.js";
 import { upsertAccount, loadAccounts } from "./session-store.js";
 import { logger } from "../lib/logger.js";
-import { Api } from "telegram";
 
 const pendingAuth = new Map<string, { client: TelegramClient; phone: string; phoneCodeHash: string }>();
 
@@ -58,7 +58,7 @@ export async function confirmPhoneCode(sessionId: string, code: string, password
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("SESSION_PASSWORD_NEEDED") && password) {
         const srp = await client.invoke(new Api.account.GetPassword());
-        const check = await client.computeCheck(srp as Api.account.Password, password);
+        const check = await computeCheck(srp as Api.account.Password, password);
         const result = await client.invoke(new Api.auth.CheckPassword({ password: check }));
         user = (result as Api.auth.Authorization).user as Api.User;
       } else {
