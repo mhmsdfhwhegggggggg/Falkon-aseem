@@ -17,6 +17,8 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { WindowManagerProvider } from "@/lib/window-manager";
+import { MembersStoreProvider } from "@/lib/members-store";
+import { TaskRunnerProvider } from "@/lib/task-runner";
 
 import "@/global.css";
 
@@ -27,6 +29,22 @@ function RootLayoutNav() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="license-activation" options={{ headerShown: false, presentation: "fullScreenModal" }} />
+      <Stack.Screen name="extraction" options={{ headerShown: false }} />
+      <Stack.Screen name="extract-and-add" options={{ headerShown: false }} />
+      <Stack.Screen name="add-members" options={{ headerShown: false }} />
+      <Stack.Screen name="members-file" options={{ headerShown: false }} />
+      <Stack.Screen name="members-files" options={{ headerShown: false }} />
+      <Stack.Screen name="bulk-ops" options={{ headerShown: false }} />
+      <Stack.Screen name="auto-reply" options={{ headerShown: false }} />
+      <Stack.Screen name="proxies" options={{ headerShown: false }} />
+      <Stack.Screen name="stats" options={{ headerShown: false }} />
+      <Stack.Screen name="channel-management" options={{ headerShown: false }} />
+      <Stack.Screen name="content-cloner" options={{ headerShown: false }} />
+      <Stack.Screen name="scheduler" options={{ headerShown: false }} />
+      <Stack.Screen name="windows" options={{ headerShown: false }} />
+      <Stack.Screen name="tasks-monitor" options={{ headerShown: false }} />
+      <Stack.Screen name="license-dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="developer-dashboard" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
@@ -42,10 +60,7 @@ export default function RootLayout() {
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
-      queries: {
-        staleTime: 30000,
-        retry: 2,
-      },
+      queries: { staleTime: 30000, retry: 2 },
     },
   }));
 
@@ -65,13 +80,17 @@ export default function RootLayout() {
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              <WindowManagerProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <KeyboardProvider>
-                    <RootLayoutNav />
-                  </KeyboardProvider>
-                </GestureHandlerRootView>
-              </WindowManagerProvider>
+              <MembersStoreProvider>
+                <TaskRunnerProvider>
+                  <WindowManagerProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <KeyboardProvider>
+                        <RootLayoutNav />
+                      </KeyboardProvider>
+                    </GestureHandlerRootView>
+                  </WindowManagerProvider>
+                </TaskRunnerProvider>
+              </MembersStoreProvider>
             </ThemeProvider>
           </QueryClientProvider>
         </trpc.Provider>

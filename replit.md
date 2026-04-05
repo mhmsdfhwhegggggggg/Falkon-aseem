@@ -58,11 +58,25 @@ Located at `artifacts/falkon-pro/`. Production-ready Telegram management system.
 - `app/developer-dashboard.tsx` — Dev tools, API test, logs
 
 ### Key Libraries
+- `lib/members-store.tsx` — Central persistent store (AsyncStorage) for member files: CRUD, status tracking per-member, export, import from text
+- `lib/task-runner.tsx` — Real-time task context with per-task logs, progress, succeeded/failed/skipped stats, output file linking
 - `lib/window-manager.tsx` — Multi-instance window state (Context API)
 - `lib/trpc.ts` — tRPC client with bearer token + HWID headers
 - `lib/theme-provider.tsx` — Dark/light theme with NativeWind CSS vars
 - `lib/theme.ts` — Color token definitions
 - `server/routers.ts` — tRPC router stubs (all endpoints)
+
+### Full Integration Pipeline
+1. **Extraction** → extracts members from group/channel → auto-saves to named MembersFile
+2. **Members Files browser** (`/members-files`) → lists all saved files with stats (total/added/pending/%)
+3. **Members File viewer** (`/members-file`) → view all members in a file, filter by status, add from file button
+4. **Add Members** (`/add-members`) — 3 modes:
+   - **From File** — pick a saved extraction file, add pending members
+   - **By @Username** — paste list of usernames (one per line)
+   - **By User ID** — paste list of numeric Telegram IDs
+5. **Extract & Add** (`/extract-and-add`) — sequential pipeline: extract → auto-save → add
+6. **Task Monitor** (`/tasks-monitor`) — live view of all running/completed tasks with logs and output file links
+7. **Dashboard** — shows live counts: files, members, running tasks, members added; quick-add buttons
 
 ### Multi-Window Feature
 Windows screen (`/windows`) allows creating and managing multiple independent task instances simultaneously — each with its own title bar (macOS window chrome style), progress tracking, pause/resume/close controls.

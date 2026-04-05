@@ -27,9 +27,11 @@ const TOOL_SECTIONS = [
     ],
   },
   {
-    title: 'Data & Analytics',
+    title: 'Members & Data',
     tools: [
-      { label: 'Member Extraction', icon: 'download' as const, color: '#FBBF24', route: '/extraction', description: 'Extract group members' },
+      { label: 'Member Extraction', icon: 'download' as const, color: '#FBBF24', route: '/extraction', description: 'Extract members → auto-save to file' },
+      { label: 'Add Members', icon: 'person-add' as const, color: '#34D399', route: '/add-members', description: 'Add by username, ID, or from file' },
+      { label: 'Saved Member Files', icon: 'folder-open' as const, color: '#8B5CF6', route: '/members-files', description: 'Browse & re-use extraction files' },
       { label: 'Statistics', icon: 'bar-chart' as const, color: '#F472B6', route: '/stats', description: 'Performance analytics' },
     ],
   },
@@ -41,9 +43,15 @@ const TOOL_SECTIONS = [
     ],
   },
   {
+    title: 'Monitoring',
+    tools: [
+      { label: 'Task Monitor', icon: 'monitor' as const, color: '#22D3EE', route: '/tasks-monitor', description: 'Real-time task logs & progress' },
+      { label: 'Multi-Window', icon: 'tab' as const, color: '#22D3EE', route: '/windows', description: 'Run parallel task instances' },
+    ],
+  },
+  {
     title: 'Advanced',
     tools: [
-      { label: 'Multi-Window', icon: 'tab' as const, color: '#22D3EE', route: '/windows', description: 'Run parallel instances' },
       { label: 'Dev Dashboard', icon: 'code' as const, color: '#818CF8', route: '/developer-dashboard', description: 'Developer tools & logs' },
     ],
   },
