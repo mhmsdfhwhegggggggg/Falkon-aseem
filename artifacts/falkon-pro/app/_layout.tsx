@@ -19,6 +19,7 @@ import { trpc, createTRPCClient } from "@/lib/trpc";
 import { WindowManagerProvider } from "@/lib/window-manager";
 import { MembersStoreProvider } from "@/lib/members-store";
 import { TaskRunnerProvider } from "@/lib/task-runner";
+import { DevAuthProvider } from "@/lib/dev-auth";
 
 import "@/global.css";
 
@@ -80,17 +81,19 @@ export default function RootLayout() {
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              <MembersStoreProvider>
-                <TaskRunnerProvider>
-                  <WindowManagerProvider>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <KeyboardProvider>
-                        <RootLayoutNav />
-                      </KeyboardProvider>
-                    </GestureHandlerRootView>
-                  </WindowManagerProvider>
-                </TaskRunnerProvider>
-              </MembersStoreProvider>
+              <DevAuthProvider>
+                <MembersStoreProvider>
+                  <TaskRunnerProvider>
+                    <WindowManagerProvider>
+                      <GestureHandlerRootView style={{ flex: 1 }}>
+                        <KeyboardProvider>
+                          <RootLayoutNav />
+                        </KeyboardProvider>
+                      </GestureHandlerRootView>
+                    </WindowManagerProvider>
+                  </TaskRunnerProvider>
+                </MembersStoreProvider>
+              </DevAuthProvider>
             </ThemeProvider>
           </QueryClientProvider>
         </trpc.Provider>
