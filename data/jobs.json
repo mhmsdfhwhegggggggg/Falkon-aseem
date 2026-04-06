@@ -108,5 +108,258 @@
       "extracted": 500
     },
     "savedFileId": "mf_1775486029743_kw7jk"
+  },
+  {
+    "id": "job_1775486696493_0fjc9",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 20,
+    "total": 20,
+    "createdAt": "2026-04-06T14:44:56.493Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 20,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:44:56.494Z",
+    "completedAt": "2026-04-06T14:44:57.159Z",
+    "result": {
+      "extracted": 20
+    }
+  },
+  {
+    "id": "job_1775486717049_8wt5y",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T14:45:17.049Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:45:17.050Z",
+    "completedAt": "2026-04-06T14:45:19.193Z",
+    "result": {
+      "extracted": 500
+    }
+  },
+  {
+    "id": "job_1775486759978_vuwcp",
+    "type": "add_members",
+    "status": "failed",
+    "progress": 4,
+    "total": 20,
+    "createdAt": "2026-04-06T14:45:59.978Z",
+    "config": {
+      "targetGroup": "https://t.me/quotes_331",
+      "mode": "by-id",
+      "members": [
+        {
+          "userId": "8481991262",
+          "username": "AcademicPlus11",
+          "firstName": "أكاديمية التفوق الجامعي",
+          "lastName": "",
+          "isOnline": false,
+          "status": "added"
+        },
+        {
+          "userId": "8646010961",
+          "username": "",
+          "firstName": "ريتال",
+          "lastName": "",
+          "isOnline": false,
+          "status": "added"
+        },
+        {
+          "userId": "6478727360",
+          "username": "",
+          "firstName": "س",
+          "lastName": "",
+          "isOnline": false,
+          "status": "added"
+        },
+        {
+          "userId": "8535458676",
+          "username": "",
+          "firstName": "ريتال للإجازات0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "status": "added"
+        },
+        {
+          "userId": "8635153067",
+          "username": "",
+          "firstName": "ريتال للإجازات0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "status": "flood",
+          "error": "PeerFlood — account paused"
+        },
+        {
+          "userId": "8471711727",
+          "username": "",
+          "firstName": "َ",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "8576188165",
+          "username": "",
+          "firstName": "ريتال للإجازات 0595969106",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "8702262567",
+          "username": "",
+          "firstName": "ابو",
+          "lastName": "صالح",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "399054878",
+          "username": "RAAD_SAAD47",
+          "firstName": "Raad",
+          "lastName": "Saad",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "141233849",
+          "username": "dbdga",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "8536173793",
+          "username": "",
+          "firstName": "R",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "8642016826",
+          "username": "",
+          "firstName": "مشاعل",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "8605288837",
+          "username": "",
+          "firstName": "ابو سلطان",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "5356864029",
+          "username": "",
+          "firstName": "A",
+          "lastName": ".",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "1244436556",
+          "username": "ax217",
+          "firstName": "مساعد الحربي",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "6367273405",
+          "username": "",
+          "firstName": "🖤",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "1338042873",
+          "username": "cdd7d",
+          "firstName": "Faris",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "1256250236",
+          "username": "nujxs",
+          "firstName": "N",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "1020166848",
+          "username": "",
+          "firstName": "Fahd",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        },
+        {
+          "userId": "1138142283",
+          "username": "IllIllIIllll",
+          "firstName": "َ",
+          "lastName": "",
+          "isOnline": false,
+          "status": "pending"
+        }
+      ],
+      "delaySeconds": 15,
+      "maxPerDay": 40,
+      "warmup": false
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:45:59.979Z",
+    "result": {
+      "added": 4,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [
+        "PeerFlood on account acc_7707423847 — stopping job"
+      ]
+    },
+    "error": "PeerFlood: account acc_7707423847 is now in cooldown",
+    "completedAt": "2026-04-06T14:47:00.411Z"
+  },
+  {
+    "id": "job_1775486816330_76vnh",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T14:46:56.330Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:46:56.331Z",
+    "completedAt": "2026-04-06T14:46:59.671Z",
+    "result": {
+      "extracted": 500
+    }
   }
 ]
