@@ -3,91 +3,104 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-
-import { useColors } from "@/hooks/use-colors";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import colors from "@/constants/colors";
 
-function TabIcon({ name, color, size = 24 }: { name: React.ComponentProps<typeof MaterialIcons>["name"]; color: string; size?: number }) {
-  return <MaterialIcons name={name} size={size} color={color} />;
+const GOLD = '#F59E0B';
+const BG_TAB = '#080D16';
+const BORDER_TAB = '#1a2235';
+
+function TabIcon({ name, color, focused }: { name: React.ComponentProps<typeof MaterialIcons>["name"]; color: string; focused: boolean }) {
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      {focused && (
+        <View style={{
+          position: 'absolute',
+          top: -10,
+          width: 32,
+          height: 2,
+          borderRadius: 1,
+          backgroundColor: GOLD,
+        }} />
+      )}
+      <MaterialIcons name={name} size={22} color={color} />
+    </View>
+  );
 }
 
 export default function TabLayout() {
   const scheme = useColorScheme();
-  const palette = colors[scheme];
-  const isDark = scheme === "dark";
   const isIOS = Platform.OS === "ios";
-  const isWeb = Platform.OS === "web";
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: palette.primary,
-        tabBarInactiveTintColor: palette.muted,
+        tabBarActiveTintColor: GOLD,
+        tabBarInactiveTintColor: '#4B5563',
         headerShown: false,
         tabBarStyle: {
           position: "absolute",
-          backgroundColor: isIOS ? "transparent" : isDark ? "#0D1117" : palette.background,
+          backgroundColor: isIOS ? "transparent" : BG_TAB,
           borderTopWidth: 1,
-          borderTopColor: palette.border,
+          borderTopColor: BORDER_TAB,
           elevation: 0,
           paddingTop: 6,
-          height: isWeb ? 64 : 56,
+          height: Platform.OS === "web" ? 64 : 60,
         },
         tabBarBackground: () =>
           isIOS ? (
             <BlurView
-              intensity={90}
-              tint={isDark ? "dark" : "light"}
+              intensity={95}
+              tint="dark"
               style={StyleSheet.absoluteFill}
             />
           ) : (
             <View
               style={[
                 StyleSheet.absoluteFill,
-                { backgroundColor: isDark ? "#0D1117" : palette.background, borderTopWidth: 1, borderTopColor: palette.border },
+                { backgroundColor: BG_TAB, borderTopWidth: 1, borderTopColor: BORDER_TAB },
               ]}
             />
           ),
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '600',
+          fontWeight: '700',
+          letterSpacing: 0.3,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
-          tabBarIcon: ({ color }) => <TabIcon name="dashboard" color={color} />,
+          title: "الرئيسية",
+          tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="accounts"
         options={{
-          title: "Accounts",
-          tabBarIcon: ({ color }) => <TabIcon name="people" color={color} />,
+          title: "الحسابات",
+          tabBarIcon: ({ color, focused }) => <TabIcon name="people" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="tasks"
         options={{
-          title: "Tasks",
-          tabBarIcon: ({ color }) => <TabIcon name="assignment" color={color} />,
+          title: "المهام",
+          tabBarIcon: ({ color, focused }) => <TabIcon name="assignment" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="tools"
         options={{
-          title: "Tools",
-          tabBarIcon: ({ color }) => <TabIcon name="build" color={color} />,
+          title: "الأدوات",
+          tabBarIcon: ({ color, focused }) => <TabIcon name="build" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => <TabIcon name="settings" color={color} />,
+          title: "الإعدادات",
+          tabBarIcon: ({ color, focused }) => <TabIcon name="settings" color={color} focused={focused} />,
         }}
       />
     </Tabs>
