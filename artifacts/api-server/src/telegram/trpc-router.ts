@@ -71,9 +71,11 @@ const extractionRouter = router({
   start: procedure
     .input(z.object({
       group: z.string().min(1),
-      limit: z.number().min(1).max(10000).default(500),
-      filterActive: z.boolean().default(false),
+      limit: z.number().min(1).max(100000).default(500),
+      filterActive: z.boolean().default(false),   // legacy — kept for compat
       excludeBots: z.boolean().default(true),
+      lastSeenDays: z.number().min(0).max(3650).default(0),  // 0 = no filter
+      dataFilter: z.enum(["all", "with-username", "without-username", "with-phone"]).default("all"),
       mode: z.enum(["members", "admins", "subscribers", "contacts"]).default("members"),
       accountId: z.string(),
       sessionString: z.string().optional(), // phone-stored session
@@ -90,6 +92,8 @@ const extractionRouter = router({
         limit: input.limit,
         filterActive: input.filterActive,
         excludeBots: input.excludeBots,
+        lastSeenDays: input.lastSeenDays,
+        dataFilter: input.dataFilter,
         mode: input.mode,
         sessionString: input.sessionString, // stored in job config (in-memory only)
       }, input.accountId);

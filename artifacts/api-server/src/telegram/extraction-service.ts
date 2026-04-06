@@ -29,12 +29,31 @@ const BATCH_SIZE = 200;
 
 // ─── Filter pipeline ──────────────────────────────────────────────────────────
 
+type DataFilter = 'all' | 'with-username' | 'without-username' | 'with-phone';
+
 interface ExtractionFilters {
   excludeBots: boolean;
-  filterActive: boolean;      // only users active in last 30 days
-  hasUsername: boolean;       // only users with @username
-  hasPhone: boolean;          // only users who share phone
-  minFollowers?: number;      // for channels (future)
+  lastSeenDays: number;       // 0 = no filter; N = active within N days
+  dataFilter: DataFilter;     // username / no-username / phone / all
+}
+
+/**
+ * Estimate how many days ago the user was last seen.
+ * Returns null if truly unknown (privacy/empty status with no filter).
+ */
+function daysSinceLastSeen(user: Api.User): number | null {
+  const s = user.status;
+  if (s instanceof Api.UserStatusOnline) return 0;
+  if (s instanceof Api.UserStatusRecently) return 1;   // within ~1-3 days
+  if (s instanceof Api.UserStatusLastWeek) return 5;   // within 7 days
+  if (s instanceof Api.UserStatusLastMonth) return 20; // within 30 days
+  if (s instanceof Api.UserStatusOffline) {
+    const wasOnlineSec = (s as any).wasOnline as number;
+    if (wasOnlineSec) {
+      return Math.floor((Date.now() / 1000 - wasOnlineSec) / 86400);
+    }
+  }
+  return null; // UserStatusEmpty — privacy settings hide last seen
 }
 
 function applyFilters(user: Api.User, filters: ExtractionFilters): boolean {
@@ -42,16 +61,17 @@ function applyFilters(user: Api.User, filters: ExtractionFilters): boolean {
   if (user.deleted) return false;
   if (user.bot && filters.excludeBots) return false;
 
-  if (filters.filterActive) {
-    const status = user.status;
-    const isActive =
-      status instanceof Api.UserStatusOnline ||
-      status instanceof Api.UserStatusRecently ||
-      status instanceof Api.UserStatusLastWeek;
-    if (!isActive) return false;
+  // ── Last-seen filter ─────────────────────────────────────────────────────
+  if (filters.lastSeenDays > 0) {
+    const days = daysSinceLastSeen(user);
+    // If status is hidden (null) we exclude them — can't verify activity
+    if (days === null || days > filters.lastSeenDays) return false;
   }
 
-  if (filters.hasUsername && !user.username) return false;
+  // ── Data type filter ─────────────────────────────────────────────────────
+  if (filters.dataFilter === 'with-username' && !user.username) return false;
+  if (filters.dataFilter === 'without-username' && !!user.username) return false;
+  if (filters.dataFilter === 'with-phone' && !user.phone) return false;
 
   return true;
 }
@@ -59,24 +79,29 @@ function applyFilters(user: Api.User, filters: ExtractionFilters): boolean {
 // ─── Main extraction function ─────────────────────────────────────────────────
 
 export async function runExtraction(job: Job) {
-  const {
-    group,
-    limit = 500,
-    filterActive = false,
-    excludeBots = true,
-    hasUsername = false,
-  } = job.config as {
+  const config = job.config as {
     group: string;
     limit: number;
-    filterActive: boolean;
+    filterActive?: boolean;   // legacy — maps to lastSeenDays=30
     excludeBots: boolean;
-    hasUsername?: boolean;
+    lastSeenDays?: number;
+    dataFilter?: DataFilter;
     mode: string;
   };
 
+  const {
+    group,
+    limit = 500,
+    excludeBots = true,
+  } = config;
+
+  // lastSeenDays: explicit value wins; filterActive legacy maps to 30 days
+  const lastSeenDays = config.lastSeenDays ?? (config.filterActive ? 30 : 0);
+  const dataFilter: DataFilter = config.dataFilter ?? 'all';
+
   const accountId = job.accountId!;
   const sessionString = (job.config as any).sessionString as string | undefined;
-  const filters: ExtractionFilters = { excludeBots, filterActive, hasUsername, hasPhone: false };
+  const filters: ExtractionFilters = { excludeBots, lastSeenDays, dataFilter };
 
   logger.info({ jobId: job.id, group, limit, filters }, "Starting extraction v2");
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });

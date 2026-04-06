@@ -50,9 +50,15 @@ const accountsRouter = router({
 const extractionRouter = router({
   start: publicProcedure
     .input(z.object({
-      group: z.string(), limit: z.number().optional(), filterActive: z.boolean().optional(),
-      excludeBots: z.boolean().optional(), mode: z.enum(["members", "admins", "subscribers", "contacts"]).optional(),
-      accountId: z.string(), sessionString: z.string().optional(),
+      group: z.string(),
+      limit: z.number().optional(),
+      filterActive: z.boolean().optional(),
+      excludeBots: z.boolean().optional(),
+      lastSeenDays: z.number().optional(),
+      dataFilter: z.enum(["all", "with-username", "without-username", "with-phone"]).optional(),
+      mode: z.enum(["members", "admins", "subscribers", "contacts"]).optional(),
+      accountId: z.string(),
+      sessionString: z.string().optional(),
     }))
     .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),
 
