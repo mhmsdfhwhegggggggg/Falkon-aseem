@@ -66,6 +66,14 @@ Located at `artifacts/falkon-pro/`. Production-ready Telegram management system.
 - `lib/theme.ts` — Color token definitions
 - `server/routers.ts` — tRPC router stubs (all endpoints)
 
+### Screen Integration Status (all wired to real API)
+- **bulk-ops.tsx** — `trpc.bulkMessage.start` + `trpc.bulkMessage.status` polling; DM/group/channel modes; account rotation; live progress
+- **content-cloner.tsx** — `trpc.contentCloner.start` + `trpc.contentCloner.status` polling; forward/skip controls; FloodWait safe
+- **proxies.tsx** — AsyncStorage persistence (`@falkon_proxies`, `@falkon_account_proxy`); `trpc.proxy.setAccountProxy` sync; per-account assignment UI
+- **extraction.tsx** — `trpc.extraction.start` + `status` + `result`; auto-saves to MembersStore
+- **add-members.tsx** — `trpc.addMembers.start` + `status`; from-file/by-username/by-id modes
+- **extract-and-add.tsx** — chained pipeline extraction → result → add; multi-account rotation
+
 ### Full Integration Pipeline
 1. **Extraction** → extracts members from group/channel → auto-saves to named MembersFile
 2. **Members Files browser** (`/members-files`) → lists all saved files with stats (total/added/pending/%)

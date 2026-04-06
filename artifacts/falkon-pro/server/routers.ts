@@ -1,10 +1,19 @@
-import { initTRPC, TRPCError } from "@trpc/server";
+import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { z } from "zod";
 
 const t = initTRPC.create({ transformer: superjson });
 export const router = t.router;
 export const publicProcedure = t.procedure;
+
+const ProxyConfigSchema = z.object({
+  host: z.string().min(1),
+  port: z.number().int().min(1).max(65535),
+  type: z.enum(["socks5", "http", "mtproto"]),
+  username: z.string().optional(),
+  password: z.string().optional(),
+  secret: z.string().optional(),
+}).optional();
 
 const accountsRouter = router({
   list: publicProcedure.query((): {
@@ -68,6 +77,12 @@ const extractionRouter = router({
       jobId: string; status: string; progress: number; total: number;
       extracted: number; error?: string; completedAt?: string;
     }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, extracted: 0 })),
+
+  result: publicProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async (): Promise<{
+      jobId: string; members: any[]; extracted: number; savedFileId?: string; completedAt?: string;
+    }> => ({ jobId: '', members: [], extracted: 0 })),
 });
 
 const addMembersRouter = router({
@@ -88,8 +103,81 @@ const addMembersRouter = router({
     .input(z.object({ jobId: z.string() }))
     .query(async (): Promise<{
       jobId: string; status: string; progress: number; total: number;
-      added: number; failed: number; errors: string[]; error?: string; completedAt?: string;
-    }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, added: 0, failed: 0, errors: [] })),
+      added: number; failed: number; skipped: number; errors: string[]; error?: string; completedAt?: string;
+      members?: any[] | null;
+    }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, added: 0, failed: 0, skipped: 0, errors: [] })),
+});
+
+const bulkMessageRouter = router({
+  start: publicProcedure
+    .input(z.object({
+      mode: z.enum(["dm", "group", "channel"]).default("dm"),
+      message: z.string().min(1),
+      targets: z.array(z.string()).min(1),
+      delaySeconds: z.number().optional(),
+      maxPerDay: z.number().optional(),
+      warmup: z.boolean().optional(),
+      parseMode: z.enum(["html", "markdown", "none"]).optional(),
+      accountId: z.string(),
+      sessionString: z.string().optional(),
+      allAccounts: z.array(z.object({
+        id: z.string(),
+        sessionString: z.string().optional(),
+        proxy: ProxyConfigSchema,
+      })).optional(),
+      proxy: ProxyConfigSchema,
+      priority: z.enum(["low", "normal", "high"]).optional(),
+    }))
+    .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),
+
+  status: publicProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async (): Promise<{
+      jobId: string; status: string; progress: number; total: number;
+      sent: number; failed: number; errors: string[]; error?: string; completedAt?: string;
+    }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, sent: 0, failed: 0, errors: [] })),
+});
+
+const contentClonerRouter = router({
+  start: publicProcedure
+    .input(z.object({
+      sourceGroup: z.string().min(1),
+      destGroup: z.string().min(1),
+      cloneMedia: z.boolean().optional(),
+      clonePolls: z.boolean().optional(),
+      delaySeconds: z.number().optional(),
+      limit: z.number().optional(),
+      skipForwards: z.boolean().optional(),
+      reverseOrder: z.boolean().optional(),
+      accountId: z.string(),
+      sessionString: z.string().optional(),
+      proxy: ProxyConfigSchema,
+      priority: z.enum(["low", "normal", "high"]).optional(),
+    }))
+    .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),
+
+  status: publicProcedure
+    .input(z.object({ jobId: z.string() }))
+    .query(async (): Promise<{
+      jobId: string; status: string; progress: number; total: number;
+      forwarded: number; failed: number; errors: string[]; error?: string; completedAt?: string;
+    }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, forwarded: 0, failed: 0, errors: [] })),
+});
+
+const proxyRouter = router({
+  setAccountProxy: publicProcedure
+    .input(z.object({
+      accountId: z.string(),
+      proxy: z.object({
+        host: z.string().min(1),
+        port: z.number().int().min(1).max(65535),
+        type: z.enum(["socks5", "http", "mtproto"]),
+        username: z.string().optional(),
+        password: z.string().optional(),
+        secret: z.string().optional(),
+      }).nullable(),
+    }))
+    .mutation((): { success: boolean; accountId: string } => ({ success: true, accountId: '' })),
 });
 
 const membersFilesRouter = router({
@@ -195,6 +283,9 @@ export const appRouter = router({
   accounts: accountsRouter,
   extraction: extractionRouter,
   addMembers: addMembersRouter,
+  bulkMessage: bulkMessageRouter,
+  contentCloner: contentClonerRouter,
+  proxy: proxyRouter,
   membersFiles: membersFilesRouter,
   jobs: jobsRouter,
   stats: statsRouter,

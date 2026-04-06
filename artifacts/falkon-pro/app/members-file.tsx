@@ -23,6 +23,7 @@ const STATUS_CONFIG: Record<MemberStatus, { color: string; icon: React.Component
   failed: { color: '#F87171', icon: 'error', label: 'فشل' },
   flood: { color: '#FB923C', icon: 'warning', label: 'Flood' },
   already_member: { color: '#60A5FA', icon: 'info', label: 'موجود' },
+  privacy: { color: '#A78BFA', icon: 'lock', label: 'خصوصية' },
 };
 
 function MemberRow({ member, palette }: { member: Member; palette: any }) {

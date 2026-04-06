@@ -6,12 +6,24 @@ import { startPhoneAuth, confirmPhoneCode, resendCode } from "./auth-service.js"
 import { createJob, getJob, loadJobs, updateJob } from "./jobs.js";
 import { runExtraction } from "./extraction-service.js";
 import { runAddMembers } from "./add-members-service.js";
+import { runBulkMessage } from "./bulk-message-service.js";
+import { runContentCloner } from "./content-cloner-service.js";
 import { loadMembersIndex, loadMembersFile, deleteMembersFile } from "./members-files.js";
 import { workerPool } from "./worker-pool.js";
 import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } from "./anti-ban.js";
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
-import { getPoolMetrics } from "./client-manager.js";
+import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
+
+// ─── Shared zod schema for proxy config ──────────────────────────────────────
+const ProxyConfigSchema = z.object({
+  host: z.string().min(1),
+  port: z.number().int().min(1).max(65535),
+  type: z.enum(["socks5", "http", "mtproto"]),
+  username: z.string().optional(),
+  password: z.string().optional(),
+  secret: z.string().optional(),
+}).optional();
 
 const t = initTRPC.create({ transformer: superjson });
 export const router = t.router;
@@ -356,6 +368,180 @@ const systemRouter = router({
     }),
 });
 
+// ─── Bulk Message Router ──────────────────────────────────────────────────────
+
+const bulkMessageRouter = router({
+  start: procedure
+    .input(z.object({
+      mode: z.enum(["dm", "group", "channel"]).default("dm"),
+      message: z.string().min(1),
+      targets: z.array(z.string()).min(1),
+      delaySeconds: z.number().min(5).max(600).default(45),
+      maxPerDay: z.number().min(1).max(200).default(30),
+      warmup: z.boolean().default(false),
+      parseMode: z.enum(["html", "markdown", "none"]).default("none"),
+      accountId: z.string(),
+      sessionString: z.string().optional(),
+      allAccounts: z.array(z.object({
+        id: z.string(),
+        sessionString: z.string().optional(),
+        proxy: ProxyConfigSchema,
+      })).optional(),
+      proxy: ProxyConfigSchema,
+      priority: z.enum(["low", "normal", "high"]).default("normal"),
+    }))
+    .mutation(async ({ input }) => {
+      if (!input.sessionString) {
+        const account = getAccount(input.accountId);
+        if (!account) throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+      }
+
+      if (input.proxy) {
+        setAccountProxy(input.accountId, input.proxy);
+      }
+
+      const job = createJob("bulk_message", {
+        mode: input.mode,
+        message: input.message,
+        targets: input.targets,
+        delaySeconds: input.delaySeconds,
+        maxPerDay: input.maxPerDay,
+        warmup: input.warmup,
+        parseMode: input.parseMode,
+        sessionString: input.sessionString,
+        allAccounts: input.allAccounts,
+        proxy: input.proxy,
+      }, input.accountId);
+
+      workerPool.enqueue({
+        id: job.id,
+        accountId: input.accountId,
+        priority: input.priority,
+        timeoutMs: 8 * 60 * 60 * 1000, // 8h max
+        addedAt: Date.now(),
+        fn: () => runBulkMessage(job),
+      });
+
+      return { jobId: job.id, status: "queued" };
+    }),
+
+  status: procedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = getJob(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return {
+        jobId: job.id,
+        status: job.status,
+        progress: job.progress,
+        total: job.total,
+        sent: job.result?.added || 0,
+        failed: job.result?.failed || 0,
+        errors: job.result?.errors || [],
+        error: job.error,
+        completedAt: job.completedAt,
+      };
+    }),
+});
+
+// ─── Content Cloner Router ────────────────────────────────────────────────────
+
+const contentClonerRouter = router({
+  start: procedure
+    .input(z.object({
+      sourceGroup: z.string().min(1),
+      destGroup: z.string().min(1),
+      cloneMedia: z.boolean().default(true),
+      clonePolls: z.boolean().default(false),
+      delaySeconds: z.number().min(1).max(300).default(5),
+      limit: z.number().min(1).max(5000).default(100),
+      skipForwards: z.boolean().default(true),
+      reverseOrder: z.boolean().default(true),
+      accountId: z.string(),
+      sessionString: z.string().optional(),
+      proxy: ProxyConfigSchema,
+      priority: z.enum(["low", "normal", "high"]).default("normal"),
+    }))
+    .mutation(async ({ input }) => {
+      if (!input.sessionString) {
+        const account = getAccount(input.accountId);
+        if (!account) throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
+      }
+
+      if (input.proxy) {
+        setAccountProxy(input.accountId, input.proxy);
+      }
+
+      const job = createJob("bulk_message", {
+        sourceGroup: input.sourceGroup,
+        destGroup: input.destGroup,
+        cloneMedia: input.cloneMedia,
+        clonePolls: input.clonePolls,
+        delaySeconds: input.delaySeconds,
+        limit: input.limit,
+        skipForwards: input.skipForwards,
+        reverseOrder: input.reverseOrder,
+        sessionString: input.sessionString,
+        proxy: input.proxy,
+        _serviceType: "content_cloner",
+      }, input.accountId);
+
+      workerPool.enqueue({
+        id: job.id,
+        accountId: input.accountId,
+        priority: input.priority,
+        timeoutMs: 6 * 60 * 60 * 1000, // 6h max
+        addedAt: Date.now(),
+        fn: () => runContentCloner(job),
+      });
+
+      return { jobId: job.id, status: "queued" };
+    }),
+
+  status: procedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = getJob(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return {
+        jobId: job.id,
+        status: job.status,
+        progress: job.progress,
+        total: job.total,
+        forwarded: job.result?.added || 0,
+        failed: job.result?.failed || 0,
+        errors: job.result?.errors || [],
+        error: job.error,
+        completedAt: job.completedAt,
+      };
+    }),
+});
+
+// ─── Proxy Router (server-side proxy cache management) ────────────────────────
+
+const proxyRouter = router({
+  setAccountProxy: procedure
+    .input(z.object({
+      accountId: z.string(),
+      proxy: z.object({
+        host: z.string().min(1),
+        port: z.number().int().min(1).max(65535),
+        type: z.enum(["socks5", "http", "mtproto"]),
+        username: z.string().optional(),
+        password: z.string().optional(),
+        secret: z.string().optional(),
+      }).nullable(),
+    }))
+    .mutation(({ input }) => {
+      if (input.proxy) {
+        setAccountProxy(input.accountId, input.proxy);
+      } else {
+        setAccountProxy(input.accountId, null);
+      }
+      return { success: true, accountId: input.accountId };
+    }),
+});
+
 const licenseRouter = router({
   activate: procedure
     .input(z.object({ key: z.string(), hwid: z.string().optional() }))
@@ -379,6 +565,9 @@ export const appRouter = router({
   accounts: accountsRouter,
   extraction: extractionRouter,
   addMembers: addMembersRouter,
+  bulkMessage: bulkMessageRouter,
+  contentCloner: contentClonerRouter,
+  proxy: proxyRouter,
   membersFiles: membersFilesRouter,
   jobs: jobsRouter,
   stats: statsRouter,

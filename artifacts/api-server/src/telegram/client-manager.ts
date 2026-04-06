@@ -22,6 +22,16 @@ if (!API_ID || !API_HASH) {
   throw new Error("TELEGRAM_API_ID and TELEGRAM_API_HASH must be set");
 }
 
+// ─── Proxy configuration type ─────────────────────────────────────────────────
+export interface ProxyConfig {
+  host: string;
+  port: number;
+  type: "socks5" | "http" | "mtproto";
+  username?: string;
+  password?: string;
+  secret?: string;   // MTProto proxy secret
+}
+
 // ─── Device fingerprint pool — rotate to avoid bot detection ─────────────────
 // Each account gets assigned a unique device profile. Using real device names
 // and Telegram app versions used by actual users in the Arab world.
@@ -127,12 +137,43 @@ setInterval(() => {
 
 // ─── Internal: create, connect, pool ─────────────────────────────────────────
 
-async function createAndPoolClient(accountId: string, sessionString: string): Promise<TelegramClient> {
+// Proxy cache: accountId → ProxyConfig
+const proxyCache = new Map<string, ProxyConfig>();
+
+export function setAccountProxy(accountId: string, proxy: ProxyConfig | null) {
+  if (proxy) proxyCache.set(accountId, proxy);
+  else proxyCache.delete(accountId);
+}
+
+function buildProxyOption(proxy: ProxyConfig): Record<string, unknown> {
+  if (proxy.type === "mtproto") {
+    return { ip: proxy.host, port: proxy.port, MTProxy: true, secret: proxy.secret || "" };
+  }
+  const socksType = proxy.type === "socks5" ? 5 : 4;
+  const opt: Record<string, unknown> = { ip: proxy.host, port: proxy.port, socksType };
+  if (proxy.username) opt["username"] = proxy.username;
+  if (proxy.password) opt["password"] = proxy.password;
+  return opt;
+}
+
+async function createAndPoolClient(
+  accountId: string,
+  sessionString: string,
+  proxy?: ProxyConfig
+): Promise<TelegramClient> {
   const session = new StringSession(sessionString);
   const device = getDeviceProfile(accountId);
-  const connectionOptions = { ...BASE_CONNECTION_OPTIONS, ...device };
+  const connectionOptions: Record<string, unknown> = { ...BASE_CONNECTION_OPTIONS, ...device };
+
+  // Apply proxy if provided or found in cache
+  const effectiveProxy = proxy ?? proxyCache.get(accountId);
+  if (effectiveProxy) {
+    connectionOptions["proxy"] = buildProxyOption(effectiveProxy);
+    logger.debug({ accountId, proxy: `${effectiveProxy.type}://${effectiveProxy.host}:${effectiveProxy.port}` }, "Using proxy");
+  }
+
   logger.debug({ accountId, device: device.deviceModel }, "Connecting with device profile");
-  const client = new TelegramClient(session, API_ID, API_HASH, connectionOptions);
+  const client = new TelegramClient(session, API_ID, API_HASH, connectionOptions as any);
 
   await client.connect();
 
@@ -190,6 +231,7 @@ export async function getClient(accountId: string): Promise<TelegramClient> {
 export async function getClientFromSession(
   sessionString: string,
   accountId: string,
+  proxy?: ProxyConfig,
 ): Promise<TelegramClient> {
   const existing = pool.get(accountId);
   if (existing) {
@@ -212,7 +254,10 @@ export async function getClientFromSession(
   const inFlight = connecting.get(accountId);
   if (inFlight) return inFlight;
 
-  const promise = createAndPoolClient(accountId, sessionString);
+  // Register proxy in cache so reconnects also use it
+  if (proxy) setAccountProxy(accountId, proxy);
+
+  const promise = createAndPoolClient(accountId, sessionString, proxy);
   connecting.set(accountId, promise);
   return promise;
 }

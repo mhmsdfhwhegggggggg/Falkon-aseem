@@ -266,6 +266,15 @@ export async function runAddMembers(job: Job) {
       result: { added: 0, failed: 0, skipped: 0, errors: [], members: membersToAdd },
     });
     await warmupSession(client, currentAccId);
+
+    // ── Activate warmup mode for new accounts ────────────────────────────────
+    // When warmup=true: account starts slow (1 add per batch) and ramps up.
+    // setWarmupMode sets the first N actions to use 1.8x delays.
+    if (warmup) {
+      setWarmupMode(currentAccId, membersToAdd.length);
+      logger.info({ accountId: currentAccId, membersCount: membersToAdd.length }, "Warmup mode activated ✓");
+    }
+
     updateJob(job.id, { status: "running", error: undefined });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -290,6 +299,13 @@ export async function runAddMembers(job: Job) {
   const MAX_PEER_FLOOD_RECOVERIES = 5;
   // Adaptive delay: multiplied by 1.5x after each PeerFlood — backs off naturally
   let adaptiveDelayMultiplier = 1.0;
+
+  // ── Batch randomization state ────────────────────────────────────────────────
+  // randomBatchSize generates a number in [1,3] — never same size twice in a row.
+  // After each batch completes, we take a slightly longer pause (~2–8s) before
+  // continuing. This breaks the pattern of perfectly regular add intervals.
+  let currentBatchTarget = randomBatchSize(currentAccId, 1, 3);
+  let currentBatchCount = 0; // count of successful adds in current batch
 
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
@@ -436,9 +452,23 @@ export async function runAddMembers(job: Job) {
       member.status = "added";
       added++;
       consecutivePeerFloods = 0; // reset on success
+      currentBatchCount++;
 
       recordAction(currentAccId);
-      logger.info({ accountId: currentAccId, username: member.username, userId: member.userId, added, total: membersToAdd.length, accountIdx: currentAccIdx }, "✓ Member added");
+      logger.info({ accountId: currentAccId, username: member.username, userId: member.userId, added, total: membersToAdd.length, accountIdx: currentAccIdx, batch: `${currentBatchCount}/${currentBatchTarget}` }, "✓ Member added");
+
+      // ── Batch end pause ─────────────────────────────────────────────────────
+      // When we complete a batch (randomBatchSize adds), take an extra pause
+      // before the next batch. This creates variable-rhythm adds instead of
+      // perfectly regular intervals — much harder for Telegram to detect.
+      if (currentBatchCount >= currentBatchTarget) {
+        const batchPause = humanDelay({ base: 4500, jitter: 0.5, min: 2000, max: 8000 }) * adaptiveDelayMultiplier;
+        logger.debug({ accountId: currentAccId, batchPause, batchSize: currentBatchTarget }, "Batch end pause");
+        await sleep(batchPause);
+        // Reset for next batch with a new random size
+        currentBatchTarget = randomBatchSize(currentAccId, 1, 3);
+        currentBatchCount = 0;
+      }
 
     } catch (err: unknown) {
       if (isAlreadyMember(err)) {
@@ -527,6 +557,9 @@ export async function runAddMembers(job: Job) {
         currentAccIdx = nextIdx;
         currentAccId = allAccounts[nextIdx]!.id;
         currentSession = allAccounts[nextIdx]!.sessionString;
+        // Reset batch tracking for new account
+        currentBatchTarget = randomBatchSize(currentAccId, 1, 3);
+        currentBatchCount = 0;
 
         logger.warn({
           fromAccount: allAccounts[nextIdx - 1]!.id,
