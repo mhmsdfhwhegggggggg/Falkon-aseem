@@ -60,7 +60,7 @@ const extractionRouter = router({
     .input(z.object({ jobId: z.string() }))
     .query(async (): Promise<{
       jobId: string; status: string; progress: number; total: number;
-      extracted: number; error?: string; savedFileId?: string; completedAt?: string;
+      extracted: number; error?: string; completedAt?: string;
     }> => ({ jobId: '', status: 'pending', progress: 0, total: 0, extracted: 0 })),
 });
 

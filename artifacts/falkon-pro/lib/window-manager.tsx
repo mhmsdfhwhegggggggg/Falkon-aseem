@@ -16,6 +16,7 @@ import React, {
 } from 'react';
 import { trpc } from './trpc';
 import { useAccountsStore } from './accounts-store';
+import { useMembersStore, type Member } from './members-store';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,7 @@ export function WindowManagerProvider({ children }: { children: React.ReactNode 
   useEffect(() => { windowsRef.current = windows; }, [windows]);
 
   const { getSession } = useAccountsStore();
+  const membersStore = useMembersStore();
   const utils = trpc.useUtils();
 
   // Per-window polling timers: windowId → intervalId
@@ -220,11 +222,54 @@ export function WindowManagerProvider({ children }: { children: React.ReactNode 
         // Stop polling when terminal
         if (newState === 'completed' || newState === 'error' || newState === 'cancelled') {
           stopPolling(windowId);
-          const msg =
-            newState === 'completed' ? 'اكتملت المهمة بنجاح ✓' :
-            newState === 'cancelled' ? 'تم إلغاء المهمة' :
-            `فشلت المهمة: ${status.error ?? 'خطأ غير معروف'}`;
-          addLog(windowId, msg, newState === 'completed' ? 'success' : 'error');
+
+          if (newState === 'completed') {
+            addLog(windowId, 'اكتملت المهمة ✓ — جاري الحفظ على الهاتف...', 'success');
+
+            // ── Auto-save extraction results to phone ──
+            if (taskType === 'extraction' || taskType === 'extract-and-add') {
+              try {
+                const win = windowsRef.current.find((w) => w.id === windowId);
+                const resultData = await utils.extraction.result.fetch({ jobId }, { staleTime: 0 });
+
+                if (resultData?.members && resultData.members.length > 0) {
+                  const sourceGroup = win?.config.sourceGroup ?? jobId;
+                  const groupName = sourceGroup
+                    .replace(/^@/, '')
+                    .replace(/https?:\/\/t\.me\//, '')
+                    .replace(/\//g, '_')
+                    .substring(0, 40);
+                  const fileName = `${groupName}_${new Date().toISOString().split('T')[0]}`;
+
+                  const members: Member[] = resultData.members.map((m: any) => ({
+                    id: `m_${m.userId}_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
+                    userId: m.userId,
+                    username: m.username || '',
+                    firstName: m.firstName || '',
+                    lastName: m.lastName || '',
+                    phone: m.phone || '',
+                    isOnline: m.isOnline || false,
+                    lastSeen: m.lastSeen,
+                    status: 'pending' as const,
+                    source: sourceGroup,
+                    extractedAt: new Date().toISOString(),
+                  }));
+
+                  await membersStore.createFile(fileName, members, sourceGroup);
+                  addLog(windowId, `✓ حُفظ ${members.length} عضو على الهاتف — "${fileName}"`, 'success');
+                }
+              } catch (saveErr: any) {
+                addLog(windowId, `تحذير: فشل الحفظ المحلي — ${saveErr?.message ?? 'unknown'}`, 'warning');
+              }
+            } else {
+              addLog(windowId, 'اكتملت المهمة بنجاح ✓', 'success');
+            }
+          } else {
+            const msg = newState === 'cancelled'
+              ? 'تم إلغاء المهمة'
+              : `فشلت المهمة: ${status.error ?? 'خطأ غير معروف'}`;
+            addLog(windowId, msg, 'error');
+          }
         }
 
       } catch (err: any) {

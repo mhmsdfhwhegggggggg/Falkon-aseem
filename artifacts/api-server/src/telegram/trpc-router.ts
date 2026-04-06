@@ -118,7 +118,7 @@ const extractionRouter = router({
         total: job.total,
         extracted: job.result?.extracted || 0,
         error: job.error,
-        savedFileId: job.savedFileId,
+        // savedFileId removed — storage is phone-side only
         completedAt: job.completedAt,
       };
     }),

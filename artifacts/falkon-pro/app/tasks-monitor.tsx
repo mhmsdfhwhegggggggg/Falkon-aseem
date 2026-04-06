@@ -168,7 +168,7 @@ export default function TasksMonitorScreen() {
                   )}
 
                   {(job as any).result && (
-                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: (job as any).savedFileId ? 8 : 0 }}>
+                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
                       {(job as any).result.extracted !== undefined && (
                         <Text style={{ color: palette.muted, fontSize: 11 }}>Extracted: <Text style={{ color: palette.success }}>{(job as any).result.extracted}</Text></Text>
                       )}
@@ -186,13 +186,13 @@ export default function TasksMonitorScreen() {
                   )}
 
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                    {(job as any).savedFileId && (
+                    {job.status === 'completed' && (job as any).result?.extracted > 0 && (
                       <TouchableOpacity
                         style={{ flex: 1, backgroundColor: palette.primary + '20', borderRadius: 8, padding: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 4 }}
-                        onPress={() => router.push({ pathname: '/members-file', params: { id: (job as any).savedFileId } } as any)}
+                        onPress={() => router.push('/members-files' as any)}
                       >
                         <MaterialIcons name="folder-open" size={14} color={palette.primary} />
-                        <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>View File</Text>
+                        <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>Members Files</Text>
                       </TouchableOpacity>
                     )}
                     {(job.status === 'running' || job.status === 'queued') && (

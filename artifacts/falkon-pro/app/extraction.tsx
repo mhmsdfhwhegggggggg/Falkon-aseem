@@ -55,6 +55,7 @@ export default function ExtractionScreen() {
 
   const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [localFileId, setLocalFileId] = useState<string | null>(null);
 
   const localAccounts = useAccountsStore();
   const membersStore = useMembersStore();
@@ -92,7 +93,8 @@ export default function ExtractionScreen() {
             source: targetGroup,
             extractedAt: new Date().toISOString(),
           }));
-          await membersStore.createFile(name, phoneMembers, targetGroup);
+          const saved = await membersStore.createFile(name, phoneMembers, targetGroup);
+          setLocalFileId(saved.id);
         }
       });
     } else if (status === 'failed' || status === 'cancelled') {
@@ -134,7 +136,6 @@ export default function ExtractionScreen() {
 
   const job = statusQuery.data;
   const progress = job?.total ? Math.round((job.progress / job.total) * 100) : 0;
-  const savedFileId = job?.savedFileId;
 
   return (
     <View style={{ flex: 1, backgroundColor: palette.background }}>
@@ -181,18 +182,18 @@ export default function ExtractionScreen() {
               </View>
               {isRunning && <ActivityIndicator color={palette.primary} size="small" style={{ marginBottom: 8 }} />}
               {job.error && <Text style={{ color: palette.error, fontSize: 12 }}>{job.error}</Text>}
-              {savedFileId && (
+              {localFileId && (
                 <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
                   <TouchableOpacity
                     style={{ flex: 1, backgroundColor: palette.primary, borderRadius: 10, padding: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
-                    onPress={() => router.push({ pathname: '/members-file', params: { id: savedFileId } } as any)}
+                    onPress={() => router.push({ pathname: '/members-file', params: { id: localFileId } } as any)}
                   >
                     <MaterialIcons name="folder-open" size={16} color="#fff" />
                     <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>View File</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{ flex: 1, backgroundColor: palette.success + '20', borderRadius: 10, padding: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
-                    onPress={() => router.push({ pathname: '/add-members', params: { fileId: savedFileId } } as any)}
+                    onPress={() => router.push({ pathname: '/add-members', params: { fileId: localFileId } } as any)}
                   >
                     <MaterialIcons name="person-add" size={16} color={palette.success} />
                     <Text style={{ color: palette.success, fontWeight: '700', fontSize: 13 }}>Add Members</Text>

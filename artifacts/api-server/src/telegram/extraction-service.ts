@@ -13,7 +13,6 @@
 import { Api } from "telegram";
 import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job, type MemberRecord } from "./jobs.js";
-import { createMembersFile } from "./members-files.js";
 import { resolveEntity, setCachedEntity } from "./entity-cache.js";
 import {
   sleep,
@@ -179,25 +178,18 @@ export async function runExtraction(job: Job) {
       await sleep(delay);
     }
 
-    const groupName = group
-      .replace(/^@/, "")
-      .replace(/https?:\/\/t\.me\//, "")
-      .replace(/\//g, "_")
-      .substring(0, 40);
-    const fileName = `${groupName}_${new Date().toISOString().split("T")[0]}`;
-    const savedFile = createMembersFile(fileName, group, members);
-
+    // Store result in-memory only — phone will fetch and save locally
     updateJob(job.id, {
       status: "completed",
       completedAt: new Date().toISOString(),
       progress: members.length,
       total: members.length,
       result: { members, extracted: members.length },
-      savedFileId: savedFile.id,
+      // No savedFileId — file storage is phone-side (AsyncStorage/SecureStore)
     });
 
-    logger.info({ jobId: job.id, extracted: members.length, fileId: savedFile.id }, "Extraction v2 complete");
-    return savedFile;
+    logger.info({ jobId: job.id, extracted: members.length }, "Extraction v2 complete — phone will save locally");
+    return members;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error({ jobId: job.id, err: msg }, "Extraction v2 failed");
