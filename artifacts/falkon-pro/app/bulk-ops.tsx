@@ -27,7 +27,7 @@ export default function BulkOpsScreen() {
       Alert.alert('Missing Input', 'Please fill in the message and targets');
       return;
     }
-    createWindow({ title: `Bulk ${mode}: ${message.slice(0, 20)}...`, taskType: 'bulk-message', metadata: { mode, message, targets, delay } });
+    createWindow({ taskType: 'bulk-message' }, `Bulk ${mode}: ${message.slice(0, 20)}...`);
     router.push('/windows' as any);
   };
 

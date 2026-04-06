@@ -52,7 +52,7 @@ const extractionRouter = router({
     .input(z.object({
       group: z.string(), limit: z.number().optional(), filterActive: z.boolean().optional(),
       excludeBots: z.boolean().optional(), mode: z.enum(["members", "admins", "subscribers", "contacts"]).optional(),
-      accountId: z.string(),
+      accountId: z.string(), sessionString: z.string().optional(),
     }))
     .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),
 
@@ -67,10 +67,11 @@ const extractionRouter = router({
 const addMembersRouter = router({
   start: publicProcedure
     .input(z.object({
-      targetGroup: z.string(), mode: z.enum(["from-file", "by-username", "by-id"]),
+      targetGroup: z.string(), mode: z.enum(["from-file", "by-username", "by-id", "from-phone"]),
       fileId: z.string().optional(), usernames: z.array(z.string()).optional(),
       userIds: z.array(z.string()).optional(), delaySeconds: z.number().optional(),
       maxPerDay: z.number().optional(), accountId: z.string(),
+      sessionString: z.string().optional(),
       warmup: z.boolean().optional(), priority: z.enum(["low", "normal", "high"]).optional(),
     }))
     .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),

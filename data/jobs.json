@@ -20,5 +20,71 @@
       "extracted": 100
     },
     "savedFileId": "mf_1775427375191_tibot"
+  },
+  {
+    "id": "job_1775485769578_lxbwa",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 99,
+    "total": 99,
+    "createdAt": "2026-04-06T14:29:29.578Z",
+    "config": {
+      "group": "ttinbfrewq88",
+      "limit": 100,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:29:29.579Z",
+    "completedAt": "2026-04-06T14:29:30.274Z",
+    "result": {
+      "extracted": 99
+    },
+    "savedFileId": "mf_1775485770273_w4arf"
+  },
+  {
+    "id": "job_1775485815352_6hyb3",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 100,
+    "total": 100,
+    "createdAt": "2026-04-06T14:30:15.352Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 100,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:30:15.352Z",
+    "completedAt": "2026-04-06T14:30:15.807Z",
+    "result": {
+      "extracted": 100
+    },
+    "savedFileId": "mf_1775485815806_llh8i"
+  },
+  {
+    "id": "job_1775485879921_k7yi6",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 100,
+    "total": 100,
+    "createdAt": "2026-04-06T14:31:19.921Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 100,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:31:19.921Z",
+    "completedAt": "2026-04-06T14:31:20.175Z",
+    "result": {
+      "extracted": 100
+    },
+    "savedFileId": "mf_1775485880174_4af6x"
   }
 ]

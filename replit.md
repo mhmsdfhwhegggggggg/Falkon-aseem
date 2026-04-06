@@ -79,4 +79,21 @@ Located at `artifacts/falkon-pro/`. Production-ready Telegram management system.
 7. **Dashboard** — shows live counts: files, members, running tasks, members added; quick-add buttons
 
 ### Multi-Window Feature
-Windows screen (`/windows`) allows creating and managing multiple independent task instances simultaneously — each with its own title bar (macOS window chrome style), progress tracking, pause/resume/close controls.
+Windows screen (`/windows`) allows creating and managing multiple independent task instances simultaneously.
+
+**Architecture (`lib/window-manager.tsx`):**
+- Each `AppWindow` has a `status` (`configuring|running|paused|completed|error|cancelled`), `jobId` (server job link), per-window `logs[]` (last 50), and per-window `stats` (extracted/added/failed/total)
+- `createWindow(config, title)` — creates window in `configuring` state (no server job yet)
+- `startWindow(id)` — fetches session from SecureStore, submits real job to server (`extraction.start` or `addMembers.start` mutation), then starts 2s polling loop
+- `pauseWindow` — stops polling (server job continues); `resumeWindow` — restarts polling
+- All async callbacks use `windowsRef` to avoid stale closure issues
+- Polling uses `utils.extraction.status.fetch` / `utils.addMembers.status.fetch` with `staleTime: 0`
+
+**UI (`app/windows.tsx`):**
+- macOS-style window cards: traffic light buttons, title, status badge
+- Animated gradient progress bar with shimmer effect (running state)
+- Stats grid: extracted / added / failed / total
+- Expandable log viewer (tap to show last 8 entries)
+- Elapsed time ticker (live counter while running)
+- "New Window" bottom sheet: task type selection → config form with account picker, group inputs, limit presets, warmup toggle
+- Gold gradient buttons throughout; full Arabic RTL UI

@@ -22,7 +22,7 @@ export default function ContentClonerScreen() {
       Alert.alert('Missing Input', 'Fill in source and destination channels');
       return;
     }
-    createWindow({ title: `Clone: ${source}→${dest}`, taskType: 'content-clone', metadata: { source, dest, cloneMedia, clonePolls, delay } });
+    createWindow({ taskType: 'content-clone' }, `Clone: ${source}→${dest}`);
     router.push('/windows' as any);
   };
 
