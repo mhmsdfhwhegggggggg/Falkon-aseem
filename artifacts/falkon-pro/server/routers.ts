@@ -78,6 +78,8 @@ const addMembersRouter = router({
       userIds: z.array(z.string()).optional(), delaySeconds: z.number().optional(),
       maxPerDay: z.number().optional(), accountId: z.string(),
       sessionString: z.string().optional(),
+      members: z.array(z.any()).optional(),
+      allAccounts: z.array(z.object({ id: z.string(), sessionString: z.string().optional() })).optional(),
       warmup: z.boolean().optional(), priority: z.enum(["low", "normal", "high"]).optional(),
     }))
     .mutation(async (): Promise<{ jobId: string; status: string }> => ({ jobId: '', status: 'queued' })),

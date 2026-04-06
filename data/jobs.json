@@ -401,5 +401,74 @@
     "result": {
       "extracted": 500
     }
+  },
+  {
+    "id": "job_1775488848913_g05iu",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T15:20:48.913Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:20:48.914Z",
+    "completedAt": "2026-04-06T15:20:52.807Z",
+    "result": {
+      "extracted": 500
+    }
+  },
+  {
+    "id": "job_1775489440340_74p59",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T15:30:40.340Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:30:40.340Z",
+    "completedAt": "2026-04-06T15:30:43.980Z",
+    "result": {
+      "extracted": 500
+    }
+  },
+  {
+    "id": "job_1775489487290_u1jou",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T15:31:27.290Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:31:27.290Z",
+    "completedAt": "2026-04-06T15:31:30.237Z",
+    "result": {
+      "extracted": 500
+    }
   }
 ]

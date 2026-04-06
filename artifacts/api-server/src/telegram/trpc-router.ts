@@ -168,7 +168,11 @@ const addMembersRouter = router({
       delaySeconds: z.number().min(5).max(300).default(30),
       maxPerDay: z.number().min(1).max(200).default(40),
       accountId: z.string(),
-      sessionString: z.string().optional(), // phone-stored session
+      sessionString: z.string().optional(), // phone-stored session (primary account)
+      allAccounts: z.array(z.object({          // rotation pool — all active accounts
+        id: z.string(),
+        sessionString: z.string().optional(),
+      })).optional(),
       warmup: z.boolean().default(false),
       priority: z.enum(["low", "normal", "high"]).default("normal"),
     }))
@@ -189,6 +193,7 @@ const addMembersRouter = router({
         maxPerDay: input.maxPerDay,
         warmup: input.warmup,
         sessionString: input.sessionString, // phone-stored session
+        allAccounts: input.allAccounts,      // account rotation pool
       }, input.accountId);
 
       workerPool.enqueue({
