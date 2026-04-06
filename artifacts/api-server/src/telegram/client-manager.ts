@@ -22,6 +22,38 @@ if (!API_ID || !API_HASH) {
   throw new Error("TELEGRAM_API_ID and TELEGRAM_API_HASH must be set");
 }
 
+// ─── Device fingerprint pool — rotate to avoid bot detection ─────────────────
+// Each account gets assigned a unique device profile. Using real device names
+// and Telegram app versions used by actual users in the Arab world.
+
+const DEVICE_PROFILES = [
+  { deviceModel: "iPhone 15 Pro Max", systemVersion: "iOS 17.2", appVersion: "10.3.4", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "iPhone 14 Pro",     systemVersion: "iOS 17.1", appVersion: "10.2.9", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "iPhone 13",         systemVersion: "iOS 16.6", appVersion: "10.2.1", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "Samsung Galaxy S24 Ultra", systemVersion: "Android 14; One UI 6.1", appVersion: "10.3.2", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "Samsung Galaxy S23", systemVersion: "Android 14; One UI 6.0",       appVersion: "10.2.8", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "Xiaomi 14 Ultra",   systemVersion: "Android 14",                    appVersion: "10.2.9", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "Huawei Mate 60 Pro",systemVersion: "Android 12",                    appVersion: "10.1.4", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "OnePlus 12",        systemVersion: "Android 14; OxygenOS 14",       appVersion: "10.3.0", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "iPad Pro 12.9",     systemVersion: "iOS 17.0",                      appVersion: "10.2.3", langCode: "ar", systemLangCode: "ar-SA" },
+  { deviceModel: "Oppo Find X7",      systemVersion: "Android 14; ColorOS 14",        appVersion: "10.2.7", langCode: "ar", systemLangCode: "ar-SA" },
+];
+
+/**
+ * Get a deterministic-but-varied device profile for an accountId.
+ * Same account always gets the same profile (consistent fingerprint).
+ * Different accounts get different profiles (avoids same-device detection).
+ */
+function getDeviceProfile(accountId: string) {
+  // Use a simple hash of the accountId to pick a profile
+  let hash = 0;
+  for (let i = 0; i < accountId.length; i++) {
+    hash = ((hash << 5) - hash + accountId.charCodeAt(i)) | 0;
+  }
+  const idx = Math.abs(hash) % DEVICE_PROFILES.length;
+  return DEVICE_PROFILES[idx]!;
+}
+
 interface ManagedClient {
   client: TelegramClient;
   accountId: string;
@@ -40,17 +72,12 @@ const pool = new Map<string, ManagedClient>();
 // client is in pool, we share the same Promise instead of creating two clients.
 const connecting = new Map<string, Promise<TelegramClient>>();
 
-const CONNECTION_OPTIONS = {
+const BASE_CONNECTION_OPTIONS = {
   connectionRetries: 5,
   requestRetries: 3,
   retryDelay: 1000,
   autoReconnect: true,
   floodSleepThreshold: 60,
-  deviceModel: "Desktop",
-  systemVersion: "Windows 10",
-  appVersion: "4.9.4",
-  langCode: "en",
-  systemLangCode: "en",
 };
 
 // ─── Staggered ping (keep-alive) ─────────────────────────────────────────────
@@ -102,7 +129,10 @@ setInterval(() => {
 
 async function createAndPoolClient(accountId: string, sessionString: string): Promise<TelegramClient> {
   const session = new StringSession(sessionString);
-  const client = new TelegramClient(session, API_ID, API_HASH, CONNECTION_OPTIONS);
+  const device = getDeviceProfile(accountId);
+  const connectionOptions = { ...BASE_CONNECTION_OPTIONS, ...device };
+  logger.debug({ accountId, device: device.deviceModel }, "Connecting with device profile");
+  const client = new TelegramClient(session, API_ID, API_HASH, connectionOptions);
 
   await client.connect();
 
@@ -191,12 +221,11 @@ export async function getClientFromSession(
 
 export function createFreshClient(): TelegramClient {
   const session = new StringSession("");
+  // Fresh clients (auth flow) use a random Arabic mobile device profile
+  const randomProfile = DEVICE_PROFILES[Math.floor(Math.random() * DEVICE_PROFILES.length)]!;
   return new TelegramClient(session, API_ID, API_HASH, {
-    connectionRetries: 5,
-    deviceModel: "Desktop",
-    systemVersion: "Windows 10",
-    appVersion: "4.9.4",
-    langCode: "en",
+    ...BASE_CONNECTION_OPTIONS,
+    ...randomProfile,
   });
 }
 

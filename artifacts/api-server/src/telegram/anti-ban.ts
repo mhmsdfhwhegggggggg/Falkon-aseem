@@ -304,11 +304,17 @@ export function selectBestAccount(
  * Mimics human behavior: user glances at chat between adding members.
  */
 export async function maybeInterleavePause(index: number): Promise<void> {
-  if (index > 0 && index % 5 === 0) {
-    // Every 5 actions: short "reading" pause
-    const pause = humanDelay({ base: 3000, jitter: 0.5, min: 1500, max: 7000 });
-    logger.debug({ index, pause }, "Interleave pause (simulating reading)");
+  // Every 2 actions: micro reading pause (simulates human glancing at the chat)
+  if (index > 0 && index % 2 === 0) {
+    const pause = humanDelay({ base: 2500, jitter: 0.6, min: 1200, max: 6000 });
+    logger.debug({ index, pause }, "Interleave pause (simulating reading every 2 adds)");
     await sleep(pause);
+  }
+  // Every 7 actions: longer "distraction" pause (checks another chat, etc.)
+  if (index > 0 && index % 7 === 0) {
+    const longPause = humanDelay({ base: 8000, jitter: 0.4, min: 5000, max: 14000 });
+    logger.debug({ index, longPause }, "Long interleave pause (simulating distraction)");
+    await sleep(longPause);
   }
 }
 

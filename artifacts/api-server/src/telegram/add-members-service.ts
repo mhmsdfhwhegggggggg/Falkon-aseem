@@ -56,6 +56,81 @@ import {
 } from "./anti-ban.js";
 import { logger } from "../lib/logger.js";
 
+// ─── Session Warming — محاكاة السلوك البشري عند فتح التطبيق ─────────────────
+/**
+ * Before starting adds, simulate a real user opening Telegram:
+ * - Check notifications (GetNotifySettings)
+ * - Load contact list (GetContacts)
+ * - Browse dialogs (GetDialogs)
+ * This "warms up" the session so Telegram sees human-like traffic before adds.
+ */
+async function warmupSession(client: any, accountId: string): Promise<void> {
+  logger.info({ accountId }, "Warming up session before adds...");
+  try {
+    // 1. Check notify settings (every app open does this)
+    await client.invoke(new Api.account.GetNotifySettings({ peer: new Api.InputNotifyAll() }));
+    await sleep(700 + Math.floor(Math.random() * 1300));
+
+    // 2. Load contacts (human checks their contact list)
+    await client.invoke(new Api.contacts.GetContacts({ hash: BigInt(0) }));
+    await sleep(800 + Math.floor(Math.random() * 1200));
+
+    // 3. Browse recent dialogs (core user behavior)
+    await client.invoke(new Api.messages.GetDialogs({
+      offsetDate: 0,
+      offsetId: 0,
+      offsetPeer: new Api.InputPeerEmpty(),
+      limit: 15,
+      hash: BigInt(0),
+    }));
+    await sleep(1200 + Math.floor(Math.random() * 1800));
+
+    logger.info({ accountId }, "Session warmed up ✓");
+  } catch (err) {
+    // Non-fatal — warming is best-effort
+    logger.warn({ accountId, err: err instanceof Error ? err.message : String(err) }, "Session warmup partial (non-fatal)");
+  }
+}
+
+// ─── Contact Import — تقليل PeerFlood بربط الحساب مع الهدف أولاً ────────────
+/**
+ * Technique: Import target user as contact before InviteToChannel.
+ * Having a "contact relationship" lowers Telegram's spam score for this add.
+ * Works for members extracted with phone numbers.
+ */
+async function tryImportContact(client: any, member: any, accountId: string): Promise<void> {
+  if (!member.phone) return;
+  try {
+    await client.invoke(new Api.contacts.ImportContacts({
+      contacts: [new Api.InputPhoneContact({
+        clientId: BigInt(Math.floor(Math.random() * 9_000_000) + 1_000_000),
+        phone: member.phone,
+        firstName: member.firstName || "User",
+        lastName: member.lastName || "",
+      })],
+    }));
+    await sleep(600 + Math.floor(Math.random() * 900));
+    logger.debug({ accountId, phone: member.phone }, "Contact imported before add");
+  } catch (_) {
+    // Non-fatal — some phones don't allow contact import
+  }
+}
+
+// ─── Pre-Add Entity Warmup — تأسيس علاقة وهمية مع الهدف ────────────────────
+/**
+ * Technique: Before adding a user, "view" their profile (GetFullUser).
+ * This creates a minimal interaction trace — real users look at profiles
+ * before adding them. Reduces the "cold invite" signal Telegram flags.
+ */
+async function preAddEntityWarmup(client: any, userEntity: any, accountId: string): Promise<void> {
+  try {
+    await client.invoke(new Api.users.GetFullUser({ id: userEntity }));
+    await sleep(400 + Math.floor(Math.random() * 600));
+  } catch (_) {
+    // Non-fatal
+  }
+}
+
 // ─── Main function ────────────────────────────────────────────────────────────
 
 export async function runAddMembers(job: Job) {
@@ -182,6 +257,16 @@ export async function runAddMembers(job: Job) {
   try {
     client = await connectAccount(0);
     targetEntity = await resolveEntity(client, targetGroup);
+    // ── Warm up session BEFORE first add ────────────────────────────────────
+    // Simulate human app-open behavior: browse dialogs, check contacts, etc.
+    // This makes the account look active before we start adding members.
+    updateJob(job.id, {
+      status: "running",
+      error: "🔥 تدفئة الجلسة — محاكاة السلوك البشري قبل البدء...",
+      result: { added: 0, failed: 0, skipped: 0, errors: [], members: membersToAdd },
+    });
+    await warmupSession(client, currentAccId);
+    updateJob(job.id, { status: "running", error: undefined });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     updateJob(job.id, { status: "failed", error: `Cannot resolve target: ${msg}`, completedAt: new Date().toISOString() });
@@ -202,7 +287,9 @@ export async function runAddMembers(job: Job) {
   const errors: string[] = [];
   let consecutivePeerFloods = 0;
   let peerFloodRecoveries = 0;
-  const MAX_PEER_FLOOD_RECOVERIES = 5; // Wait and retry up to 5 times before giving up
+  const MAX_PEER_FLOOD_RECOVERIES = 5;
+  // Adaptive delay: multiplied by 1.5x after each PeerFlood — backs off naturally
+  let adaptiveDelayMultiplier = 1.0;
 
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
@@ -260,10 +347,11 @@ export async function runAddMembers(job: Job) {
     }
 
     // ── Compute human-like delay for this iteration ────────────────────────────
-    const h = getHealth(accountId);
+    const h = getHealth(currentAccId);
     const qm = quietHourMultiplier ? quietHourMultiplier() : 1.0;
     const wm = h.warmupMode ? 1.8 : 1.0;
-    const delayMs = Math.round(humanDelay(delayConfig) * qm * wm);
+    // adaptiveDelayMultiplier grows after each PeerFlood recovery (1.0 → 1.5 → 2.25...)
+    const delayMs = Math.round(humanDelay(delayConfig) * qm * wm * adaptiveDelayMultiplier);
 
     // ── Resolve user entity ───────────────────────────────────────────────────
     let userEntity: any;
@@ -311,6 +399,12 @@ export async function runAddMembers(job: Job) {
       updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
       continue;
     }
+
+    // ── Pre-add techniques: establish relationship before inviting ─────────────
+    // 1. Import as contact if phone available (lowers PeerFlood probability)
+    await tryImportContact(client, member, currentAccId);
+    // 2. View profile first (looks human, not a bot mass-inviter)
+    await preAddEntityWarmup(client, userEntity, currentAccId);
 
     // ── Invoke add ─────────────────────────────────────────────────────────────
     try {
@@ -405,6 +499,9 @@ export async function runAddMembers(job: Job) {
           // Reset all account circuits after cooldown
           for (const acc of allAccounts) resetCircuit(acc.id);
           consecutivePeerFloods = 0;
+          // Adaptive backoff: each recovery increases base delay (1.0 → 1.5 → 2.25...)
+          adaptiveDelayMultiplier = Math.min(4.0, adaptiveDelayMultiplier * 1.5);
+          logger.info({ adaptiveDelayMultiplier }, "Adaptive delay multiplier increased after PeerFlood");
 
           // Reconnect with first account
           currentAccIdx = 0;
@@ -412,6 +509,8 @@ export async function runAddMembers(job: Job) {
           try {
             client = await connectAccount(0);
             logger.info({ accountId: currentAccId, added }, "PeerFlood recovery: reconnected, resuming adds");
+            // Re-warm session after long wait — account needs to look active again
+            await warmupSession(client, currentAccId);
           } catch (connErr) {
             logger.error({ accountId: currentAccId, connErr }, "Failed to reconnect after PeerFlood cooldown");
             errors.push(`فشل إعادة الاتصال بعد الانتظار`);
@@ -445,6 +544,8 @@ export async function runAddMembers(job: Job) {
 
         try {
           client = await connectAccount(currentAccIdx);
+          // Warm new account session before resuming adds
+          await warmupSession(client, currentAccId);
           updateJob(job.id, { status: "running", error: undefined });
         } catch (connErr) {
           logger.error({ accountId: currentAccId, connErr }, "Failed to connect next account");
