@@ -1,3 +1,13 @@
+/**
+ * JOBS STORE — In-Memory with Periodic Persistence
+ * ==================================================
+ * Critical for 500+ concurrent users:
+ * - All reads/writes go to in-memory Map (μs latency vs ms file I/O)
+ * - Periodic flush every 30s to disk (durability without performance hit)
+ * - Race-condition-safe: no concurrent file writes
+ * - Session strings are STRIPPED before disk persistence (security)
+ */
+
 import fs from "fs";
 import path from "path";
 
@@ -43,23 +53,84 @@ export interface Job {
   savedFileId?: string;
 }
 
+// ─── In-memory store (the only source of truth at runtime) ───────────────────
+
+const jobsMap = new Map<string, Job>();
+let flushPending = false;
+
 function ensureDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-export function loadJobs(): Job[] {
+// ─── Boot: load from disk once ───────────────────────────────────────────────
+
+function bootLoad() {
   ensureDir();
-  if (!fs.existsSync(JOBS_FILE)) return [];
+  if (!fs.existsSync(JOBS_FILE)) return;
   try {
-    return JSON.parse(fs.readFileSync(JOBS_FILE, "utf-8")) as Job[];
+    const raw = fs.readFileSync(JOBS_FILE, "utf-8");
+    const jobs = JSON.parse(raw) as Job[];
+    // Only load completed/failed/cancelled — running/queued jobs are invalid after restart
+    for (const job of jobs) {
+      if (job.status === "running" || job.status === "queued") {
+        job.status = "failed";
+        job.error = "Server restarted — job interrupted";
+        job.completedAt = new Date().toISOString();
+      }
+      // Strip session strings on load (safety)
+      if (job.config["sessionString"]) delete job.config["sessionString"];
+      jobsMap.set(job.id, job);
+    }
   } catch {
-    return [];
+    // corrupted file — start fresh
   }
 }
 
-export function saveJobs(jobs: Job[]) {
-  ensureDir();
-  fs.writeFileSync(JOBS_FILE, JSON.stringify(jobs, null, 2));
+bootLoad();
+
+// ─── Periodic flush to disk (non-blocking, debounced) ────────────────────────
+
+function scheduleFlush() {
+  if (flushPending) return;
+  flushPending = true;
+  setTimeout(() => {
+    flushPending = false;
+    flushToDisk();
+  }, 5000); // batch writes: flush max once every 5s
+}
+
+function flushToDisk() {
+  try {
+    ensureDir();
+    // Strip session strings and large member arrays before persisting
+    const jobs = [...jobsMap.values()].map((job) => {
+      const config = { ...job.config };
+      delete config["sessionString"]; // NEVER persist session strings to disk
+      const result = job.result
+        ? { ...job.result, members: undefined } // don't persist large member arrays
+        : undefined;
+      return { ...job, config, result };
+    });
+    // Keep only last 500 jobs on disk (oldest jobs dropped first)
+    const toSave = jobs.slice(-500);
+    fs.writeFileSync(JOBS_FILE, JSON.stringify(toSave, null, 2));
+  } catch (err) {
+    // Never crash on flush failure
+    console.error("[jobs] flush failed:", err);
+  }
+}
+
+// Auto-flush every 30s regardless
+setInterval(flushToDisk, 30_000);
+
+// Flush on graceful shutdown
+process.on("SIGTERM", () => { flushToDisk(); });
+process.on("SIGINT",  () => { flushToDisk(); });
+
+// ─── Public API — all O(1) in-memory operations ──────────────────────────────
+
+export function loadJobs(): Job[] {
+  return [...jobsMap.values()];
 }
 
 export function createJob(type: JobType, config: Record<string, unknown>, accountId?: string): Job {
@@ -70,26 +141,37 @@ export function createJob(type: JobType, config: Record<string, unknown>, accoun
     progress: 0,
     total: 0,
     createdAt: new Date().toISOString(),
-    config,
+    config,   // session string lives here in-memory only; stripped before disk
     accountId,
   };
-  const jobs = loadJobs();
-  jobs.push(job);
-  saveJobs(jobs);
+  jobsMap.set(job.id, job);
+  scheduleFlush();
   return job;
 }
 
-export function updateJob(id: string, updates: Partial<Job>) {
-  const jobs = loadJobs();
-  const idx = jobs.findIndex((j) => j.id === id);
-  if (idx >= 0) {
-    jobs[idx] = { ...jobs[idx]!, ...updates };
-    saveJobs(jobs);
-    return jobs[idx]!;
-  }
-  return null;
+export function updateJob(id: string, updates: Partial<Job>): Job | null {
+  const existing = jobsMap.get(id);
+  if (!existing) return null;
+  const updated = { ...existing, ...updates };
+  jobsMap.set(id, updated);
+  scheduleFlush();
+  return updated;
 }
 
 export function getJob(id: string): Job | undefined {
-  return loadJobs().find((j) => j.id === id);
+  return jobsMap.get(id);
 }
+
+// Clean up completed jobs older than 24h to prevent memory growth
+setInterval(() => {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  for (const [id, job] of jobsMap) {
+    if (
+      (job.status === "completed" || job.status === "failed" || job.status === "cancelled") &&
+      job.completedAt &&
+      new Date(job.completedAt).getTime() < cutoff
+    ) {
+      jobsMap.delete(id);
+    }
+  }
+}, 60 * 60 * 1000); // run hourly

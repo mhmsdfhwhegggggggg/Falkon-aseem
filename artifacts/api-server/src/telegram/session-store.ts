@@ -1,3 +1,10 @@
+/**
+ * SESSION STORE — In-Memory with Periodic Persistence
+ * =====================================================
+ * Same pattern as jobs.ts: in-memory Map = fast, disk = durability.
+ * All reads are O(1). Writes debounced to 5s.
+ */
+
 import fs from "fs";
 import path from "path";
 
@@ -18,52 +25,82 @@ export interface StoredAccount {
   lastReset: string;
 }
 
+// ─── In-memory store ─────────────────────────────────────────────────────────
+
+const accountsMap = new Map<string, StoredAccount>();
+let flushPending = false;
+
 function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
-export function loadAccounts(): StoredAccount[] {
+// Boot: load from disk once
+function bootLoad() {
   ensureDir();
-  if (!fs.existsSync(SESSIONS_FILE)) return [];
+  if (!fs.existsSync(SESSIONS_FILE)) return;
   try {
     const raw = fs.readFileSync(SESSIONS_FILE, "utf-8");
-    return JSON.parse(raw) as StoredAccount[];
+    const accounts = JSON.parse(raw) as StoredAccount[];
+    for (const acc of accounts) accountsMap.set(acc.id, acc);
   } catch {
-    return [];
+    // corrupted — start fresh
   }
 }
 
-export function saveAccounts(accounts: StoredAccount[]) {
-  ensureDir();
-  fs.writeFileSync(SESSIONS_FILE, JSON.stringify(accounts, null, 2));
+bootLoad();
+
+// ─── Flush (debounced, 5s) ───────────────────────────────────────────────────
+
+function scheduleFlush() {
+  if (flushPending) return;
+  flushPending = true;
+  setTimeout(() => {
+    flushPending = false;
+    flushToDisk();
+  }, 5000);
+}
+
+function flushToDisk() {
+  try {
+    ensureDir();
+    const accounts = [...accountsMap.values()];
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(accounts, null, 2));
+  } catch (err) {
+    console.error("[session-store] flush failed:", err);
+  }
+}
+
+setInterval(flushToDisk, 30_000);
+process.on("SIGTERM", () => { flushToDisk(); });
+process.on("SIGINT",  () => { flushToDisk(); });
+
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+export function loadAccounts(): StoredAccount[] {
+  return [...accountsMap.values()];
 }
 
 export function getAccount(id: string): StoredAccount | undefined {
-  return loadAccounts().find((a) => a.id === id);
+  return accountsMap.get(id);
 }
 
 export function upsertAccount(account: StoredAccount) {
-  const accounts = loadAccounts();
-  const idx = accounts.findIndex((a) => a.id === account.id);
-  if (idx >= 0) {
-    accounts[idx] = account;
-  } else {
-    accounts.push(account);
-  }
-  saveAccounts(accounts);
+  accountsMap.set(account.id, account);
+  scheduleFlush();
 }
 
 export function removeAccount(id: string) {
-  const accounts = loadAccounts().filter((a) => a.id !== id);
-  saveAccounts(accounts);
+  accountsMap.delete(id);
+  scheduleFlush();
 }
 
 export function resetDailyCountsIfNeeded(account: StoredAccount): StoredAccount {
   const today = new Date().toISOString().split("T")[0];
   if (account.lastReset !== today) {
-    return { ...account, dailyAdded: 0, lastReset: today! };
+    const updated = { ...account, dailyAdded: 0, lastReset: today! };
+    accountsMap.set(account.id, updated);
+    scheduleFlush();
+    return updated;
   }
   return account;
 }
