@@ -15,6 +15,16 @@ import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
 import { checkAndAutoReply } from "./auto-reply-service.js";
+import { runChatterExtraction } from "./chatters-service.js";
+import { runContactsFilter } from "./contacts-filter-service.js";
+import {
+  runJoinGroups,
+  runLeaveGroups,
+  runSendToJoined,
+  listJoinedGroups,
+  runExtractAdmins,
+  updateAccountProfile,
+} from "./group-manager-service.js";
 import {
   createScheduledJob,
   listScheduledJobs,
@@ -635,20 +645,170 @@ const schedulerRouter = router({
   }),
 });
 
+// ─── Chatters Router ──────────────────────────────────────────────────────────
+const chattersRouter = router({
+  start: procedure
+    .input(z.object({
+      group:         z.string().min(1),
+      limit:         z.number().min(1).max(100000).default(500),
+      lastDays:      z.number().min(0).max(365).default(30),
+      excludeBots:   z.boolean().default(true),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("chatter-extraction", input.accountId, {
+        group: input.group, limit: input.limit,
+        lastDays: input.lastDays, excludeBots: input.excludeBots,
+        sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runChatterExtraction(job));
+      return { jobId: job.id };
+    }),
+
+  status: procedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = getJob(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return job;
+    }),
+});
+
+// ─── Contacts Filter Router ───────────────────────────────────────────────────
+const contactsFilterRouter = router({
+  start: procedure
+    .input(z.object({
+      phones:        z.array(z.string()).min(1).max(10000),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("contacts-filter", input.accountId, {
+        phones: input.phones, sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runContactsFilter(job));
+      return { jobId: job.id };
+    }),
+
+  status: procedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = getJob(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return job;
+    }),
+});
+
+// ─── Group Manager Router ─────────────────────────────────────────────────────
+const groupManagerRouter = router({
+  join: procedure
+    .input(z.object({
+      groups:        z.array(z.string()).min(1).max(1000),
+      delaySeconds:  z.number().min(1).max(60).default(3),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("join-groups", input.accountId, {
+        groups: input.groups, delaySeconds: input.delaySeconds, sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runJoinGroups(job));
+      return { jobId: job.id };
+    }),
+
+  leave: procedure
+    .input(z.object({
+      groups:        z.array(z.string()).optional(),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("leave-groups", input.accountId, {
+        groups: input.groups, sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runLeaveGroups(job));
+      return { jobId: job.id };
+    }),
+
+  sendToAll: procedure
+    .input(z.object({
+      message:       z.string().min(1),
+      delaySeconds:  z.number().min(1).max(120).default(5),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("send-to-joined", input.accountId, {
+        message: input.message, delaySeconds: input.delaySeconds, sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runSendToJoined(job));
+      return { jobId: job.id };
+    }),
+
+  listJoined: procedure
+    .input(z.object({ accountId: z.string(), sessionString: z.string().min(10) }))
+    .query(async ({ input }) => {
+      const groups = await listJoinedGroups(input.sessionString, input.accountId);
+      return { groups };
+    }),
+
+  extractAdmins: procedure
+    .input(z.object({
+      group:         z.string().min(1),
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+    }))
+    .mutation(async ({ input }) => {
+      const job = createJob("extract-admins", input.accountId, {
+        group: input.group, sessionString: input.sessionString,
+      });
+      workerPool.submit(() => runExtractAdmins(job));
+      return { jobId: job.id };
+    }),
+
+  updateProfile: procedure
+    .input(z.object({
+      accountId:     z.string().min(1),
+      sessionString: z.string().min(10),
+      firstName:     z.string().optional(),
+      lastName:      z.string().optional(),
+      bio:           z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      return updateAccountProfile(input.sessionString, input.accountId, {
+        firstName: input.firstName,
+        lastName:  input.lastName,
+        bio:       input.bio,
+      });
+    }),
+
+  status: procedure
+    .input(z.object({ jobId: z.string() }))
+    .query(({ input }) => {
+      const job = getJob(input.jobId);
+      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return job;
+    }),
+});
+
 export const appRouter = router({
-  accounts: accountsRouter,
-  extraction: extractionRouter,
-  addMembers: addMembersRouter,
-  bulkMessage: bulkMessageRouter,
-  contentCloner: contentClonerRouter,
-  proxy: proxyRouter,
-  membersFiles: membersFilesRouter,
-  jobs: jobsRouter,
-  stats: statsRouter,
-  license: licenseRouter,
-  system: systemRouter,
-  autoReply: autoReplyRouter,
-  scheduler: schedulerRouter,
+  accounts:       accountsRouter,
+  extraction:     extractionRouter,
+  addMembers:     addMembersRouter,
+  bulkMessage:    bulkMessageRouter,
+  contentCloner:  contentClonerRouter,
+  proxy:          proxyRouter,
+  membersFiles:   membersFilesRouter,
+  jobs:           jobsRouter,
+  stats:          statsRouter,
+  license:        licenseRouter,
+  system:         systemRouter,
+  autoReply:      autoReplyRouter,
+  scheduler:      schedulerRouter,
+  chatters:       chattersRouter,
+  contactsFilter: contactsFilterRouter,
+  groupManager:   groupManagerRouter,
 });
 
 export type AppRouter = typeof appRouter;

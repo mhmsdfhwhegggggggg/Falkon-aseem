@@ -209,11 +209,26 @@ export async function runBulkMessage(job: Job) {
       continue;
     }
 
+    // ── Personalize message (replace {اسم} {username} {رقم}) ────────────────
+    let personalizedMessage = message;
+    try {
+      if (targetEntity instanceof Api.User) {
+        const fn = targetEntity.firstName || "";
+        const ln = targetEntity.lastName  || "";
+        const un = targetEntity.username  || "";
+        const ph = targetEntity.phone     || "";
+        personalizedMessage = message
+          .replace(/\{اسم\}/g, (fn + " " + ln).trim() || un || ph)
+          .replace(/\{username\}/g, un ? `@${un}` : fn || ph)
+          .replace(/\{رقم\}/g, ph);
+      }
+    } catch { /* keep original message if entity info unavailable */ }
+
     // ── Send Message ─────────────────────────────────────────────────────────
     try {
       const msgArgs: any = {
         peer: targetEntity,
-        message,
+        message: personalizedMessage,
         randomId: BigInt(Math.floor(Math.random() * 1e15)),
         noWebpage: true,
       };

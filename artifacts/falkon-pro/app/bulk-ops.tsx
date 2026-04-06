@@ -264,6 +264,16 @@ export default function BulkOpsScreen() {
                   numberOfLines={5}
                   style={{ backgroundColor: palette.surface, borderRadius: 12, padding: 14, color: palette.foreground, borderWidth: 1, borderColor: palette.border, fontSize: 14, textAlignVertical: 'top', minHeight: 120, writingDirection: 'auto' }}
                 />
+                {/* Personalization variable chips */}
+                <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                  {['{اسم}', '{username}', '{رقم}'].map((tag) => (
+                    <TouchableOpacity key={tag} onPress={() => setMessage((m) => m + tag)}
+                      style={{ backgroundColor: '#1a2235', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, borderWidth: 1, borderColor: '#F59E0B55' }}>
+                      <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '700' }}>{tag}</Text>
+                    </TouchableOpacity>
+                  ))}
+                  <Text style={{ color: palette.muted, fontSize: 11, alignSelf: 'center' }}>← متغيرات مخصصة</Text>
+                </View>
                 <Text style={{ color: palette.muted, fontSize: 11 }}>{message.length} حرف</Text>
               </View>
 
