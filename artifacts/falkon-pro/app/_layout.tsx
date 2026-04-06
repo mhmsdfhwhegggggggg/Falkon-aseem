@@ -47,6 +47,7 @@ function RootLayoutNav() {
       <Stack.Screen name="tasks-monitor" options={{ headerShown: false }} />
       <Stack.Screen name="license-dashboard" options={{ headerShown: false }} />
       <Stack.Screen name="developer-dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="account-health" options={{ headerShown: false }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );

@@ -378,3 +378,62 @@ export function getHealthReport(): Record<string, {
   }
   return report;
 }
+
+// ─── Detailed health per account (for UI display) ─────────────────────────────
+
+export function getDetailedHealth(accountId: string): {
+  score: number;
+  circuitOpen: boolean;
+  circuitOpenUntil: number;
+  cooldownRemainingMs: number;
+  dailyAdded: number;
+  totalAdded: number;
+  peerFloodCount: number;
+  floodWaitCount: number;
+  warmupMode: boolean;
+  lastPeerFloodAt: number;
+} {
+  const h = getHealth(accountId);
+  const dailyAdded = pruneDailyWindow(h);
+  const now = Date.now();
+  const cooldownRemainingMs = h.circuitOpen && h.circuitOpenUntil > now
+    ? h.circuitOpenUntil - now
+    : 0;
+  return {
+    score: h.score,
+    circuitOpen: h.circuitOpen && now < h.circuitOpenUntil,
+    circuitOpenUntil: h.circuitOpenUntil,
+    cooldownRemainingMs,
+    dailyAdded,
+    totalAdded: h.totalAdded,
+    peerFloodCount: h.peerFloodCount,
+    floodWaitCount: h.floodWaitCount,
+    warmupMode: h.warmupMode,
+    lastPeerFloodAt: h.lastPeerFloodAt,
+  };
+}
+
+// ─── Circuit reset (admin use / testing) ─────────────────────────────────────
+
+export function resetCircuit(accountId: string): void {
+  const h = getHealth(accountId);
+  h.circuitOpen = false;
+  h.circuitOpenUntil = 0;
+  h.score = Math.min(100, h.score + 20); // partial score recovery
+  healthStore.set(accountId, h);
+  logger.info({ accountId }, "Circuit manually reset by admin");
+}
+
+export function resetAllCircuits(): string[] {
+  const reset: string[] = [];
+  for (const [id, h] of healthStore) {
+    if (h.circuitOpen) {
+      h.circuitOpen = false;
+      h.circuitOpenUntil = 0;
+      healthStore.set(id, h);
+      reset.push(id);
+    }
+  }
+  logger.info({ count: reset.length }, "All circuits manually reset");
+  return reset;
+}

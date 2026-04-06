@@ -8,7 +8,7 @@ import { runExtraction } from "./extraction-service.js";
 import { runAddMembers } from "./add-members-service.js";
 import { loadMembersIndex, loadMembersFile, deleteMembersFile } from "./members-files.js";
 import { workerPool } from "./worker-pool.js";
-import { getHealthReport } from "./anti-ban.js";
+import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } from "./anti-ban.js";
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
@@ -315,6 +315,25 @@ const systemRouter = router({
       timestamp: new Date().toISOString(),
     };
   }),
+
+  accountHealth: procedure
+    .input(z.object({ accountId: z.string() }))
+    .query(({ input }) => {
+      return getDetailedHealth(input.accountId);
+    }),
+
+  resetCircuit: procedure
+    .input(z.object({ accountId: z.string() }))
+    .mutation(({ input }) => {
+      resetCircuit(input.accountId);
+      return { success: true, accountId: input.accountId };
+    }),
+
+  resetAllCircuits: procedure
+    .mutation(() => {
+      const reset = resetAllCircuits();
+      return { success: true, resetCount: reset.length, accounts: reset };
+    }),
 
   setPoolSize: procedure
     .input(z.object({ concurrency: z.number().min(1).max(50) }))

@@ -159,6 +159,25 @@ const systemRouter = router({
     timestamp: new Date().toISOString(),
   })),
 
+  accountHealth: publicProcedure
+    .input(z.object({ accountId: z.string() }))
+    .query((): {
+      score: number; circuitOpen: boolean; circuitOpenUntil: number;
+      cooldownRemainingMs: number; dailyAdded: number; totalAdded: number;
+      peerFloodCount: number; floodWaitCount: number; warmupMode: boolean; lastPeerFloodAt: number;
+    } => ({
+      score: 100, circuitOpen: false, circuitOpenUntil: 0, cooldownRemainingMs: 0,
+      dailyAdded: 0, totalAdded: 0, peerFloodCount: 0, floodWaitCount: 0,
+      warmupMode: false, lastPeerFloodAt: 0,
+    })),
+
+  resetCircuit: publicProcedure
+    .input(z.object({ accountId: z.string() }))
+    .mutation((): { success: boolean; accountId: string } => ({ success: true, accountId: '' })),
+
+  resetAllCircuits: publicProcedure
+    .mutation((): { success: boolean; resetCount: number; accounts: string[] } => ({ success: true, resetCount: 0, accounts: [] })),
+
   setPoolSize: publicProcedure
     .input(z.object({ concurrency: z.number().min(1).max(50) }))
     .mutation((): { success: boolean; concurrency: number } => ({ success: true, concurrency: 10 })),

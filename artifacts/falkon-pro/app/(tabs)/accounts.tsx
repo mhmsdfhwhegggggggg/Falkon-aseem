@@ -15,6 +15,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import colors from '@/constants/colors';
 import { trpc } from '@/lib/trpc';
 import { useAccountsStore } from '@/lib/accounts-store';
+import { router } from 'expo-router';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -802,9 +803,22 @@ function AccountCard({ account, palette, onRemove, onToggle }: any) {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ flexDirection: 'row', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: palette.border, gap: 16 }}>
+      <View style={{ flexDirection: 'row', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: palette.border, gap: 16, alignItems: 'center' }}>
         <MiniStat label="أُضيف اليوم" value={account.dailyAdded} palette={palette} />
         <MiniStat label="المعرف" value={account.userId || '—'} palette={palette} />
+        <View style={{ flex: 1 }} />
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 4,
+            backgroundColor: palette.primary + '15',
+            borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
+            borderWidth: 1, borderColor: palette.primary + '30',
+          }}
+          onPress={() => router.push({ pathname: '/account-health', params: { accountId: account.id } } as any)}
+        >
+          <MaterialIcons name="monitor-heart" size={13} color={palette.primary} />
+          <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '700' }}>فحص الصحة</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
