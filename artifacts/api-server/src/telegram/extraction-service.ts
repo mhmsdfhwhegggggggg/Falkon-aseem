@@ -172,6 +172,7 @@ export async function runExtraction(job: Job) {
 
         members.push({
           userId: user.id.toString(),
+          accessHash: user.accessHash?.toString() || undefined,  // store for add-members
           username: user.username || "",
           firstName: user.firstName || "",
           lastName: user.lastName || "",

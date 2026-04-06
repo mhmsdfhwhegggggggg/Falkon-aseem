@@ -6,6 +6,7 @@ export type MemberStatus = 'pending' | 'added' | 'failed' | 'flood' | 'already_m
 export interface Member {
   id: string;
   userId?: string;
+  accessHash?: string;   // stored from extraction — required to add by ID
   username?: string;
   firstName?: string;
   lastName?: string;

@@ -105,6 +105,7 @@ export default function ExtractionScreen() {
           const phoneMembers = res.data.members.map((m: any) => ({
             id: `m_${m.userId}_${Date.now()}`,
             userId: m.userId,
+            accessHash: m.accessHash || undefined,   // store for add-members InputUser
             username: m.username || '',
             firstName: m.firstName || '',
             lastName: m.lastName || '',

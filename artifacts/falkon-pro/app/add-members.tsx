@@ -129,6 +129,7 @@ export default function AddMembersScreen() {
       if (file) {
         inlineMembers = file.members.filter((m) => m.status === 'pending').map((m) => ({
           userId: m.userId || '',
+          accessHash: m.accessHash || undefined,   // CRITICAL: needed to add by ID
           username: m.username || '',
           firstName: m.firstName || '',
           lastName: m.lastName || '',

@@ -19,6 +19,7 @@ export type JobType = "extraction" | "add_members" | "bulk_message" | "extract_a
 
 export interface MemberRecord {
   userId: string;
+  accessHash?: string;   // REQUIRED for adding by ID — stored at extraction time
   username: string;
   firstName: string;
   lastName: string;

@@ -183,13 +183,28 @@ export async function runAddMembers(job: Job) {
     }
 
     // ── Resolve entity ───────────────────────────────────────────────────────
+    // Priority: 1) cached entity  2) InputUser from accessHash  3) username lookup  4) fail
 
     let userEntity: any;
     try {
-      if (member.username) {
-        userEntity = getCachedEntity(member.username) ?? await resolveEntity(client, member.username);
+      // Check entity cache first (populated by extraction in same session)
+      const cached = member.username
+        ? getCachedEntity(member.username) ?? (member.userId ? getCachedEntity(member.userId) : null)
+        : member.userId ? getCachedEntity(member.userId) : null;
+
+      if (cached) {
+        userEntity = cached;
+      } else if (member.userId && member.accessHash) {
+        // Build InputUser directly from stored userId + accessHash — no API call needed
+        userEntity = new Api.InputUser({
+          userId: BigInt(member.userId),
+          accessHash: BigInt(member.accessHash),
+        });
+      } else if (member.username) {
+        userEntity = await resolveEntity(client, member.username);
       } else if (member.userId) {
-        userEntity = getCachedEntity(member.userId) ?? await resolveEntity(client, member.userId);
+        // No username, no accessHash — try resolving by ID (will likely fail for channels)
+        userEntity = await resolveEntity(client, member.userId);
       } else {
         member.status = "failed";
         member.error = "لا يوجد username أو ID";

@@ -158,6 +158,7 @@ const extractionRouter = router({
 
 const MemberRecordSchema = z.object({
   userId: z.string(),
+  accessHash: z.string().optional(),   // stored at extraction — used to build InputUser
   username: z.string(),
   firstName: z.string(),
   lastName: z.string(),
