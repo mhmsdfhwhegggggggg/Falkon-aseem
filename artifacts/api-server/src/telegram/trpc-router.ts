@@ -177,8 +177,8 @@ const addMembersRouter = router({
       usernames: z.array(z.string()).optional(),
       userIds: z.array(z.string()).optional(),
       members: z.array(MemberRecordSchema).optional(), // phone-stored members sent inline
-      delaySeconds: z.number().min(5).max(300).default(30),
-      maxPerDay: z.number().min(1).max(200).default(40),
+      delaySeconds: z.number().min(1).max(1000).default(3),
+      maxPerDay: z.number().min(1).max(10000).default(500),
       accountId: z.string(),
       sessionString: z.string().optional(), // phone-stored session (primary account)
       allAccounts: z.array(z.object({          // rotation pool — all active accounts
@@ -376,8 +376,8 @@ const bulkMessageRouter = router({
       mode: z.enum(["dm", "group", "channel"]).default("dm"),
       message: z.string().min(1),
       targets: z.array(z.string()).min(1),
-      delaySeconds: z.number().min(5).max(600).default(45),
-      maxPerDay: z.number().min(1).max(200).default(30),
+      delaySeconds: z.number().min(1).max(1000).default(3),
+      maxPerDay: z.number().min(1).max(10000).default(500),
       warmup: z.boolean().default(false),
       parseMode: z.enum(["html", "markdown", "none"]).default("none"),
       accountId: z.string(),

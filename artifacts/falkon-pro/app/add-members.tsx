@@ -99,16 +99,16 @@ export default function AddMembersScreen() {
 
   const handleStart = async () => {
     if (!targetGroup.trim()) {
-      return Alert.alert('Missing Input', 'Enter a target group username or link');
+      return Alert.alert('بيانات ناقصة', 'أدخل رابط أو معرف المجموعة الهدف');
     }
     if (activeAccounts.length === 0) {
       return Alert.alert('لا يوجد حساب', 'أضف حساب Telegram نشط من تبويب الحسابات أولاً');
     }
     if (mode === 'from-file' && !selectedFileId) {
-      return Alert.alert('No File', 'Select a members file to add from');
+      return Alert.alert('لم تختر ملفاً', 'اختر ملف أعضاء للإضافة منه');
     }
     if ((mode === 'by-username' || mode === 'by-id') && !textInput.trim()) {
-      return Alert.alert('No Input', 'Enter at least one username or ID');
+      return Alert.alert('بيانات ناقصة', 'أدخل اسم مستخدم أو ID واحد على الأقل');
     }
 
     // Build account rotation pool — send ALL active accounts to the server

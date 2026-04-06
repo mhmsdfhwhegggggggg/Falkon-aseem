@@ -11,6 +11,9 @@ import { appRouter } from "./telegram/trpc-router.js";
 
 const app: Express = express();
 
+// Trust Replit's reverse proxy so express-rate-limit reads the real client IP
+app.set("trust proxy", 1);
+
 // ─── Security headers ─────────────────────────────────────────────────────────
 app.use(
   helmet({
