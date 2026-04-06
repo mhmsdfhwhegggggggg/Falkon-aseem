@@ -3,11 +3,11 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
-  useFonts,
 } from "@expo-google-fonts/inter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as Font from "expo-font";
 import React, { useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -25,6 +25,8 @@ import { DevAuthProvider } from "@/lib/dev-auth";
 import "@/global.css";
 
 SplashScreen.preventAutoHideAsync();
+
+const FONT_TIMEOUT_MS = 4000;
 
 function RootLayoutNav() {
   return (
@@ -54,12 +56,7 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
+  const [ready, setReady] = useState(false);
 
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -70,12 +67,33 @@ export default function RootLayout() {
   const trpcClient = useMemo(() => createTRPCClient(), []);
 
   useEffect(() => {
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
+    let settled = false;
 
-  if (!fontsLoaded && !fontError) return null;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      setReady(true);
+      SplashScreen.hideAsync().catch(() => {});
+    };
+
+    // Race font loading against a hard timeout so a CDN failure never blocks the app
+    const timer = setTimeout(finish, FONT_TIMEOUT_MS);
+
+    Font.loadAsync({
+      Inter_400Regular,
+      Inter_500Medium,
+      Inter_600SemiBold,
+      Inter_700Bold,
+    })
+      .catch(() => {
+        // Font load failed (e.g. network timeout) — continue with system fonts
+      })
+      .finally(finish);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!ready) return null;
 
   return (
     <SafeAreaProvider>
@@ -85,17 +103,17 @@ export default function RootLayout() {
             <ThemeProvider>
               <DevAuthProvider>
                 <AccountsStoreProvider>
-                <MembersStoreProvider>
-                  <TaskRunnerProvider>
-                    <WindowManagerProvider>
-                      <GestureHandlerRootView style={{ flex: 1 }}>
-                        <KeyboardProvider>
-                          <RootLayoutNav />
-                        </KeyboardProvider>
-                      </GestureHandlerRootView>
-                    </WindowManagerProvider>
-                  </TaskRunnerProvider>
-                </MembersStoreProvider>
+                  <MembersStoreProvider>
+                    <TaskRunnerProvider>
+                      <WindowManagerProvider>
+                        <GestureHandlerRootView style={{ flex: 1 }}>
+                          <KeyboardProvider>
+                            <RootLayoutNav />
+                          </KeyboardProvider>
+                        </GestureHandlerRootView>
+                      </WindowManagerProvider>
+                    </TaskRunnerProvider>
+                  </MembersStoreProvider>
                 </AccountsStoreProvider>
               </DevAuthProvider>
             </ThemeProvider>
