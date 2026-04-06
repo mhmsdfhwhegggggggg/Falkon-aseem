@@ -64,8 +64,8 @@ export async function runAddMembers(job: Job) {
     fileId,
     usernames,
     userIds,
-    delaySeconds = 30,
-    maxPerDay = 40,
+    delaySeconds = 15,
+    maxPerDay = 50,
     warmup = false,
   } = job.config as {
     targetGroup: string;
@@ -81,27 +81,23 @@ export async function runAddMembers(job: Job) {
   const accountId = job.accountId!;
   const sessionString = (job.config as any).sessionString as string | undefined;
   const inlineMembers = (job.config as any).members as MemberRecord[] | undefined;
-  logger.info({ jobId: job.id, mode, targetGroup, delaySeconds, maxPerDay }, "Starting add-members v2");
+
+  // ── Multi-account rotation pool ────────────────────────────────────────────
+  // allAccounts: [{id, sessionString}] sent from phone for rotation
+  // When current account gets PeerFlood → switch to next immediately (no waiting)
+  const allAccounts: Array<{ id: string; sessionString?: string }> =
+    (job.config as any).allAccounts ?? [{ id: accountId, sessionString }];
+
+  logger.info(
+    { jobId: job.id, mode, targetGroup, delaySeconds, maxPerDay, accountCount: allAccounts.length },
+    "Starting add-members v3 with account rotation"
+  );
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });
 
-  // ── Account setup (supports both server-stored and phone-stored sessions) ───
-
-  let dailyAdded = 0;
+  // ── Account setup ──────────────────────────────────────────────────────────
   let accountData = loadAccounts().find((a) => a.id === accountId);
   if (accountData) {
     accountData = resetDailyCountsIfNeeded(accountData);
-    dailyAdded = accountData.dailyAdded;
-  }
-  // If not found in server store, use 0 daily (phone manages its own tracking)
-
-  const remainingToday = Math.max(0, maxPerDay - dailyAdded);
-  if (remainingToday === 0) {
-    updateJob(job.id, {
-      status: "failed",
-      error: `Daily limit reached (${maxPerDay} per day). Resets at midnight.`,
-      completedAt: new Date().toISOString(),
-    });
-    return;
   }
 
   // ── Build member list ──────────────────────────────────────────────────────
@@ -143,9 +139,6 @@ export async function runAddMembers(job: Job) {
       }));
   }
 
-  const cap = Math.min(membersToAdd.length, remainingToday);
-  membersToAdd = membersToAdd.slice(0, cap);
-
   if (membersToAdd.length === 0) {
     updateJob(job.id, { status: "completed", completedAt: new Date().toISOString(), result: { added: 0, failed: 0, errors: [] } });
     return;
@@ -153,31 +146,40 @@ export async function runAddMembers(job: Job) {
 
   updateJob(job.id, { total: membersToAdd.length });
 
-  // ── Warmup mode ────────────────────────────────────────────────────────────
-
-  if (warmup) {
-    setWarmupMode(accountId, membersToAdd.length);
-    logger.info({ accountId, total: membersToAdd.length }, "Warmup mode enabled");
-  }
-
   // ── Delay config ───────────────────────────────────────────────────────────
+  // With account rotation: shorter delays are safe (each account adds less)
+  // Single account: use full delay. Multiple accounts: can be faster.
+  const effectiveDelay = allAccounts.length > 1
+    ? Math.max(5, Math.round(delaySeconds / Math.min(allAccounts.length, 4)))
+    : delaySeconds;
 
   const delayConfig: DelayConfig = {
-    base: delaySeconds * 1000,
-    jitter: 0.3,
-    min: Math.max(8000, delaySeconds * 700),
-    max: delaySeconds * 2000,
+    base: effectiveDelay * 1000,
+    jitter: 0.35,
+    min: Math.max(4000, effectiveDelay * 600),
+    max: effectiveDelay * 2000,
   };
 
-  // ── Connect & resolve target ───────────────────────────────────────────────
+  // ── Connect initial account & resolve target ───────────────────────────────
+
+  // Account rotation state
+  let currentAccIdx = 0;
+  let currentAccId = allAccounts[0]!.id;
+  let currentSession = allAccounts[0]!.sessionString;
+
+  const connectAccount = async (idx: number) => {
+    const acc = allAccounts[idx]!;
+    const c = acc.sessionString
+      ? await getClientFromSession(acc.sessionString, acc.id)
+      : await getClient(acc.id);
+    return c;
+  };
 
   let client: Awaited<ReturnType<typeof getClient>>;
   let targetEntity: any;
 
   try {
-    client = sessionString
-      ? await getClientFromSession(sessionString, accountId)
-      : await getClient(accountId);
+    client = await connectAccount(0);
     targetEntity = await resolveEntity(client, targetGroup);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -185,27 +187,19 @@ export async function runAddMembers(job: Job) {
     return;
   }
 
-  // ── Main add loop ──────────────────────────────────────────────────────────
-  // Professional strategy:
-  //   FloodWait  → wait the exact seconds Telegram says, then retry same member
-  //   PeerFlood  → wait PEER_FLOOD_BACKOFF_MS, then retry (up to MAX_PEER_FLOOD_RETRIES)
-  //   3rd PeerFlood → stop job (account truly restricted today)
-  //   Privacy/NotFound → skip (don't waste quota)
-  //   AlreadyMember   → skip (silent)
+  // ── Main add loop with account rotation ────────────────────────────────────
+  // Strategy:
+  //   PeerFlood on current account  → switch to NEXT account immediately (no waiting!)
+  //   FloodWait                     → wait exact seconds Telegram says, retry same member
+  //   All accounts exhausted        → stop job gracefully
+  //   Privacy/NotFound/AlreadyIn    → skip
   // ──────────────────────────────────────────────────────────────────────────
-
-  const PEER_FLOOD_WAIT_MS = [
-    15 * 60 * 1000, // 1st PeerFlood: wait 15 min then retry
-    30 * 60 * 1000, // 2nd PeerFlood: wait 30 min then retry
-    60 * 60 * 1000, // 3rd PeerFlood: wait 60 min then retry
-  ];
-  const MAX_PEER_FLOOD_PER_JOB = 3; // stop after 3 consecutive PeerFloods
 
   let added = 0;
   let failed = 0;
   let skipped = 0;
   const errors: string[] = [];
-  let consecutivePeerFloods = 0; // resets after each successful add
+  let consecutivePeerFloods = 0;
 
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
@@ -317,14 +311,8 @@ export async function runAddMembers(job: Job) {
       added++;
       consecutivePeerFloods = 0; // reset on success
 
-      // Track in account daily counter
-      if (accountData) {
-        accountData.dailyAdded++;
-        upsertAccount(accountData);
-      }
-      recordAction(accountId);
-
-      logger.info({ accountId, username: member.username, userId: member.userId, added, total: membersToAdd.length }, "✓ Member added");
+      recordAction(currentAccId);
+      logger.info({ accountId: currentAccId, username: member.username, userId: member.userId, added, total: membersToAdd.length, accountIdx: currentAccIdx }, "✓ Member added");
 
     } catch (err: unknown) {
       if (isAlreadyMember(err)) {
@@ -339,47 +327,53 @@ export async function runAddMembers(job: Job) {
         if (member.username) markInvalid(member.username, "Privacy");
 
       } else if (isPeerFlood(err)) {
-        // ── PROFESSIONAL PeerFlood handling: wait & retry, don't stop ──────────
+        // ── ACCOUNT ROTATION: switch to next account immediately, NO WAITING ──
         consecutivePeerFloods++;
-        const waitMs = PEER_FLOOD_WAIT_MS[Math.min(consecutivePeerFloods - 1, PEER_FLOOD_WAIT_MS.length - 1)]!;
-        const waitMins = Math.round(waitMs / 60000);
+        recordError(currentAccId, "peer_flood");
 
-        logger.warn({
-          accountId, jobId: job.id,
-          attempt: consecutivePeerFloods,
-          waitMins,
-          added,
-        }, `PeerFlood #${consecutivePeerFloods} — waiting ${waitMins} min then continuing`);
-
-        if (consecutivePeerFloods > MAX_PEER_FLOOD_PER_JOB) {
-          // Too many PeerFloods — genuinely restricted today
-          recordError(accountId, "peer_flood");
-          errors.push(`PeerFlood ×${consecutivePeerFloods} — الحساب محدود اليوم، توقف الآن`);
+        const nextIdx = currentAccIdx + 1;
+        if (nextIdx >= allAccounts.length) {
+          // All accounts exhausted — stop gracefully
+          errors.push(`جميع الحسابات (${allAccounts.length}) وصلت لحد PeerFlood — أُضيف ${added} عضو`);
           updateJob(job.id, {
-            status: "failed",
-            error: `PeerFlood ×${consecutivePeerFloods}: الحساب محظور مؤقتاً من Telegram. أُضيف ${added} عضو.`,
+            status: "completed",
+            error: `PeerFlood: استُنفدت جميع الحسابات (${allAccounts.length}). أُضيف ${added} عضو.`,
             completedAt: new Date().toISOString(),
             result: { added, failed, skipped, errors, members: membersToAdd },
           });
           return;
         }
 
-        // Mark this member as flood (will retry)
-        member.status = "flood";
-        member.error = `PeerFlood #${consecutivePeerFloods} — انتظار ${waitMins} دقيقة`;
+        // Switch to next account
+        currentAccIdx = nextIdx;
+        currentAccId = allAccounts[nextIdx]!.id;
+        currentSession = allAccounts[nextIdx]!.sessionString;
 
-        // Update job: show waiting status (not failed!)
+        logger.warn({
+          fromAccount: allAccounts[nextIdx - 1]!.id,
+          toAccount: currentAccId,
+          accountIdx: currentAccIdx,
+          totalAccounts: allAccounts.length,
+          added,
+        }, `PeerFlood → rotating to account ${currentAccIdx + 1}/${allAccounts.length}`);
+
         updateJob(job.id, {
           status: "running",
-          error: `⏳ PeerFlood #${consecutivePeerFloods} — انتظار ${waitMins} دقيقة ثم تكمل تلقائياً (أُضيف ${added} حتى الآن)`,
+          error: `🔄 PeerFlood → التبديل للحساب ${currentAccIdx + 1}/${allAccounts.length} (أُضيف ${added} حتى الآن)`,
           result: { added, failed, skipped, errors, members: membersToAdd },
         });
 
-        await sleep(waitMs);
+        try {
+          client = await connectAccount(currentAccIdx);
+          updateJob(job.id, { status: "running", error: undefined });
+        } catch (connErr) {
+          logger.error({ accountId: currentAccId, connErr }, "Failed to connect next account");
+          errors.push(`فشل الاتصال بالحساب ${currentAccId}`);
+        }
 
-        // Reset the error message and retry the same member
-        updateJob(job.id, { status: "running", error: undefined });
-        i--; // retry current member
+        member.status = "flood";
+        member.error = `PeerFlood → تم التبديل للحساب ${currentAccIdx + 1}`;
+        i--; // retry this member with new account
         continue;
 
       } else {

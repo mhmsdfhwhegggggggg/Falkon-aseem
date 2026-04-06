@@ -184,11 +184,14 @@ export default function TasksMonitorScreen() {
                   {(job as any).error && (() => {
                     const errMsg: string = (job as any).error;
                     const isWaiting = job.status === 'running' && errMsg.startsWith('⏳');
+                    const isRotating = job.status === 'running' && errMsg.startsWith('🔄');
+                    const msgColor = isRotating ? palette.success : isWaiting ? palette.warning : palette.error;
+                    const msgIcon = isRotating ? '🔄' : isWaiting ? '⏳' : '⚠️';
                     return (
-                      <View style={{ backgroundColor: (isWaiting ? palette.warning : palette.error) + '18', borderRadius: 8, padding: 8, marginBottom: 6, flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
-                        <Text style={{ fontSize: 12 }}>{isWaiting ? '⏳' : '⚠️'}</Text>
-                        <Text style={{ color: isWaiting ? palette.warning : palette.error, fontSize: 11, flex: 1, lineHeight: 16 }}>
-                          {isWaiting ? errMsg.replace('⏳ ', '') : errMsg}
+                      <View style={{ backgroundColor: msgColor + '18', borderRadius: 8, padding: 8, marginBottom: 6, flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
+                        <Text style={{ fontSize: 12 }}>{msgIcon}</Text>
+                        <Text style={{ color: msgColor, fontSize: 11, flex: 1, lineHeight: 16 }}>
+                          {(isWaiting || isRotating) ? errMsg.replace(/^[⏳🔄]\s*/, '') : errMsg}
                         </Text>
                       </View>
                     );

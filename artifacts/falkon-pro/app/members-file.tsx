@@ -8,6 +8,7 @@ import {
   Share,
   Alert,
   FlatList,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -17,11 +18,11 @@ import colors from '@/constants/colors';
 import { useMembersStore, type Member, type MemberStatus } from '@/lib/members-store';
 
 const STATUS_CONFIG: Record<MemberStatus, { color: string; icon: React.ComponentProps<typeof MaterialIcons>['name']; label: string }> = {
-  pending: { color: '#FBBF24', icon: 'schedule', label: 'Pending' },
-  added: { color: '#34D399', icon: 'check-circle', label: 'Added' },
-  failed: { color: '#F87171', icon: 'error', label: 'Failed' },
-  flood: { color: '#FB923C', icon: 'warning', label: 'Flood Wait' },
-  already_member: { color: '#60A5FA', icon: 'info', label: 'Already In' },
+  pending: { color: '#FBBF24', icon: 'schedule', label: 'انتظار' },
+  added: { color: '#34D399', icon: 'check-circle', label: 'أُضيف' },
+  failed: { color: '#F87171', icon: 'error', label: 'فشل' },
+  flood: { color: '#FB923C', icon: 'warning', label: 'Flood' },
+  already_member: { color: '#60A5FA', icon: 'info', label: 'موجود' },
 };
 
 function MemberRow({ member, palette }: { member: Member; palette: any }) {
@@ -48,7 +49,7 @@ function MemberRow({ member, palette }: { member: Member; palette: any }) {
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 2 }}>
           {member.username && <Text style={{ color: palette.primary, fontSize: 10 }}>@{member.username}</Text>}
           {member.userId && <Text style={{ color: palette.muted, fontSize: 10 }}>ID:{member.userId}</Text>}
-          {member.isOnline && <Text style={{ color: palette.success, fontSize: 10 }}>● Online</Text>}
+          {member.isOnline && <Text style={{ color: palette.success, fontSize: 10 }}>● أونلاين</Text>}
         </View>
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -59,13 +60,31 @@ function MemberRow({ member, palette }: { member: Member; palette: any }) {
   );
 }
 
+function downloadOnWeb(content: string, filename: string, mime: string) {
+  try {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default function MembersFileScreen() {
   const scheme = useColorScheme();
   const palette = colors[scheme];
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { files, exportFileAsText } = useMembersStore();
+  const { files, exportFileAsText, exportFileAsCSV, exportFileAsUsernames } = useMembersStore();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<MemberStatus | 'all'>('all');
+  const [showExport, setShowExport] = useState(false);
 
   const file = files.find((f) => f.id === id);
 
@@ -83,7 +102,7 @@ export default function MembersFileScreen() {
   }, [file, search, filterStatus]);
 
   const stats = useMemo(() => {
-    if (!file) return {};
+    if (!file) return {} as any;
     const all = file.members;
     return {
       total: all.length,
@@ -99,26 +118,57 @@ export default function MembersFileScreen() {
 
   if (!file) {
     return (
-      <View style={{ flex: 1, backgroundColor: palette.background, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: palette.muted, fontSize: 16 }}>File not found</Text>
+      <View style={{ flex: 1, backgroundColor: palette.background, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <MaterialIcons name="folder-open" size={48} color={palette.muted} />
+        <Text style={{ color: palette.muted, fontSize: 16 }}>الملف غير موجود</Text>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Text style={{ color: palette.primary, fontSize: 14, fontWeight: '700' }}>رجوع</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const handleExport = async () => {
-    const text = exportFileAsText(file.id);
+  const doExport = async (format: 'txt' | 'csv' | 'usernames') => {
+    let content = '';
+    let filename = '';
+    let mime = 'text/plain';
+
+    if (format === 'csv') {
+      content = exportFileAsCSV(file.id);
+      filename = `${file.name}.csv`;
+      mime = 'text/csv';
+    } else if (format === 'usernames') {
+      content = exportFileAsUsernames(file.id);
+      filename = `${file.name}_usernames.txt`;
+    } else {
+      content = exportFileAsText(file.id);
+      filename = `${file.name}.txt`;
+    }
+
+    setShowExport(false);
+
+    // Web: download directly
+    if (Platform.OS === 'web') {
+      const ok = downloadOnWeb(content, filename, mime);
+      if (!ok) {
+        await Share.share({ message: content, title: filename });
+      }
+      return;
+    }
+
+    // Mobile: use Share
     try {
-      await Share.share({ message: text, title: file.name });
+      await Share.share({ message: content, title: filename });
     } catch {
-      Alert.alert('Exported', 'File content ready to share');
+      Alert.alert('تصدير', `محتوى الملف جاهز للمشاركة (${content.split('\n').length} سطر)`);
     }
   };
 
   const STATUSES: Array<{ key: MemberStatus | 'all'; label: string }> = [
-    { key: 'all', label: `All (${stats.total})` },
-    { key: 'pending', label: `Pending (${stats.pending})` },
-    { key: 'added', label: `Added (${stats.added})` },
-    { key: 'failed', label: `Failed (${stats.failed})` },
+    { key: 'all', label: `الكل (${stats.total})` },
+    { key: 'pending', label: `انتظار (${stats.pending})` },
+    { key: 'added', label: `أُضيف (${stats.added})` },
+    { key: 'failed', label: `فشل (${stats.failed})` },
   ];
 
   return (
@@ -132,23 +182,62 @@ export default function MembersFileScreen() {
           <View style={{ flex: 1 }}>
             <Text style={{ color: palette.foreground, fontSize: 16, fontWeight: '800' }} numberOfLines={1}>{file.name}</Text>
             <Text style={{ color: palette.muted, fontSize: 11 }}>
-              {file.sourceGroup ? `from ${file.sourceGroup} • ` : ''}{file.totalCount} members
+              {file.sourceGroup ? `من ${file.sourceGroup} · ` : ''}{file.totalCount.toLocaleString()} عضو
             </Text>
           </View>
-          <TouchableOpacity onPress={handleExport} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: palette.border }}>
-            <MaterialIcons name="share" size={16} color={palette.foreground} />
+          <TouchableOpacity
+            onPress={() => setShowExport(!showExport)}
+            style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: showExport ? palette.primary : palette.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: showExport ? palette.primary : palette.border }}
+          >
+            <MaterialIcons name="download" size={16} color={showExport ? '#fff' : palette.foreground} />
           </TouchableOpacity>
         </View>
+
+        {/* Export Panel */}
+        {showExport && (
+          <View style={{ marginHorizontal: 20, marginBottom: 12, backgroundColor: palette.surface, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: palette.primary + '40', gap: 8 }}>
+            <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '700', marginBottom: 4 }}>تصدير الملف ({file.totalCount} عضو)</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: '#1D4ED8' + '20', borderRadius: 10, padding: 10, alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#1D4ED8' + '40' }}
+                onPress={() => doExport('csv')}
+              >
+                <MaterialIcons name="table-chart" size={20} color="#60A5FA" />
+                <Text style={{ color: '#60A5FA', fontSize: 11, fontWeight: '700' }}>CSV</Text>
+                <Text style={{ color: palette.muted, fontSize: 9, textAlign: 'center' }}>Excel / جداول</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: palette.success + '15', borderRadius: 10, padding: 10, alignItems: 'center', gap: 4, borderWidth: 1, borderColor: palette.success + '40' }}
+                onPress={() => doExport('usernames')}
+              >
+                <MaterialIcons name="alternate-email" size={20} color={palette.success} />
+                <Text style={{ color: palette.success, fontSize: 11, fontWeight: '700' }}>يوزرات</Text>
+                <Text style={{ color: palette.muted, fontSize: 9, textAlign: 'center' }}>@usernames فقط</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: palette.primary + '15', borderRadius: 10, padding: 10, alignItems: 'center', gap: 4, borderWidth: 1, borderColor: palette.primary + '40' }}
+                onPress={() => doExport('txt')}
+              >
+                <MaterialIcons name="description" size={20} color={palette.primary} />
+                <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '700' }}>TXT</Text>
+                <Text style={{ color: palette.muted, fontSize: 9, textAlign: 'center' }}>نص كامل</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={{ color: palette.muted, fontSize: 10, textAlign: 'center' }}>
+              {stats.withUsername} يوزر · {stats.withId} ID · {stats.online} أونلاين
+            </Text>
+          </View>
+        )}
 
         {/* Stats Grid */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 20, marginBottom: 12 }} contentContainerStyle={{ gap: 8 }}>
           {[
-            { label: 'Total', value: stats.total, color: palette.foreground },
-            { label: 'Usernames', value: stats.withUsername, color: palette.primary },
-            { label: 'IDs', value: stats.withId, color: palette.info },
-            { label: 'Online', value: stats.online, color: palette.success },
-            { label: 'Added', value: stats.added, color: palette.success },
-            { label: 'Failed', value: stats.failed, color: palette.error },
+            { label: 'الكل', value: stats.total, color: palette.foreground },
+            { label: 'يوزر', value: stats.withUsername, color: palette.primary },
+            { label: 'ID', value: stats.withId, color: '#60A5FA' },
+            { label: 'أونلاين', value: stats.online, color: palette.success },
+            { label: 'أُضيف', value: stats.added, color: palette.success },
+            { label: 'فشل', value: stats.failed, color: palette.error },
           ].map((s) => (
             <View key={s.label} style={{ backgroundColor: palette.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: palette.border, alignItems: 'center', minWidth: 64 }}>
               <Text style={{ color: s.color, fontSize: 16, fontWeight: '900' }}>{s.value ?? 0}</Text>
@@ -164,14 +253,14 @@ export default function MembersFileScreen() {
             onPress={() => router.push({ pathname: '/add-members', params: { fileId: file.id } } as any)}
           >
             <MaterialIcons name="person-add" size={16} color="#fff" />
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Add All Members</Text>
+            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>إضافة للمجموعة</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={{ backgroundColor: palette.surface, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: palette.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
-            onPress={handleExport}
+            style={{ backgroundColor: palette.surface, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: showExport ? palette.primary : palette.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            onPress={() => setShowExport(!showExport)}
           >
-            <MaterialIcons name="download" size={16} color={palette.foreground} />
-            <Text style={{ color: palette.foreground, fontWeight: '700', fontSize: 13 }}>Export</Text>
+            <MaterialIcons name="download" size={16} color={showExport ? palette.primary : palette.foreground} />
+            <Text style={{ color: showExport ? palette.primary : palette.foreground, fontWeight: '700', fontSize: 13 }}>تصدير</Text>
           </TouchableOpacity>
         </View>
 
@@ -182,7 +271,7 @@ export default function MembersFileScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search by name, username, ID..."
+              placeholder="بحث بالاسم، اليوزر، أو الـ ID..."
               placeholderTextColor={palette.muted}
               style={{ flex: 1, color: palette.foreground, fontSize: 13, paddingVertical: 8 }}
             />
@@ -211,8 +300,9 @@ export default function MembersFileScreen() {
             contentContainerStyle={{ paddingBottom: 100 }}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <View style={{ alignItems: 'center', paddingTop: 40 }}>
-                <Text style={{ color: palette.muted, fontSize: 14 }}>No members match the filter</Text>
+              <View style={{ alignItems: 'center', paddingTop: 40, gap: 8 }}>
+                <MaterialIcons name="group" size={40} color={palette.muted} />
+                <Text style={{ color: palette.muted, fontSize: 14 }}>لا يوجد أعضاء يطابقون الفلتر</Text>
               </View>
             }
           />

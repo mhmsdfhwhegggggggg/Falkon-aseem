@@ -99,8 +99,15 @@ export default function AddMembersScreen() {
       return Alert.alert('No Input', 'Enter at least one username or ID');
     }
 
-    const account = activeAccounts[0]!;
-    const sessionString = await localAccounts.getSession(account.id);
+    // Build account rotation pool — send ALL active accounts to the server
+    // Server will rotate automatically when one gets PeerFlood
+    const allAccountsList = await Promise.all(
+      activeAccounts.map(async (acc) => ({
+        id: acc.id,
+        sessionString: await localAccounts.getSession(acc.id) || undefined,
+      }))
+    );
+    const primaryAccount = allAccountsList[0]!;
     const lines = parseLines(textInput);
 
     // If using phone-stored file, send members inline
@@ -132,8 +139,9 @@ export default function AddMembersScreen() {
         userIds: mode === 'by-id' ? lines : undefined,
         delaySeconds: delay,
         maxPerDay,
-        accountId: account.id,
-        sessionString: sessionString || undefined,
+        accountId: primaryAccount.id,
+        sessionString: primaryAccount.sessionString,
+        allAccounts: allAccountsList, // rotation pool
       });
       setJobId(result.jobId);
     } catch (err: any) {
@@ -166,20 +174,42 @@ export default function AddMembersScreen() {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}>
 
-          {/* Account status */}
-          <View style={{ backgroundColor: palette.surface, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: activeAccounts.length > 0 ? palette.success + '50' : palette.error + '50', marginBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <MaterialIcons name={activeAccounts.length > 0 ? 'check-circle' : 'error'} size={18} color={activeAccounts.length > 0 ? palette.success : palette.error} />
-            <Text style={{ color: activeAccounts.length > 0 ? palette.success : palette.error, fontSize: 13, fontWeight: '600', flex: 1 }}>
-              {activeAccounts.length > 0
-                ? `Account: ${activeAccounts[0]!.firstName || activeAccounts[0]!.phone}`
-                : 'No account — add one in Accounts tab'}
-            </Text>
-          </View>
+          {/* Account status — shows rotation pool */}
+          <TouchableOpacity
+            style={{ backgroundColor: palette.surface, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: activeAccounts.length > 0 ? palette.success + '50' : palette.error + '50', marginBottom: 14 }}
+            onPress={() => activeAccounts.length === 0 && router.push('/(tabs)/accounts' as any)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <MaterialIcons name={activeAccounts.length > 0 ? 'check-circle' : 'error'} size={18} color={activeAccounts.length > 0 ? palette.success : palette.error} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: activeAccounts.length > 0 ? palette.success : palette.error, fontSize: 13, fontWeight: '700' }}>
+                  {activeAccounts.length > 0
+                    ? `${activeAccounts.length} حساب${activeAccounts.length > 1 ? ' (تدوير تلقائي)' : ''}`
+                    : 'لا يوجد حساب — أضف من تبويب الحسابات'}
+                </Text>
+                {activeAccounts.length > 0 && (
+                  <Text style={{ color: palette.muted, fontSize: 11, marginTop: 2 }}>
+                    {activeAccounts.map((a) => a.firstName || a.phone).join(' · ')}
+                  </Text>
+                )}
+              </View>
+              {activeAccounts.length > 1 && (
+                <View style={{ backgroundColor: palette.success + '20', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                  <Text style={{ color: palette.success, fontSize: 10, fontWeight: '800' }}>×{activeAccounts.length}</Text>
+                </View>
+              )}
+            </View>
+            {activeAccounts.length > 1 && (
+              <Text style={{ color: palette.muted, fontSize: 11, marginTop: 6 }}>
+                عند PeerFlood يتحول للحساب التالي تلقائياً بدون انتظار
+              </Text>
+            )}
+          </TouchableOpacity>
 
           {/* Progress */}
           {jobId && job && (() => {
             const jobError: string | undefined = (job as any).error;
-            const isPeerFloodWait = isRunning && !!jobError && jobError.startsWith('⏳');
+            const isPeerFloodWait = isRunning && !!jobError && (jobError.startsWith('⏳') || jobError.startsWith('🔄'));
             const cardColor = isPeerFloodWait ? palette.warning
               : isRunning ? palette.primary
               : job.status === 'completed' ? palette.success

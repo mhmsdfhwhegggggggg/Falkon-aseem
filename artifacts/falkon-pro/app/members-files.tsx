@@ -54,28 +54,28 @@ export default function MembersFilesScreen() {
             <MaterialIcons name="arrow-back" size={22} color={palette.foreground} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: palette.muted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 }}>Members Data</Text>
-            <Text style={{ color: palette.foreground, fontSize: 22, fontWeight: '800' }}>Saved Files</Text>
+            <Text style={{ color: palette.muted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 }}>بيانات الأعضاء</Text>
+            <Text style={{ color: palette.foreground, fontSize: 22, fontWeight: '800' }}>الملفات المحفوظة</Text>
           </View>
           <TouchableOpacity
             style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: palette.primary, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, gap: 6 }}
             onPress={() => router.push('/extraction' as any)}
           >
             <MaterialIcons name="add" size={16} color="#fff" />
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Extract</Text>
+            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>استخراج</Text>
           </TouchableOpacity>
         </View>
 
         {/* Stats */}
         <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 14 }}>
           {[
-            { label: 'FILES', value: files.length, color: palette.primary },
-            { label: 'TOTAL MEMBERS', value: totalMembers, color: '#34D399' },
-            { label: 'TOTAL ADDED', value: totalAdded, color: '#FBBF24' },
+            { label: 'الملفات', value: files.length, color: palette.primary },
+            { label: 'إجمالي الأعضاء', value: totalMembers, color: '#34D399' },
+            { label: 'تمت إضافتهم', value: totalAdded, color: '#FBBF24' },
           ].map((s) => (
             <View key={s.label} style={{ flex: 1, backgroundColor: palette.surface, borderRadius: 12, padding: 12, alignItems: 'center', borderWidth: 1, borderColor: palette.border }}>
               <Text style={{ color: s.color, fontSize: 20, fontWeight: '900' }}>{s.value.toLocaleString()}</Text>
-              <Text style={{ color: palette.muted, fontSize: 9, fontWeight: '700', marginTop: 2 }}>{s.label}</Text>
+              <Text style={{ color: palette.muted, fontSize: 9, fontWeight: '700', marginTop: 2, textAlign: 'center' }}>{s.label}</Text>
             </View>
           ))}
         </View>
@@ -86,7 +86,7 @@ export default function MembersFilesScreen() {
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search files..."
+              placeholder="بحث في الملفات..."
               placeholderTextColor={palette.muted}
               style={{ flex: 1, color: palette.foreground, fontSize: 14, paddingVertical: 10 }}
             />
@@ -96,27 +96,22 @@ export default function MembersFilesScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={filesQuery.isFetching} onRefresh={() => filesQuery.refetch()} tintColor={palette.primary} />}
         >
-          {filesQuery.isLoading ? (
-            <View style={{ alignItems: 'center', paddingTop: 60 }}>
-              <ActivityIndicator color={palette.primary} size="large" />
-            </View>
-          ) : filtered.length === 0 ? (
+          {filtered.length === 0 ? (
             <View style={{ alignItems: 'center', paddingTop: 60, gap: 12 }}>
               <View style={{ width: 72, height: 72, borderRadius: 18, backgroundColor: palette.primary + '15', alignItems: 'center', justifyContent: 'center' }}>
                 <MaterialIcons name="folder-open" size={36} color={palette.primary} />
               </View>
-              <Text style={{ color: palette.foreground, fontSize: 18, fontWeight: '700' }}>No Files Yet</Text>
+              <Text style={{ color: palette.foreground, fontSize: 18, fontWeight: '700' }}>لا توجد ملفات</Text>
               <Text style={{ color: palette.muted, fontSize: 14, textAlign: 'center' }}>
-                {search ? 'No files match your search' : 'Run an extraction to save member lists here. You can then add them to any group.'}
+                {search ? 'لا توجد ملفات تطابق البحث' : 'قم باستخراج أعضاء لحفظهم هنا ثم إضافتهم لأي مجموعة'}
               </Text>
               {!search && (
                 <TouchableOpacity
                   style={{ backgroundColor: palette.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12 }}
                   onPress={() => router.push('/extraction' as any)}
                 >
-                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>Start Extraction</Text>
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>ابدأ الاستخراج</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -135,7 +130,7 @@ export default function MembersFilesScreen() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }} numberOfLines={1}>{file.name}</Text>
-                      <Text style={{ color: palette.muted, fontSize: 11 }}>{file.sourceGroup} · {new Date(file.createdAt).toLocaleDateString()}</Text>
+                      <Text style={{ color: palette.muted, fontSize: 11 }}>{file.sourceGroup} · {new Date(file.createdAt).toLocaleDateString('ar')}</Text>
                     </View>
                     <TouchableOpacity onPress={() => handleDelete(file.id, file.name)}>
                       <MaterialIcons name="delete-outline" size={18} color={palette.error} />
@@ -144,10 +139,10 @@ export default function MembersFilesScreen() {
 
                   <View style={{ flexDirection: 'row', gap: 12, marginBottom: 8 }}>
                     <Text style={{ color: palette.muted, fontSize: 12 }}>
-                      Members: <Text style={{ color: palette.foreground, fontWeight: '700' }}>{file.memberCount.toLocaleString()}</Text>
+                      الأعضاء: <Text style={{ color: palette.foreground, fontWeight: '700' }}>{file.memberCount.toLocaleString()}</Text>
                     </Text>
                     <Text style={{ color: palette.muted, fontSize: 12 }}>
-                      Added: <Text style={{ color: palette.success, fontWeight: '700' }}>{file.addedCount.toLocaleString()}</Text>
+                      أُضيفوا: <Text style={{ color: palette.success, fontWeight: '700' }}>{file.addedCount.toLocaleString()}</Text>
                     </Text>
                   </View>
 
@@ -156,7 +151,7 @@ export default function MembersFilesScreen() {
                       <View style={{ height: 4, backgroundColor: palette.border, borderRadius: 2 }}>
                         <View style={{ height: 4, borderRadius: 2, backgroundColor: palette.success, width: `${addedPct}%` }} />
                       </View>
-                      <Text style={{ color: palette.muted, fontSize: 10, marginTop: 3 }}>{addedPct}% added</Text>
+                      <Text style={{ color: palette.muted, fontSize: 10, marginTop: 3 }}>{addedPct}% تمت إضافتهم</Text>
                     </View>
                   )}
 
@@ -166,14 +161,14 @@ export default function MembersFilesScreen() {
                       onPress={() => router.push({ pathname: '/members-file', params: { id: file.id } } as any)}
                     >
                       <MaterialIcons name="visibility" size={14} color={palette.primary} />
-                      <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>View</Text>
+                      <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>عرض الملف</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={{ flex: 1, backgroundColor: palette.success + '15', borderRadius: 10, padding: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 4 }}
                       onPress={() => router.push({ pathname: '/add-members', params: { fileId: file.id } } as any)}
                     >
                       <MaterialIcons name="person-add" size={14} color={palette.success} />
-                      <Text style={{ color: palette.success, fontSize: 12, fontWeight: '700' }}>Add Members</Text>
+                      <Text style={{ color: palette.success, fontSize: 12, fontWeight: '700' }}>إضافة للمجموعة</Text>
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>

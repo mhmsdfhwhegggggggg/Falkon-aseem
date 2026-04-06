@@ -109,6 +109,8 @@ interface MembersContextValue {
   updateMemberStatus: (fileId: string, memberId: string, status: MemberStatus) => Promise<void>;
   renameFile: (fileId: string, name: string) => Promise<void>;
   exportFileAsText: (fileId: string) => string;
+  exportFileAsUsernames: (fileId: string) => string;
+  exportFileAsCSV: (fileId: string) => string;
   importMembersFromText: (text: string, source?: 'username' | 'id') => Member[];
   totalMembers: number;
 }
@@ -221,6 +223,33 @@ export function MembersStoreProvider({ children }: { children: React.ReactNode }
     return `# ${file.name}\n# Source: ${file.sourceGroup ?? 'manual'}\n# Extracted: ${file.createdAt}\n# Total: ${file.totalCount}\n\n${lines.join('\n')}`;
   }, [state.files]);
 
+  const exportFileAsUsernames = useCallback((fileId: string): string => {
+    const file = state.files.find((f) => f.id === fileId);
+    if (!file) return '';
+    return file.members
+      .filter((m) => m.username)
+      .map((m) => `@${m.username}`)
+      .join('\n');
+  }, [state.files]);
+
+  const exportFileAsCSV = useCallback((fileId: string): string => {
+    const file = state.files.find((f) => f.id === fileId);
+    if (!file) return '';
+    const header = 'user_id,username,first_name,last_name,phone,is_online,status,source,extracted_at';
+    const rows = file.members.map((m) => [
+      m.userId ?? '',
+      m.username ?? '',
+      (m.firstName ?? '').replace(/,/g, ' '),
+      (m.lastName ?? '').replace(/,/g, ' '),
+      m.phone ?? '',
+      m.isOnline ? '1' : '0',
+      m.status,
+      (m.source ?? '').replace(/,/g, ' '),
+      m.extractedAt ?? '',
+    ].join(','));
+    return [header, ...rows].join('\n');
+  }, [state.files]);
+
   const importMembersFromText = useCallback((text: string, source: 'username' | 'id' = 'username'): Member[] => {
     const lines = text.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
     return lines.map((line) => {
@@ -256,9 +285,11 @@ export function MembersStoreProvider({ children }: { children: React.ReactNode }
     updateMemberStatus,
     renameFile,
     exportFileAsText,
+    exportFileAsUsernames,
+    exportFileAsCSV,
     importMembersFromText,
     totalMembers,
-  }), [state, selectedFile, createFile, appendToFile, deleteFile, selectFile, updateMemberStatus, renameFile, exportFileAsText, importMembersFromText, totalMembers]);
+  }), [state, selectedFile, createFile, appendToFile, deleteFile, selectFile, updateMemberStatus, renameFile, exportFileAsText, exportFileAsUsernames, exportFileAsCSV, importMembersFromText, totalMembers]);
 
   return <MembersContext.Provider value={value}>{children}</MembersContext.Provider>;
 }
