@@ -14,6 +14,15 @@ import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } fr
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
+import { checkAndAutoReply } from "./auto-reply-service.js";
+import {
+  createScheduledJob,
+  listScheduledJobs,
+  deleteScheduledJob,
+  getScheduledJob,
+  updateScheduledJobStatus,
+  getPendingJobsDue,
+} from "./scheduler-service.js";
 
 // ─── Shared zod schema for proxy config ──────────────────────────────────────
 const ProxyConfigSchema = z.object({
@@ -562,6 +571,70 @@ const licenseRouter = router({
     }),
 });
 
+// ─── Auto-Reply Router ────────────────────────────────────────────────────────
+const AutoReplyRuleSchema = z.object({
+  id: z.string(),
+  trigger: z.string().min(1),
+  response: z.string().min(1),
+  matchType: z.enum(["contains", "exact", "startsWith"]).default("contains"),
+  enabled: z.boolean().default(true),
+});
+
+const autoReplyRouter = router({
+  check: procedure
+    .input(z.object({
+      sessionString: z.string().min(10),
+      rules: z.array(AutoReplyRuleSchema).max(100),
+      limitDialogs: z.number().min(1).max(50).default(10),
+      limitMessages: z.number().min(1).max(50).default(20),
+    }))
+    .mutation(async ({ input }) => {
+      const result = await checkAndAutoReply(
+        input.sessionString,
+        input.rules,
+        input.limitDialogs,
+        input.limitMessages,
+      );
+      return result;
+    }),
+});
+
+// ─── Scheduler Router ─────────────────────────────────────────────────────────
+const schedulerRouter = router({
+  create: procedure
+    .input(z.object({
+      name: z.string().min(1).max(100),
+      taskType: z.enum(["extraction", "add-members", "bulk-message"]),
+      scheduledAt: z.number().int().min(0),
+      params: z.record(z.unknown()),
+    }))
+    .mutation(({ input }) => {
+      const job = createScheduledJob({
+        name: input.name,
+        taskType: input.taskType,
+        scheduledAt: input.scheduledAt,
+        params: input.params,
+      });
+      return job;
+    }),
+
+  list: procedure.query(() => {
+    return { jobs: listScheduledJobs() };
+  }),
+
+  delete: procedure
+    .input(z.object({ id: z.string() }))
+    .mutation(({ input }) => {
+      const deleted = deleteScheduledJob(input.id);
+      if (!deleted) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      return { success: true };
+    }),
+
+  due: procedure.query(() => {
+    return { jobs: getPendingJobsDue() };
+  }),
+});
+
 export const appRouter = router({
   accounts: accountsRouter,
   extraction: extractionRouter,
@@ -574,6 +647,8 @@ export const appRouter = router({
   stats: statsRouter,
   license: licenseRouter,
   system: systemRouter,
+  autoReply: autoReplyRouter,
+  scheduler: schedulerRouter,
 });
 
 export type AppRouter = typeof appRouter;

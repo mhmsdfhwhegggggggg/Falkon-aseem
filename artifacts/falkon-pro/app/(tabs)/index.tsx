@@ -148,26 +148,19 @@ export default function DashboardScreen() {
             <LinearGradient
               colors={['#1a1200', '#1f1500', '#0a0a00']}
               style={{
-                width: 180, height: 180, borderRadius: 90,
+                width: 210, height: 210, borderRadius: 105,
                 alignItems: 'center', justifyContent: 'center',
-                borderWidth: 2, borderColor: GOLD + '60',
-                marginTop: 30,
+                borderWidth: 2, borderColor: GOLD + '50',
+                marginTop: 25,
               }}
             >
-              {/* Inner accent ring */}
-              <View style={{
-                position: 'absolute',
-                width: 160, height: 160, borderRadius: 80,
-                borderWidth: 1, borderColor: GOLD + '30',
-              }} />
-
               <Animated.View style={{
                 transform: [
                   { scale: falconAnim },
                   { translateY: falconAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) },
                 ],
               }}>
-                <FalconLogo size={130} />
+                <FalconLogo size={170} />
               </Animated.View>
             </LinearGradient>
 

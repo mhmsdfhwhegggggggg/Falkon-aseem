@@ -1,200 +1,177 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import colors from '@/constants/colors';
 import { router } from 'expo-router';
 import { useTaskRunner } from '@/lib/task-runner';
 import { useMembersStore } from '@/lib/members-store';
 
-const TASK_TYPES = [
+const BG = '#030712';
+const SURFACE = '#0D1117';
+const BORDER = '#1a2235';
+const GOLD = '#F59E0B';
+
+const TASK_CARDS = [
   {
     id: 'extraction',
-    label: 'Member Extraction',
-    description: 'Extract members from groups & channels → save to file',
+    label: 'استخراج الأعضاء',
+    desc: 'استخرج أعضاء المجموعات والقنوات واحفظهم في ملف',
     icon: 'download' as const,
     color: '#8B5CF6',
-    gradient: ['#4C1D95', '#6D28D9'] as [string, string],
+    gradient: ['#1e1035', '#2d1b69'] as [string, string],
     route: '/extraction',
-    badge: 'Save to file',
+    badge: 'يحفظ في ملف',
   },
   {
     id: 'add-members',
-    label: 'Add Members',
-    description: 'Add by username, by ID, or from a saved file',
+    label: 'إضافة أعضاء',
+    desc: 'أضف بالاسم أو ID أو من ملف محفوظ مع التدوير التلقائي',
     icon: 'person-add' as const,
     color: '#34D399',
-    gradient: ['#064E3B', '#059669'] as [string, string],
+    gradient: ['#052e16', '#064e3b'] as [string, string],
     route: '/add-members',
-    badge: '3 modes',
+    badge: '3 طرق',
   },
   {
     id: 'extract-add',
-    label: 'Extract & Add',
-    description: 'Extract members then add them automatically',
+    label: 'استخراج وإضافة',
+    desc: 'استخرج الأعضاء وأضفهم تلقائياً في خطوة واحدة',
     icon: 'sync-alt' as const,
     color: '#60A5FA',
-    gradient: ['#1E3A8A', '#2563EB'] as [string, string],
+    gradient: ['#0c1a3e', '#1e3a8a'] as [string, string],
     route: '/extract-and-add',
-    badge: '2-in-1',
+    badge: 'دفعة واحدة',
   },
   {
     id: 'bulk-message',
-    label: 'Bulk Messaging',
-    description: 'Send bulk messages to users, groups, or channels',
+    label: 'الرسائل الجماعية',
+    desc: 'أرسل رسائل جماعية للمستخدمين أو المجموعات أو القنوات',
     icon: 'chat' as const,
     color: '#FBBF24',
-    gradient: ['#78350F', '#D97706'] as [string, string],
+    gradient: ['#291700', '#451a03'] as [string, string],
     route: '/bulk-ops',
-    badge: 'Multi-mode',
+    badge: 'متعدد الأهداف',
   },
   {
     id: 'auto-reply',
-    label: 'Auto Reply',
-    description: 'Automated keyword-based response system',
+    label: 'الرد التلقائي',
+    desc: 'نظام ردود ذكي يعمل على الكلمات المفتاحية',
     icon: 'reply' as const,
     color: '#F472B6',
-    gradient: ['#831843', '#BE185D'] as [string, string],
+    gradient: ['#2a0520', '#701a75'] as [string, string],
     route: '/auto-reply',
-    badge: 'Smart bot',
+    badge: 'ذكي',
   },
   {
     id: 'scheduler',
-    label: 'Task Scheduler',
-    description: 'Schedule any task to run at a specific time',
+    label: 'جدولة المهام',
+    desc: 'جدول تشغيل أي مهمة في وقت محدد تلقائياً',
     icon: 'schedule' as const,
     color: '#A78BFA',
-    gradient: ['#4C1D95', '#7C3AED'] as [string, string],
+    gradient: ['#1e1035', '#3b0764'] as [string, string],
     route: '/scheduler',
-    badge: 'Timed',
+    badge: 'مؤجل',
   },
   {
     id: 'content-cloner',
-    label: 'Content Cloner',
-    description: 'Clone & forward content between channels',
+    label: 'ناسخ المحتوى',
+    desc: 'انسخ وأعد توجيه المنشورات بين القنوات تلقائياً',
     icon: 'content-copy' as const,
     color: '#FB923C',
-    gradient: ['#7C2D12', '#EA580C'] as [string, string],
+    gradient: ['#1c0700', '#431407'] as [string, string],
     route: '/content-cloner',
-    badge: 'Auto-forward',
+    badge: 'تلقائي',
   },
 ];
 
 export default function TasksScreen() {
-  const scheme = useColorScheme();
-  const palette = colors[scheme];
   const { activeTasks, tasks } = useTaskRunner();
   const { files, totalMembers } = useMembersStore();
 
+  const completedCount = tasks.filter((t) => t.status === 'completed').length;
+  const totalAdded = files.reduce((a, f) => a + f.addedCount, 0);
+
   return (
-    <View style={{ flex: 1, backgroundColor: palette.background }}>
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
-          <View>
-            <Text style={{ color: palette.muted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 }}>Automation</Text>
-            <Text style={{ color: palette.foreground, fontSize: 24, fontWeight: '800', marginTop: 2 }}>Tasks</Text>
+
+        {/* Header */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View>
+              <Text style={{ color: '#4B5563', fontSize: 11, fontWeight: '700', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 4 }}>
+                FALKON PRO
+              </Text>
+              <Text style={{ color: '#F3F4F6', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 }}>المهام</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push('/tasks-monitor' as any)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: activeTasks.length > 0 ? '#34D39915' : SURFACE, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: activeTasks.length > 0 ? '#34D39940' : BORDER, marginTop: 4 }}
+            >
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: activeTasks.length > 0 ? '#34D399' : '#4B5563' }} />
+              <Text style={{ color: activeTasks.length > 0 ? '#34D399' : '#6B7280', fontSize: 12, fontWeight: '700' }}>
+                {activeTasks.length > 0 ? `${activeTasks.length} نشط` : 'لا توجد مهام'}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: activeTasks.length > 0 ? palette.success + '20' : palette.surface, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: activeTasks.length > 0 ? palette.success + '50' : palette.border }}
-            onPress={() => router.push('/tasks-monitor' as any)}
-          >
-            <MaterialIcons name="monitor" size={14} color={activeTasks.length > 0 ? palette.success : palette.muted} />
-            <Text style={{ color: activeTasks.length > 0 ? palette.success : palette.muted, fontSize: 12, fontWeight: '700' }}>
-              {activeTasks.length > 0 ? `${activeTasks.length} Running` : 'Monitor'}
-            </Text>
-          </TouchableOpacity>
+          <View style={{ height: 2, width: 40, backgroundColor: GOLD, borderRadius: 1, marginTop: 8 }} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-          {/* Saved Files Quick Access */}
-          {files.length > 0 && (
-            <View style={{ marginHorizontal: 20, marginBottom: 16 }}>
-              <LinearGradient
-                colors={['#1E1B4B', '#2D1B69']}
-                style={{ borderRadius: 16, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
+
+          {/* Stats row */}
+          <View style={{ flexDirection: 'row', gap: 1, marginHorizontal: 20, marginTop: 20, marginBottom: 24, backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, overflow: 'hidden' }}>
+            {[
+              { label: 'منجزة', value: completedCount.toString(), color: '#34D399' },
+              { label: 'الأعضاء', value: totalMembers.toLocaleString(), color: '#8B5CF6' },
+              { label: 'تمت إضافتهم', value: totalAdded.toLocaleString(), color: GOLD },
+            ].map((stat, i) => (
+              <View key={i} style={{ flex: 1, alignItems: 'center', paddingVertical: 14, borderRightWidth: i < 2 ? 1 : 0, borderColor: BORDER }}>
+                <Text style={{ color: stat.color, fontSize: 20, fontWeight: '900' }}>{stat.value}</Text>
+                <Text style={{ color: '#4B5563', fontSize: 10, marginTop: 3, fontWeight: '600' }}>{stat.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Section label */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 20, marginBottom: 14 }}>
+            <View style={{ width: 3, height: 18, backgroundColor: GOLD, borderRadius: 2 }} />
+            <Text style={{ color: '#E5E7EB', fontSize: 15, fontWeight: '800' }}>ابدأ مهمة جديدة</Text>
+          </View>
+
+          {/* Task cards */}
+          <View style={{ paddingHorizontal: 20, gap: 10 }}>
+            {TASK_CARDS.map((task) => (
+              <TouchableOpacity
+                key={task.id}
+                onPress={() => router.push(task.route as any)}
+                activeOpacity={0.82}
               >
-                <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' }}>
-                  <MaterialIcons name="folder" size={22} color="#fff" />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: '#fff', fontSize: 14, fontWeight: '800' }}>Saved Member Files</Text>
-                  <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>
-                    {files.length} files • {totalMembers.toLocaleString()} members
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={{ backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 }}
-                  onPress={() => router.push('/members-files' as any)}
+                <LinearGradient
+                  colors={[...task.gradient, task.color + '18']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{ borderRadius: 16, padding: 1.5 }}
                 >
-                  <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>View Files</Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          )}
-
-          {/* Task Counts */}
-          {tasks.length > 0 && (
-            <View style={{ flexDirection: 'row', marginHorizontal: 20, gap: 10, marginBottom: 16 }}>
-              {[
-                { label: 'Running', value: activeTasks.length, color: palette.success },
-                { label: 'Completed', value: tasks.filter((t) => t.status === 'completed').length, color: palette.info },
-                { label: 'Total', value: tasks.length, color: palette.muted },
-              ].map((stat) => (
-                <TouchableOpacity
-                  key={stat.label}
-                  style={{ flex: 1, backgroundColor: palette.surface, borderRadius: 12, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: palette.border }}
-                  onPress={() => router.push('/tasks-monitor' as any)}
-                >
-                  <Text style={{ color: stat.color, fontSize: 18, fontWeight: '900' }}>{stat.value}</Text>
-                  <Text style={{ color: palette.muted, fontSize: 9, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 }}>{stat.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {/* Task Type Cards */}
-          <View style={{ paddingHorizontal: 20 }}>
-            <Text style={{ color: palette.foreground, fontSize: 15, fontWeight: '700', marginBottom: 12 }}>
-              Start a Task
-            </Text>
-            <View style={{ gap: 10 }}>
-              {TASK_TYPES.map((task) => (
-                <TouchableOpacity
-                  key={task.id}
-                  onPress={() => router.push(task.route as any)}
-                >
-                  <LinearGradient
-                    colors={[...task.gradient, task.color + '40']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{ borderRadius: 14, padding: 1 }}
-                  >
-                    <View style={{ backgroundColor: palette.surface, borderRadius: 13, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                      <View style={{ width: 46, height: 46, borderRadius: 13, backgroundColor: task.color + '20', alignItems: 'center', justifyContent: 'center' }}>
-                        <MaterialIcons name={task.icon} size={22} color={task.color} />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                          <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '800' }}>{task.label}</Text>
-                          <View style={{ paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, backgroundColor: task.color + '20' }}>
-                            <Text style={{ color: task.color, fontSize: 9, fontWeight: '700' }}>{task.badge}</Text>
-                          </View>
-                        </View>
-                        <Text style={{ color: palette.muted, fontSize: 12, lineHeight: 16 }}>{task.description}</Text>
-                      </View>
-                      <MaterialIcons name="chevron-right" size={18} color={palette.muted} />
+                  <View style={{ backgroundColor: SURFACE, borderRadius: 15, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+                    <View style={{ width: 50, height: 50, borderRadius: 14, backgroundColor: task.color + '1A', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: task.color + '40' }}>
+                      <MaterialIcons name={task.icon} size={24} color={task.color} />
                     </View>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <Text style={{ color: '#F3F4F6', fontSize: 15, fontWeight: '800' }}>{task.label}</Text>
+                        <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, backgroundColor: task.color + '25', borderWidth: 1, borderColor: task.color + '40' }}>
+                          <Text style={{ color: task.color, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 }}>{task.badge}</Text>
+                        </View>
+                      </View>
+                      <Text style={{ color: '#6B7280', fontSize: 12, lineHeight: 17 }}>{task.desc}</Text>
+                    </View>
+                    <MaterialIcons name="arrow-forward-ios" size={14} color="#374151" />
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+            ))}
           </View>
         </ScrollView>
       </SafeAreaView>

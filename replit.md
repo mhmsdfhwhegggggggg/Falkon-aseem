@@ -65,6 +65,7 @@ Located at `artifacts/falkon-pro/`. Production-ready Telegram management system.
 - `lib/theme-provider.tsx` — Dark/light theme with NativeWind CSS vars
 - `lib/theme.ts` — Color token definitions
 - `server/routers.ts` — tRPC router stubs (all endpoints)
+- `lib/accounts-store.tsx` — StoredAccount (no sessionString on object, call `getSession(id)` async)
 
 ### Screen Integration Status (all wired to real API)
 - **bulk-ops.tsx** — `trpc.bulkMessage.start` + `trpc.bulkMessage.status` polling; DM/group/channel modes; account rotation; live progress
@@ -105,3 +106,16 @@ Windows screen (`/windows`) allows creating and managing multiple independent ta
 - Elapsed time ticker (live counter while running)
 - "New Window" bottom sheet: task type selection → config form with account picker, group inputs, limit presets, warmup toggle
 - Gold gradient buttons throughout; full Arabic RTL UI
+
+### New Features Added (Latest Session)
+- **FalconLogo redesign** — Heraldic spread-wings falcon (UAE-style emblem), professional SVG in `components/FalconLogo.tsx`
+- **Auto-reply screen** (`app/auto-reply.tsx`) — Full Arabic UI; rules stored in AsyncStorage; calls `trpc.autoReply.check` to scan recent messages and auto-reply; supports contains/exact/startsWith match types
+- **Scheduler screen** (`app/scheduler.tsx`) — Full Arabic UI; scheduled jobs stored in AsyncStorage; calls `trpc.scheduler.create` to register jobs server-side; auto-detects due jobs every minute
+- **Backend: auto-reply-service.ts** — Connects via MTProto, fetches dialogs, matches rules, sends replies
+- **Backend: scheduler-service.ts** — In-memory job store on stateless server; `createScheduledJob`, `listScheduledJobs`, `deleteScheduledJob`, `getPendingJobsDue`
+- **tRPC router additions**: `autoReply.check`, `scheduler.create`, `scheduler.list`, `scheduler.delete`, `scheduler.due`
+- **tools.tsx** — Fully translated to Arabic; professional dark design with section icons and left-accent bars
+- **tasks.tsx** — Fully translated to Arabic; LinearGradient task cards with badges; stats row at top
+
+### Session Storage Pattern
+CRITICAL: `StoredAccount` does NOT have `sessionString` field. Always call `const session = await getSession(accountId)` to load it from SecureStore.

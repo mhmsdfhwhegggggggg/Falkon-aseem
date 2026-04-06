@@ -1,155 +1,219 @@
 import React from 'react';
-import Svg, { Path, G, Defs, LinearGradient, Stop, Ellipse, Polygon, Circle, Rect } from 'react-native-svg';
+import Svg, { Path, Defs, LinearGradient, Stop, Circle, Polygon, Ellipse } from 'react-native-svg';
 
 interface FalconLogoProps {
   size?: number;
 }
 
+/**
+ * FALKON PRO — Heraldic Spread Falcon (front-facing, wings spread)
+ * Classic military / UAE emblem style — instantly recognizable as a raptor
+ * Gold gradient, sharp angular lines, professional logo quality
+ */
 export default function FalconLogo({ size = 120 }: FalconLogoProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 200 200">
       <Defs>
-        <LinearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <LinearGradient id="h_gold" x1="0.5" y1="0" x2="0.5" y2="1">
+          <Stop offset="0" stopColor="#FEF3C7" />
+          <Stop offset="0.35" stopColor="#F59E0B" />
+          <Stop offset="0.75" stopColor="#D97706" />
+          <Stop offset="1" stopColor="#78350F" />
+        </LinearGradient>
+        <LinearGradient id="h_wing_l" x1="1" y1="0" x2="0" y2="1">
           <Stop offset="0" stopColor="#FDE68A" />
-          <Stop offset="0.4" stopColor="#F59E0B" />
-          <Stop offset="1" stopColor="#B45309" />
+          <Stop offset="0.5" stopColor="#D97706" />
+          <Stop offset="1" stopColor="#451a03" />
         </LinearGradient>
-        <LinearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+        <LinearGradient id="h_wing_r" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor="#FDE68A" />
+          <Stop offset="0.5" stopColor="#D97706" />
+          <Stop offset="1" stopColor="#451a03" />
+        </LinearGradient>
+        <LinearGradient id="h_body" x1="0.5" y1="0" x2="0.5" y2="1">
           <Stop offset="0" stopColor="#FBBF24" />
-          <Stop offset="1" stopColor="#D97706" />
+          <Stop offset="0.6" stopColor="#D97706" />
+          <Stop offset="1" stopColor="#92400E" />
         </LinearGradient>
-        <LinearGradient id="g3" x1="0" y1="0" x2="1" y2="0">
-          <Stop offset="0" stopColor="#B45309" />
+        <LinearGradient id="h_head" x1="0.3" y1="0" x2="0.7" y2="1">
+          <Stop offset="0" stopColor="#FEF3C7" />
           <Stop offset="0.5" stopColor="#F59E0B" />
           <Stop offset="1" stopColor="#B45309" />
         </LinearGradient>
-        <LinearGradient id="gWingL" x1="1" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor="#FDE68A" stopOpacity="1" />
-          <Stop offset="0.6" stopColor="#F59E0B" stopOpacity="1" />
-          <Stop offset="1" stopColor="#78350F" stopOpacity="0.8" />
-        </LinearGradient>
-        <LinearGradient id="gWingR" x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#FDE68A" stopOpacity="1" />
-          <Stop offset="0.6" stopColor="#F59E0B" stopOpacity="1" />
-          <Stop offset="1" stopColor="#78350F" stopOpacity="0.8" />
-        </LinearGradient>
       </Defs>
 
-      {/* ── LEFT WING — broad, swept back ── */}
+      {/* ═══════════ LEFT WING ═══════════
+          Wing surface: spans from body center-left out to the left
+          Angular feather tips at bottom-left
+      */}
       {/* Main wing shape */}
       <Path
-        d="M98 105 L10 55 L28 80 L6 90 L32 96 L10 115 L42 108 L22 135 L55 120 L45 148 L74 128"
-        fill="url(#gWingL)"
-        strokeLinejoin="round"
+        d="M 92 100
+           L 85 88
+           L 50 62
+           L 22 58
+           L 6  70
+           L 14 82
+           L 4  88
+           L 16 96
+           L 4  108
+           L 18 112
+           L 6  128
+           L 22 126
+           L 12 144
+           L 30 136
+           L 24 154
+           L 46 140
+           L 52 158
+           L 68 138
+           L 80 148
+           L 88 128
+           L 92 118
+           Z"
+        fill="url(#h_wing_l)"
       />
-      {/* Wing mid layer */}
+      {/* Wing feather highlight layer */}
       <Path
-        d="M98 105 L28 80 L46 88 L32 96 L52 102 L42 108 L60 112 L55 120 L70 120 L74 128"
+        d="M 92 100 L 50 62 L 60 72 L 36 84 L 52 90 L 32 104 L 54 108 L 36 122 L 58 120 L 44 136 L 68 126 L 68 138 L 80 120 L 88 128"
         fill="#F59E0B"
-        opacity="0.65"
-      />
-      {/* Wing feather lines */}
-      <Path d="M98 105 L10 55" stroke="#78350F" strokeWidth="0.5" opacity="0.4" />
-      <Path d="M98 105 L28 80" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-      <Path d="M98 105 L32 96" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-      <Path d="M98 105 L42 108" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-
-      {/* ── RIGHT WING ── */}
-      <Path
-        d="M102 105 L190 55 L172 80 L194 90 L168 96 L190 115 L158 108 L178 135 L145 120 L155 148 L126 128"
-        fill="url(#gWingR)"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M102 105 L172 80 L154 88 L168 96 L148 102 L158 108 L140 112 L145 120 L130 120 L126 128"
-        fill="#F59E0B"
-        opacity="0.65"
-      />
-      <Path d="M102 105 L190 55" stroke="#78350F" strokeWidth="0.5" opacity="0.4" />
-      <Path d="M102 105 L172 80" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-      <Path d="M102 105 L168 96" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-      <Path d="M102 105 L158 108" stroke="#B45309" strokeWidth="0.5" opacity="0.3" />
-
-      {/* ── BODY ── */}
-      <Path
-        d="M86 98 Q84 122 90 150 Q100 172 110 150 Q116 122 114 98 Z"
-        fill="url(#g2)"
-      />
-      {/* Chest shield detail */}
-      <Path
-        d="M90 108 Q100 118 110 108 Q108 136 100 152 Q92 136 90 108 Z"
-        fill="#92400E"
-        opacity="0.45"
-      />
-      {/* Body center line */}
-      <Path
-        d="M100 100 L100 155"
-        stroke="#78350F"
-        strokeWidth="0.8"
         opacity="0.3"
-        strokeDasharray="4,3"
       />
+      {/* Feather tip detail lines */}
+      <Path d="M 92 100 L 6 70" stroke="#451a03" strokeWidth="0.7" opacity="0.35" fill="none" />
+      <Path d="M 92 100 L 4 88" stroke="#451a03" strokeWidth="0.7" opacity="0.3" fill="none" />
+      <Path d="M 92 100 L 4 108" stroke="#451a03" strokeWidth="0.7" opacity="0.3" fill="none" />
+      <Path d="M 92 102 L 6 128" stroke="#451a03" strokeWidth="0.6" opacity="0.25" fill="none" />
+      <Path d="M 88 108 L 12 144" stroke="#451a03" strokeWidth="0.6" opacity="0.2" fill="none" />
 
-      {/* ── TAIL FEATHERS ── */}
+      {/* ═══════════ RIGHT WING (mirror) ═══════════ */}
       <Path
-        d="M90 150 L78 186 L91 165 L100 185 L109 165 L122 186 L110 150 Z"
-        fill="url(#g3)"
+        d="M 108 100
+           L 115 88
+           L 150 62
+           L 178 58
+           L 194 70
+           L 186 82
+           L 196 88
+           L 184 96
+           L 196 108
+           L 182 112
+           L 194 128
+           L 178 126
+           L 188 144
+           L 170 136
+           L 176 154
+           L 154 140
+           L 148 158
+           L 132 138
+           L 120 148
+           L 112 128
+           L 108 118
+           Z"
+        fill="url(#h_wing_r)"
       />
-      {/* Tail detail */}
-      <Path d="M91 165 L86 185 L100 170 L114 185 L109 165" fill="#D97706" opacity="0.5" />
-      <Path d="M100 150 L100 185" stroke="#78350F" strokeWidth="0.6" opacity="0.35" />
-
-      {/* ── SHOULDER CONNECTION ── */}
       <Path
-        d="M80 102 Q88 94 100 93 Q112 94 120 102 Q112 108 100 108 Q88 108 80 102Z"
+        d="M 108 100 L 150 62 L 140 72 L 164 84 L 148 90 L 168 104 L 146 108 L 164 122 L 142 120 L 156 136 L 132 126 L 132 138 L 120 120 L 112 128"
+        fill="#F59E0B"
+        opacity="0.3"
+      />
+      <Path d="M 108 100 L 194 70" stroke="#451a03" strokeWidth="0.7" opacity="0.35" fill="none" />
+      <Path d="M 108 100 L 196 88" stroke="#451a03" strokeWidth="0.7" opacity="0.3" fill="none" />
+      <Path d="M 108 100 L 196 108" stroke="#451a03" strokeWidth="0.7" opacity="0.3" fill="none" />
+      <Path d="M 108 102 L 194 128" stroke="#451a03" strokeWidth="0.6" opacity="0.25" fill="none" />
+      <Path d="M 112 108 L 188 144" stroke="#451a03" strokeWidth="0.6" opacity="0.2" fill="none" />
+
+      {/* ═══════════ BODY ═══════════ */}
+      <Ellipse cx="100" cy="118" rx="18" ry="42" fill="url(#h_body)" />
+      {/* Chest feather barring */}
+      <Path d="M 85 105 Q 100 100 115 105" stroke="#451a03" strokeWidth="1.2" opacity="0.4" fill="none" />
+      <Path d="M 84 114 Q 100 109 116 114" stroke="#451a03" strokeWidth="1.2" opacity="0.38" fill="none" />
+      <Path d="M 84 123 Q 100 118 116 123" stroke="#451a03" strokeWidth="1" opacity="0.32" fill="none" />
+      <Path d="M 85 132 Q 100 127 115 132" stroke="#451a03" strokeWidth="0.9" opacity="0.28" fill="none" />
+      <Path d="M 86 141 Q 100 136 114 141" stroke="#451a03" strokeWidth="0.8" opacity="0.22" fill="none" />
+      {/* Center line */}
+      <Path d="M 100 96 L 100 158" stroke="#78350F" strokeWidth="0.7" opacity="0.25" strokeDasharray="4,4" fill="none" />
+
+      {/* ═══════════ MANTLE / SHOULDER SHIELD ═══════════ */}
+      <Path
+        d="M 82 95 Q 100 86 118 95 Q 112 108 100 112 Q 88 108 82 95 Z"
         fill="#FBBF24"
       />
 
-      {/* ── NECK ── */}
-      <Path d="M90 92 Q100 86 110 92 L112 100 Q100 96 88 100 Z" fill="#FDE68A" />
-
-      {/* ── HEAD ── */}
-      <Ellipse cx="100" cy="73" rx="17" ry="21" fill="url(#g1)" />
-
-      {/* Head hood / mask */}
+      {/* ═══════════ TAIL ═══════════ */}
       <Path
-        d="M84 76 Q86 60 100 54 Q114 60 116 76 Q110 68 100 66 Q90 68 84 76Z"
-        fill="#92400E"
-        opacity="0.55"
+        d="M 84 158 L 76 192 L 86 174 L 100 198 L 114 174 L 124 192 L 116 158 Z"
+        fill="url(#h_body)"
+      />
+      {/* Tail feathers */}
+      <Path d="M 86 174 L 82 194" stroke="#451a03" strokeWidth="0.9" opacity="0.5" fill="none" />
+      <Path d="M 100 175 L 100 198" stroke="#451a03" strokeWidth="0.9" opacity="0.5" fill="none" />
+      <Path d="M 114 174 L 118 194" stroke="#451a03" strokeWidth="0.9" opacity="0.5" fill="none" />
+      <Path d="M 78 183 Q 100 192 122 183" stroke="#D97706" strokeWidth="1.2" opacity="0.4" fill="none" />
+
+      {/* ═══════════ NECK ═══════════ */}
+      <Path
+        d="M 89 92 Q 100 87 111 92 L 112 98 Q 100 94 88 98 Z"
+        fill="#FDE68A"
       />
 
-      {/* ── BEAK ── */}
+      {/* ═══════════ HEAD ═══════════ */}
+      {/* Head silhouette — angular, flat-topped, not perfectly round */}
       <Path
-        d="M94 89 Q100 84 106 89 L103 96 Q100 100 97 96 Z"
-        fill="#D97706"
+        d="M 84 82
+           Q 82 62 100 56
+           Q 118 62 116 82
+           Q 112 94 100 96
+           Q 88 94 84 82 Z"
+        fill="url(#h_head)"
       />
+      {/* Dark crown/cap */}
       <Path
-        d="M94 89 Q100 84 106 89 L104 93 Q100 96 96 93 Z"
-        fill="#F59E0B"
+        d="M 88 58 Q 100 52 112 58 Q 110 66 100 64 Q 90 66 88 58 Z"
+        fill="#1C0800"
+        opacity="0.65"
       />
-      {/* Beak hook */}
-      <Path d="M103 96 Q105 100 101 102 Q98 100 97 96" fill="#92400E" />
+      {/* Peregrine malar stripes (both sides for front view) */}
+      <Path d="M 84 74 Q 84 82 86 88 L 84 88 Q 82 82 82 74 Z" fill="#1C0800" opacity="0.7" />
+      <Path d="M 116 74 Q 116 82 114 88 L 116 88 Q 118 82 118 74 Z" fill="#1C0800" opacity="0.7" />
 
-      {/* ── EYE ── */}
-      <Circle cx="92" cy="70" r="5.5" fill="#1C1917" />
-      <Circle cx="92" cy="70" r="3.5" fill="#0C0A09" />
-      <Circle cx="90.5" cy="68.5" r="1.2" fill="rgba(255,255,255,0.9)" />
-      {/* Eye ring */}
-      <Circle cx="92" cy="70" r="5.5" fill="none" stroke="#F59E0B" strokeWidth="0.8" opacity="0.5" />
+      {/* ═══════════ BEAK ═══════════ */}
+      {/* Cere */}
+      <Ellipse cx="100" cy="85" rx="8" ry="3.5" fill="#FBBF24" opacity="0.8" />
+      {/* Upper mandible */}
+      <Path d="M 92 87 Q 100 83 108 87 L 106 93 Q 100 98 94 93 Z" fill="#B45309" />
+      {/* Mandible highlight */}
+      <Path d="M 93 87 Q 100 83 107 87 L 105 91 Q 100 95 95 91 Z" fill="#D97706" opacity="0.8" />
+      {/* Hook */}
+      <Path d="M 106 93 Q 110 97 107 103 Q 102 103 100 99 Q 104 97 106 93 Z" fill="#78350F" />
+      {/* Lower mandible */}
+      <Path d="M 94 93 Q 100 97 106 93 Q 104 100 100 102 Q 96 100 94 93 Z" fill="#92400E" />
 
-      {/* ── CREST FEATHERS ── */}
-      <Path d="M88 56 Q84 40 80 30 Q90 44 93 52" stroke="#FDE68A" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <Path d="M95 52 Q93 36 92 24 Q99 38 100 48" stroke="#FDE68A" strokeWidth="2.2" fill="none" strokeLinecap="round" />
-      <Path d="M105 53 Q108 37 112 28 Q108 42 107 52" stroke="#FDE68A" strokeWidth="2" fill="none" strokeLinecap="round" />
-      {/* Crest tips */}
-      <Circle cx="80" cy="30" r="2" fill="#FDE68A" opacity="0.8" />
-      <Circle cx="92" cy="24" r="2.5" fill="#FDE68A" opacity="0.9" />
-      <Circle cx="112" cy="28" r="2" fill="#FDE68A" opacity="0.8" />
+      {/* ═══════════ EYES — sharp, fierce raptor eyes (not round/owlish) ═══════════ */}
+      {/* Left eye — almond-shaped, angular */}
+      <Path d="M 84 70 Q 90 64 96 70 Q 96 78 90 80 Q 84 78 84 70 Z" fill="#0C0800" />
+      <Circle cx="90" cy="73" r="4" fill="#050200" />
+      <Circle cx="90" cy="73" r="4" fill="none" stroke="#F59E0B" strokeWidth="1.2" opacity="0.7" />
+      <Circle cx="88.5" cy="71.5" r="1.5" fill="rgba(255,255,255,0.9)" />
+      {/* Supraorbital ridge — fierce expression */}
+      <Path d="M 83 68 Q 90 63 97 68" stroke="#1C0800" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.7" />
+      {/* Right eye */}
+      <Path d="M 104 70 Q 110 64 116 70 Q 116 78 110 80 Q 104 78 104 70 Z" fill="#0C0800" />
+      <Circle cx="110" cy="73" r="4" fill="#050200" />
+      <Circle cx="110" cy="73" r="4" fill="none" stroke="#F59E0B" strokeWidth="1.2" opacity="0.7" />
+      <Circle cx="108.5" cy="71.5" r="1.5" fill="rgba(255,255,255,0.9)" />
+      <Path d="M 103 68 Q 110 63 117 68" stroke="#1C0800" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.7" />
 
-      {/* ── TALONS hint (feet) ── */}
-      <Path d="M93 158 L88 170 M93 158 L91 172 M93 158 L96 170" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-      <Path d="M107 158 L112 170 M107 158 L109 172 M107 158 L104 170" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-
+      {/* ═══════════ TALONS ═══════════ */}
+      {/* Left talons */}
+      <Path d="M 90 166 L 82 180 M 90 166 L 86 182 M 90 166 L 93 182" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.9" />
+      <Circle cx="81" cy="181" r="2.2" fill="#78350F" opacity="0.8" />
+      <Circle cx="85" cy="183" r="2.2" fill="#78350F" opacity="0.8" />
+      <Circle cx="93.5" cy="183" r="2.2" fill="#78350F" opacity="0.8" />
+      {/* Right talons */}
+      <Path d="M 110 166 L 118 180 M 110 166 L 114 182 M 110 166 L 107 182" stroke="#D97706" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.9" />
+      <Circle cx="119" cy="181" r="2.2" fill="#78350F" opacity="0.8" />
+      <Circle cx="115" cy="183" r="2.2" fill="#78350F" opacity="0.8" />
+      <Circle cx="106.5" cy="183" r="2.2" fill="#78350F" opacity="0.8" />
     </Svg>
   );
 }
