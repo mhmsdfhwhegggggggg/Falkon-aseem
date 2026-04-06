@@ -576,10 +576,11 @@ export default function ExtractAndAddScreen() {
             <View>
               <Text style={{ color: palette.muted, fontSize: 11, marginBottom: 8 }}>حد الاستخراج</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {['100', '200', '500', '1000', '5000'].map((v) => {
-                  const isSel = limit === v;
+                {['500', '1000', '5000', '10000', 'الكل'].map((v) => {
+                  const val = v === 'الكل' ? '100000' : v;
+                  const isSel = limit === val;
                   return (
-                    <TouchableOpacity key={v} onPress={() => !isRunning && setLimit(v)}
+                    <TouchableOpacity key={v} onPress={() => !isRunning && setLimit(val)}
                       style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: isSel ? palette.primary : palette.background, borderWidth: 1, borderColor: isSel ? palette.primary : palette.border, opacity: isRunning ? 0.5 : 1 }}>
                       <Text style={{ color: isSel ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{v}</Text>
                     </TouchableOpacity>

@@ -390,7 +390,7 @@ export default function ExtractionScreen() {
               <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600', marginBottom: 6 }}>حد الاستخراج</Text>
               <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
                 {['100', '500', '1000', '5000', '10000', 'الكل'].map((v) => {
-                  const val = v === 'الكل' ? '99999' : v;
+                  const val = v === 'الكل' ? '100000' : v;
                   const isSelected = limit === val;
                   return (
                     <TouchableOpacity
