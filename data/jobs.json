@@ -380,5 +380,26 @@
     "startedAt": "2026-04-06T14:50:08.267Z",
     "error": "Account health circuit open — paused until 2026-04-06T15:17:00.411Z",
     "completedAt": "2026-04-06T14:50:08.267Z"
+  },
+  {
+    "id": "job_1775487578656_m36d0",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 500,
+    "total": 500,
+    "createdAt": "2026-04-06T14:59:38.656Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T14:59:38.657Z",
+    "completedAt": "2026-04-06T14:59:42.270Z",
+    "result": {
+      "extracted": 500
+    }
   }
 ]

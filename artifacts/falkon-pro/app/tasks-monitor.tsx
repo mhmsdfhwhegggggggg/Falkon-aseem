@@ -181,9 +181,18 @@ export default function TasksMonitorScreen() {
                     </View>
                   )}
 
-                  {(job as any).error && (
-                    <Text style={{ color: palette.error, fontSize: 11, marginBottom: 4 }}>Error: {(job as any).error}</Text>
-                  )}
+                  {(job as any).error && (() => {
+                    const errMsg: string = (job as any).error;
+                    const isWaiting = job.status === 'running' && errMsg.startsWith('⏳');
+                    return (
+                      <View style={{ backgroundColor: (isWaiting ? palette.warning : palette.error) + '18', borderRadius: 8, padding: 8, marginBottom: 6, flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
+                        <Text style={{ fontSize: 12 }}>{isWaiting ? '⏳' : '⚠️'}</Text>
+                        <Text style={{ color: isWaiting ? palette.warning : palette.error, fontSize: 11, flex: 1, lineHeight: 16 }}>
+                          {isWaiting ? errMsg.replace('⏳ ', '') : errMsg}
+                        </Text>
+                      </View>
+                    );
+                  })()}
 
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                     {job.status === 'completed' && (job as any).result?.extracted > 0 && (

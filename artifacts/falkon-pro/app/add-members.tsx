@@ -27,17 +27,17 @@ const MODE_CONFIG = {
 };
 
 const DELAYS = [
-  { label: '10s', value: 10 },
-  { label: '30s', value: 30 },
-  { label: '60s', value: 60 },
-  { label: '120s', value: 120 },
+  { label: '30 ثانية', value: 30 },
+  { label: '45 ثانية', value: 45 },
+  { label: 'دقيقة', value: 60 },
+  { label: 'دقيقتين', value: 120 },
 ];
 
 const MAX_PER_DAY_OPTIONS = [
-  { label: '20/day', value: 20 },
-  { label: '40/day', value: 40 },
-  { label: '60/day', value: 60 },
-  { label: '80/day', value: 80 },
+  { label: '20/يوم', value: 20 },
+  { label: '40/يوم', value: 40 },
+  { label: '60/يوم', value: 60 },
+  { label: '80/يوم', value: 80 },
 ];
 
 export default function AddMembersScreen() {
@@ -177,25 +177,43 @@ export default function AddMembersScreen() {
           </View>
 
           {/* Progress */}
-          {jobId && job && (
-            <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: isRunning ? palette.primary + '60' : (job.status === 'completed' ? palette.success + '60' : palette.error + '60'), marginBottom: 16 }}>
+          {jobId && job && (() => {
+            const jobError: string | undefined = (job as any).error;
+            const isPeerFloodWait = isRunning && !!jobError && jobError.startsWith('⏳');
+            const cardColor = isPeerFloodWait ? palette.warning
+              : isRunning ? palette.primary
+              : job.status === 'completed' ? palette.success
+              : palette.error;
+            return (
+            <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: cardColor + '60', marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>
-                  {isRunning ? 'Adding Members...' : job.status === 'completed' ? '✓ Complete' : `✗ ${job.status}`}
+                <Text style={{ color: cardColor, fontSize: 14, fontWeight: '700' }}>
+                  {isPeerFloodWait ? '⏳ PeerFlood — انتظار تلقائي' : isRunning ? 'جاري الإضافة...' : job.status === 'completed' ? '✓ اكتمل' : `✗ ${job.status}`}
                 </Text>
                 <Text style={{ color: palette.primary, fontSize: 13, fontWeight: '800' }}>
                   +{job.added} / ✗{job.failed}
                 </Text>
               </View>
               <View style={{ height: 6, backgroundColor: palette.border, borderRadius: 3, marginBottom: 8 }}>
-                <View style={{ height: 6, borderRadius: 3, backgroundColor: isRunning ? palette.primary : (job.status === 'completed' ? palette.success : palette.error), width: `${progress}%` }} />
+                <View style={{ height: 6, borderRadius: 3, backgroundColor: cardColor, width: `${progress}%` }} />
               </View>
-              {isRunning && <ActivityIndicator color={palette.primary} size="small" style={{ marginBottom: 4 }} />}
-              {job.errors.slice(-3).map((e, i) => (
+              {isRunning && !isPeerFloodWait && <ActivityIndicator color={cardColor} size="small" style={{ marginBottom: 4 }} />}
+              {isPeerFloodWait && (
+                <View style={{ backgroundColor: palette.warning + '15', borderRadius: 8, padding: 10, marginBottom: 6 }}>
+                  <Text style={{ color: palette.warning, fontSize: 12, lineHeight: 18 }}>
+                    {jobError!.replace('⏳ ', '')}
+                  </Text>
+                  <Text style={{ color: palette.muted, fontSize: 11, marginTop: 4 }}>
+                    المهمة لا تزال تعمل — ستكمل تلقائياً بعد انتهاء وقت الانتظار
+                  </Text>
+                </View>
+              )}
+              {!isPeerFloodWait && job.errors.slice(-3).map((e, i) => (
                 <Text key={i} style={{ color: palette.error, fontSize: 11 }}>{e}</Text>
               ))}
             </View>
-          )}
+            );
+          })()}
 
           {/* Target Group */}
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
