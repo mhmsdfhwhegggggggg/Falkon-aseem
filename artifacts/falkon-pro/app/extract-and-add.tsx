@@ -168,12 +168,29 @@ export default function ExtractAndAddScreen() {
     if (isFloodWait) addLog(`⏳ ${error?.replace('⏳ ', '')}`);
     if (progress > 0 && progress % 10 === 0) addLog(`[إضافة] ${progress}/${total}: +${added} ✗${failed}`);
 
-    if (status === 'completed') {
-      addLog(`[إضافة] ✓ انتهى: ${added} مضاف | ${failed} فاشل`);
+    if (status === 'completed' || status === 'failed') {
+      if (status === 'completed') {
+        addLog(`[إضافة] ✓ انتهى: ${added} مضاف | ${failed} فاشل`);
+      } else {
+        addLog(`[إضافة] ✗ فشل: ${error}`);
+      }
+      // Sync member statuses back to phone storage so the file shows real results
+      const serverMembers = (addStatus.data as any).members as any[] | null;
+      if (savedFileId && serverMembers && serverMembers.length > 0) {
+        const updates = serverMembers
+          .filter((m: any) => m.status !== 'pending')
+          .map((m: any) => ({
+            userId: m.userId || undefined,
+            username: m.username || undefined,
+            status: m.status as any,
+            error: m.error,
+          }));
+        if (updates.length > 0) {
+          membersStore.batchUpdateMemberStatuses(savedFileId, updates);
+          addLog(`[حفظ] ✓ تم تحديث حالة ${updates.length} عضو في الملف المحلي`);
+        }
+      }
       setPhase('done');
-    } else if (status === 'failed') {
-      addLog(`[إضافة] ✗ فشل: ${error}`);
-      setPhase('done'); // still show results
     }
   }, [addStatus.data?.status, addStatus.data?.added, addStatus.data?.progress]);
 

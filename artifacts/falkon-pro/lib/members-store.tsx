@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export type MemberStatus = 'pending' | 'added' | 'failed' | 'flood' | 'already_member';
+export type MemberStatus = 'pending' | 'added' | 'failed' | 'flood' | 'already_member' | 'privacy';
 
 export interface Member {
   id: string;
@@ -14,6 +14,7 @@ export interface Member {
   isOnline?: boolean;
   lastSeen?: string;
   status: MemberStatus;
+  error?: string;
   source?: string;
   extractedAt?: string;
 }
@@ -41,6 +42,7 @@ type MembersAction =
   | { type: 'DELETE_FILE'; id: string }
   | { type: 'SELECT_FILE'; id: string | null }
   | { type: 'UPDATE_MEMBER_STATUS'; fileId: string; memberId: string; status: MemberStatus }
+  | { type: 'BATCH_UPDATE_STATUSES'; fileId: string; updates: Array<{ userId?: string; username?: string; status: MemberStatus; error?: string }> }
   | { type: 'SET_LOADING'; loading: boolean }
   | { type: 'APPEND_MEMBERS'; fileId: string; members: Member[] };
 
@@ -77,6 +79,23 @@ function membersReducer(state: MembersState, action: MembersAction): MembersStat
           return { ...f, members, addedCount };
         }),
       };
+    case 'BATCH_UPDATE_STATUSES':
+      return {
+        ...state,
+        files: state.files.map((f) => {
+          if (f.id !== action.fileId) return f;
+          const members = f.members.map((m) => {
+            const upd = action.updates.find((u) =>
+              (u.userId && u.userId === m.userId) ||
+              (u.username && u.username === m.username)
+            );
+            if (!upd) return m;
+            return { ...m, status: upd.status, ...(upd.error ? { error: upd.error } : {}) };
+          });
+          const addedCount = members.filter((m) => m.status === 'added').length;
+          return { ...f, members, addedCount };
+        }),
+      };
     case 'APPEND_MEMBERS':
       return {
         ...state,
@@ -107,6 +126,7 @@ interface MembersContextValue {
   deleteFile: (fileId: string) => Promise<void>;
   selectFile: (id: string | null) => void;
   updateMemberStatus: (fileId: string, memberId: string, status: MemberStatus) => Promise<void>;
+  batchUpdateMemberStatuses: (fileId: string, updates: Array<{ userId?: string; username?: string; status: MemberStatus; error?: string }>) => Promise<void>;
   renameFile: (fileId: string, name: string) => Promise<void>;
   exportFileAsText: (fileId: string) => string;
   exportFileAsUsernames: (fileId: string) => string;
@@ -204,6 +224,27 @@ export function MembersStoreProvider({ children }: { children: React.ReactNode }
     await persist(next);
   }, [state.files, persist]);
 
+  const batchUpdateMemberStatuses = useCallback(async (
+    fileId: string,
+    updates: Array<{ userId?: string; username?: string; status: MemberStatus; error?: string }>
+  ) => {
+    dispatch({ type: 'BATCH_UPDATE_STATUSES', fileId, updates });
+    const next = state.files.map((f) => {
+      if (f.id !== fileId) return f;
+      const members = f.members.map((m) => {
+        const upd = updates.find((u) =>
+          (u.userId && u.userId === m.userId) ||
+          (u.username && u.username === m.username)
+        );
+        if (!upd) return m;
+        return { ...m, status: upd.status, ...(upd.error ? { error: upd.error } : {}) };
+      });
+      const addedCount = members.filter((m) => m.status === 'added').length;
+      return { ...f, members, addedCount };
+    });
+    await persist(next);
+  }, [state.files, persist]);
+
   const renameFile = useCallback(async (fileId: string, name: string) => {
     dispatch({ type: 'UPDATE_FILE', id: fileId, updates: { name } });
     const next = state.files.map((f) => f.id === fileId ? { ...f, name } : f);
@@ -283,13 +324,14 @@ export function MembersStoreProvider({ children }: { children: React.ReactNode }
     deleteFile,
     selectFile,
     updateMemberStatus,
+    batchUpdateMemberStatuses,
     renameFile,
     exportFileAsText,
     exportFileAsUsernames,
     exportFileAsCSV,
     importMembersFromText,
     totalMembers,
-  }), [state, selectedFile, createFile, appendToFile, deleteFile, selectFile, updateMemberStatus, renameFile, exportFileAsText, exportFileAsUsernames, exportFileAsCSV, importMembersFromText, totalMembers]);
+  }), [state, selectedFile, createFile, appendToFile, deleteFile, selectFile, updateMemberStatus, batchUpdateMemberStatuses, renameFile, exportFileAsText, exportFileAsUsernames, exportFileAsCSV, importMembersFromText, totalMembers]);
 
   return <MembersContext.Provider value={value}>{children}</MembersContext.Provider>;
 }

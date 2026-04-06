@@ -53,6 +53,8 @@ export default function AddMembersScreen() {
   const [maxPerDay, setMaxPerDay] = useState(40);
   const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  // Track the active file ID at job-start time via ref (avoids stale closure in useEffect)
+  const activeFileIdRef = React.useRef<string | null>(null);
 
   const localAccounts = useAccountsStore();
   const membersStore = useMembersStore();
@@ -65,11 +67,26 @@ export default function AddMembersScreen() {
 
   useEffect(() => {
     if (!statusQuery.data) return;
-    const { status } = statusQuery.data;
+    const { status, members } = statusQuery.data;
     if (status === 'completed' || status === 'failed' || status === 'cancelled') {
       setIsRunning(false);
+      // Sync member statuses back to phone storage when job finishes
+      const fileId = activeFileIdRef.current;
+      if (fileId && members && members.length > 0) {
+        const updates = members
+          .filter((m: any) => m.status !== 'pending')
+          .map((m: any) => ({
+            userId: m.userId || undefined,
+            username: m.username || undefined,
+            status: m.status as any,
+            error: m.error,
+          }));
+        if (updates.length > 0) {
+          membersStore.batchUpdateMemberStatuses(fileId, updates);
+        }
+      }
     }
-  }, [statusQuery.data]);
+  }, [statusQuery.data?.status]);
 
   const activeAccounts = localAccounts.activeAccounts;
   // Use phone-stored members files
@@ -129,6 +146,8 @@ export default function AddMembersScreen() {
     }
 
     try {
+      // Track which file to update when this job completes
+      activeFileIdRef.current = mode === 'from-file' ? selectedFileId : null;
       setIsRunning(true);
       const result = await startMut.mutateAsync({
         targetGroup: targetGroup.trim(),
@@ -287,7 +306,7 @@ export default function AddMembersScreen() {
           {mode === 'from-file' && (
             <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
               <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>Select File</Text>
-              {filesQuery.isLoading ? (
+              {membersStore.isLoading ? (
                 <ActivityIndicator color={palette.primary} />
               ) : files.length === 0 ? (
                 <View style={{ alignItems: 'center', paddingVertical: 16, gap: 8 }}>

@@ -106,13 +106,11 @@ export async function runExtraction(job: Job) {
   logger.info({ jobId: job.id, group, limit, filters }, "Starting extraction v2");
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });
 
-  // Health check
-  const h = getHealth(accountId);
-  if (h.circuitOpen && Date.now() < h.circuitOpenUntil) {
-    const msg = `Account health circuit open — paused until ${new Date(h.circuitOpenUntil).toISOString()}`;
-    updateJob(job.id, { status: "failed", error: msg, completedAt: new Date().toISOString() });
-    return;
-  }
+  // NOTE: No circuit-breaker check for extraction.
+  // PeerFlood is an ADD restriction (sending messages/invites), NOT a READ restriction.
+  // Telegram never blocks GetParticipants due to PeerFlood on the same account.
+  // Checking the circuit here caused all extractions to fail for 30+ minutes after
+  // a single PeerFlood event during adding — completely wrong behaviour.
 
   try {
     const client = sessionString

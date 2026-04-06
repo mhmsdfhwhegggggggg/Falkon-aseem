@@ -470,5 +470,1989 @@
     "result": {
       "extracted": 500
     }
+  },
+  {
+    "id": "job_1775489597823_z1ocw",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 200,
+    "total": 200,
+    "createdAt": "2026-04-06T15:33:17.823Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:33:17.824Z",
+    "completedAt": "2026-04-06T15:33:19.021Z",
+    "result": {
+      "extracted": 200
+    }
+  },
+  {
+    "id": "job_1775489601516_ges2f",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 0,
+    "total": 200,
+    "createdAt": "2026-04-06T15:33:21.516Z",
+    "config": {
+      "targetGroup": "https://t.me/quotes_331",
+      "mode": "from-phone",
+      "members": [
+        {
+          "userId": "8753521254",
+          "username": "",
+          "firstName": "ريتال للإجازات0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5226268759",
+          "username": "",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8602128165",
+          "username": "",
+          "firstName": "ريتال للإجازات 0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8481991262",
+          "username": "AcademicPlus11",
+          "firstName": "أكاديمية التفوق الجامعي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6478727360",
+          "username": "",
+          "firstName": "س",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8535458676",
+          "username": "",
+          "firstName": "ريتال للإجازات0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8635153067",
+          "username": "",
+          "firstName": "ريتال للإجازات0595869106",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8471711727",
+          "username": "",
+          "firstName": "َ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8576188165",
+          "username": "",
+          "firstName": "ريتال للإجازات 0595969106",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8702262567",
+          "username": "",
+          "firstName": "ابو",
+          "lastName": "صالح",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "399054878",
+          "username": "RAAD_SAAD47",
+          "firstName": "Raad",
+          "lastName": "Saad",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "141233849",
+          "username": "dbdga",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8536173793",
+          "username": "",
+          "firstName": "R",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8642016826",
+          "username": "",
+          "firstName": "مشاعل",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8605288837",
+          "username": "",
+          "firstName": "ابو سلطان",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5356864029",
+          "username": "",
+          "firstName": "A",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1244436556",
+          "username": "ax217",
+          "firstName": "مساعد الحربي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6367273405",
+          "username": "",
+          "firstName": "🖤",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1338042873",
+          "username": "cdd7d",
+          "firstName": "Faris",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1256250236",
+          "username": "nujxs",
+          "firstName": "N",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1020166848",
+          "username": "",
+          "firstName": "Fahd",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1138142283",
+          "username": "IllIllIIllll",
+          "firstName": "َ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "628670114",
+          "username": "The_majestic_castle",
+          "firstName": "𝔰𝔥𝔬𝔯𝔬𝔲𝔤(𝔩𝔞𝔴⚖️👩🏻‍⚖️💗)",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7189364975",
+          "username": "",
+          "firstName": "العقيد فهد",
+          "lastName": "0",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "873272146",
+          "username": "Al_HarthiABOD",
+          "firstName": "ABOD",
+          "lastName": "Alharthi",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8615477932",
+          "username": "",
+          "firstName": "Joud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "561411545",
+          "username": "shahddab",
+          "firstName": "Shahd",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1803326352",
+          "username": "",
+          "firstName": "أكاديمية سكاي للطيران I طريقك لتحقيق حلمك",
+          "lastName": "Sky Aviation Academy",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8672599161",
+          "username": "",
+          "firstName": "🌹",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5632397542",
+          "username": "Ali03Ahmed",
+          "firstName": "علي",
+          "lastName": "احمد",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8627033769",
+          "username": "",
+          "firstName": "A",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8304146595",
+          "username": "hadier00",
+          "firstName": "Son",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "928682812",
+          "username": "",
+          "firstName": "A🕊",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8600979600",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7400885303",
+          "username": "",
+          "firstName": "Riyadh",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8338184348",
+          "username": "Fa_m202",
+          "firstName": "Fa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5843958339",
+          "username": "",
+          "firstName": "ابو ناصر",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8668084734",
+          "username": "",
+          "firstName": "ام اثار",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "456648509",
+          "username": "",
+          "firstName": "Omar",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "443983190",
+          "username": "H10H01",
+          "firstName": "~H~",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "826497339",
+          "username": "",
+          "firstName": "دحوم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7775088",
+          "username": "",
+          "firstName": "Majed",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1197312287",
+          "username": "",
+          "firstName": "عبدالهادي",
+          "lastName": "المطاوعه",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7811876629",
+          "username": "",
+          "firstName": "🤎",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8279609556",
+          "username": "",
+          "firstName": "Joud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8593639166",
+          "username": "AbdMoh64",
+          "firstName": "AAB",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7541590409",
+          "username": "R_6z11",
+          "firstName": "R_6z",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7976006685",
+          "username": "N849435H",
+          "firstName": "ناصر الشهراني",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6279694107",
+          "username": "",
+          "firstName": "ENG_MAX",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5825191631",
+          "username": "",
+          "firstName": "q-rs13",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6802581734",
+          "username": "M_arimm",
+          "firstName": "د/مريم العنزي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7821163855",
+          "username": "",
+          "firstName": "Farraj",
+          "lastName": "Aldawsari",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8732208925",
+          "username": "",
+          "firstName": "Limitless",
+          "lastName": "Glory",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5949237624",
+          "username": "ou_ooi",
+          "firstName": "A",
+          "lastName": "C",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1484482684",
+          "username": "mhmed3dnan",
+          "firstName": "VDNVN",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "216448546",
+          "username": "mlorib12",
+          "firstName": "Arib",
+          "lastName": "Moha",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7809543014",
+          "username": "",
+          "firstName": "Hhh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "332912190",
+          "username": "",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8348220747",
+          "username": "",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5901979652",
+          "username": "ZuluAlpha112",
+          "firstName": "Z",
+          "lastName": "A",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8593526485",
+          "username": "vghjdhdhhdhd",
+          "firstName": "Ян",
+          "lastName": "Беков",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7526635500",
+          "username": "",
+          "firstName": "ام اثار",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6941591656",
+          "username": "turki0qarni",
+          "firstName": "TURKI",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7565501368",
+          "username": "Mkarrar8",
+          "firstName": "Karrar",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1287371233",
+          "username": "ArwaElsherbany",
+          "firstName": "Arwa",
+          "lastName": "Osama",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8208955631",
+          "username": "",
+          "firstName": "Riya",
+          "lastName": "Волков",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8303581476",
+          "username": "",
+          "firstName": "Mohmmad",
+          "lastName": "Alahmadi",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5130874604",
+          "username": "",
+          "firstName": "Joe",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8214944550",
+          "username": "",
+          "firstName": "Q",
+          "lastName": "2",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7803604713",
+          "username": "Reeem217",
+          "firstName": "د/ريم",
+          "lastName": "الغامدي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1442741361",
+          "username": "TURKI1010r",
+          "firstName": "T",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7422494417",
+          "username": "",
+          "firstName": "هند",
+          "lastName": "احمد",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8262223846",
+          "username": "",
+          "firstName": "Mohamed Talaat",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8579884732",
+          "username": "",
+          "firstName": "ام رغد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6768716460",
+          "username": "ALMALMHX",
+          "firstName": "المعلمه .",
+          "lastName": "♡",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1614311907",
+          "username": "by_user27",
+          "firstName": "🖤",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8030602072",
+          "username": "SAA19900",
+          "firstName": "خدمات طلابية",
+          "lastName": "جامعية",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "354393216",
+          "username": "MESSO_n9",
+          "firstName": "Masoud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1229867811",
+          "username": "Zdem9",
+          "firstName": "Ahmed",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "747734757",
+          "username": "ALI_I_k_H",
+          "firstName": "A〽️",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1978385974",
+          "username": "FaisalAl_s503",
+          "firstName": "FA",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "687054262",
+          "username": "mq5alqadi",
+          "firstName": "محمد القاضي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6410000162",
+          "username": "ALAMORH2024",
+          "firstName": "امل",
+          "lastName": "البلوشي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6588535963",
+          "username": "Maremm0",
+          "firstName": "الاستاذه مريم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6969401255",
+          "username": "",
+          "firstName": "طيبة ستار",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "485315402",
+          "username": "",
+          "firstName": "Anas",
+          "lastName": "Eideh",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7755331712",
+          "username": "",
+          "firstName": "ساره العتيبي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8597199585",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1034960974",
+          "username": "A_MTM7",
+          "firstName": "Ahmed",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7485675340",
+          "username": "qaN662",
+          "firstName": "عديل الروح👑✨",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1006055370",
+          "username": "Earllwlf",
+          "firstName": "88",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8579164206",
+          "username": "",
+          "firstName": "زهور",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8638515503",
+          "username": "",
+          "firstName": "مريم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6635748079",
+          "username": "tarba5",
+          "firstName": "𝑭",
+          "lastName": "𝑬 𝑹 𝑨 𝑺 💤",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1999188076",
+          "username": "uurov",
+          "firstName": "Anas",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6221623866",
+          "username": "",
+          "firstName": "ابوحسن",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "841642978",
+          "username": "shahadaqx",
+          "firstName": "ItsYeMiNT",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7953474215",
+          "username": "",
+          "firstName": "muhammad",
+          "lastName": "usman",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1061463993",
+          "username": "ndjdmsnxixb",
+          "firstName": "Nnnnnnn",
+          "lastName": "Nnnnnnn",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1466762338",
+          "username": "HussainBahaa25",
+          "firstName": "7osaen",
+          "lastName": "sehan",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1254059889",
+          "username": "jou129",
+          "firstName": "Yousef",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5495177997",
+          "username": "someb0dy07",
+          "firstName": "Омар",
+          "lastName": "00:00",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "844099424",
+          "username": "TrruustMe",
+          "firstName": "TrustMe",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8441498140",
+          "username": "",
+          "firstName": "ام بسمة",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8296289696",
+          "username": "Uoawxm",
+          "firstName": "حل الواجبات وعمل البحوث والمشاريع التخرج",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6612574095",
+          "username": "University_services",
+          "firstName": "خدمات",
+          "lastName": "طلابية",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6938698005",
+          "username": "",
+          "firstName": "اسامه",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5972176740",
+          "username": "sidahmedtaib",
+          "firstName": "taib",
+          "lastName": "sid ahmed",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "671091825",
+          "username": "Aabbooicc",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8478947704",
+          "username": "",
+          "firstName": "S",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1993944976",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "2024822369",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8353146235",
+          "username": "",
+          "firstName": "ام فهد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8173583763",
+          "username": "habdjfklg",
+          "firstName": "Tatas",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1698967063",
+          "username": "",
+          "firstName": "Alsubaie",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7413693278",
+          "username": "Fl5Eagle",
+          "firstName": "S",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5353003415",
+          "username": "",
+          "firstName": "B",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5927069081",
+          "username": "",
+          "firstName": "Mohamed",
+          "lastName": "Fahim",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1594616020",
+          "username": "",
+          "firstName": "Nawaf",
+          "lastName": "Abdulqader",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1296662729",
+          "username": "Only7rby",
+          "firstName": "Aw",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "972535747",
+          "username": "llixme",
+          "firstName": "Saud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1245467485",
+          "username": "Jwcv1",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1335261840",
+          "username": "w0_nc",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1667096238",
+          "username": "turki1680",
+          "firstName": "Turki",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5183880432",
+          "username": "Admn305",
+          "firstName": "نيزك",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1675231727",
+          "username": "q1m_z",
+          "firstName": "FSG",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7782073173",
+          "username": "Sarhh000",
+          "firstName": "د/ساره",
+          "lastName": "العنزي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1139309788",
+          "username": "iixtez",
+          "firstName": "J",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "966567426240",
+          "status": "pending"
+        },
+        {
+          "userId": "1077771413",
+          "username": "",
+          "firstName": "عبدالله",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6069688673",
+          "username": "",
+          "firstName": "Abdulaziz",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "967593305",
+          "username": "renugu",
+          "firstName": "‘",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "758095396",
+          "username": "iAbuMay",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "498876748",
+          "username": "Q4890",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "609279335",
+          "username": "braiji13",
+          "firstName": "Nawaf",
+          "lastName": "Braiji",
+          "isOnline": false,
+          "phone": "966553958056",
+          "status": "pending"
+        },
+        {
+          "userId": "1051143937",
+          "username": "",
+          "firstName": "YF",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1011784367",
+          "username": "Rfupj",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8011104623",
+          "username": "",
+          "firstName": "Joud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1304173977",
+          "username": "civaui",
+          "firstName": "خالد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1267898395",
+          "username": "",
+          "firstName": "Ammar",
+          "lastName": "Alshamrany",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8221118634",
+          "username": "",
+          "firstName": "Joud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6732385335",
+          "username": "",
+          "firstName": "ayman",
+          "lastName": "shehab",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "959339231",
+          "username": "Kal1l1",
+          "firstName": "Khalid.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7015466466",
+          "username": "sa11234566",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5579241295",
+          "username": "fares_almosabi",
+          "firstName": "Fares",
+          "lastName": "Almosabi",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "390456890",
+          "username": "sy999sy",
+          "firstName": "S",
+          "lastName": ".A",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6470108470",
+          "username": "",
+          "firstName": "Heidi",
+          "lastName": "Saeed",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "759761213",
+          "username": "hattan220",
+          "firstName": "Hattan",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6481694265",
+          "username": "Asaew4",
+          "firstName": "حسين 🤎🤎",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8481483748",
+          "username": "",
+          "firstName": "@Sklifffffff🫆(𝑺𝒊𝒄𝒌 𝒍𝒆𝒂𝒗𝒆) جـــود لَلَآنِـجّـآزٍآتٌ ألَــطِـبًـيَ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7007296982",
+          "username": "",
+          "firstName": "~~~~~",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1860233278",
+          "username": "unnforgettad",
+          "firstName": "Faisal",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8578053300",
+          "username": "Dr_Amal_Academic",
+          "firstName": "د. أمل",
+          "lastName": "الزهراني",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1448216458",
+          "username": "",
+          "firstName": "Khalid🥱",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5469207807",
+          "username": "Youssefhamada72",
+          "firstName": "Youssef",
+          "lastName": "Hamada",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "771575488",
+          "username": "",
+          "firstName": "خَ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1368946265",
+          "username": "",
+          "firstName": "T.R",
+          "lastName": "TU",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6955028592",
+          "username": "wttjjjj",
+          "firstName": "AAAA",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1069378120",
+          "username": "",
+          "firstName": "Islam",
+          "lastName": "Sabry",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8090099575",
+          "username": "onlineonlineonlineonlinnnn",
+          "firstName": "عرض خاص 🇸🇦 سكليفات الدفع بعد الإنجاز 🇸🇦",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8560643153",
+          "username": "",
+          "firstName": "مرام الدوسري",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8121391889",
+          "username": "Almafya7",
+          "firstName": "K",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1202879085",
+          "username": "Asma_qu",
+          "firstName": "Asma",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1335170403",
+          "username": "",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "613853412",
+          "username": "haaaayyaaaa",
+          "firstName": "H",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1300885921",
+          "username": "rka980",
+          "firstName": "RKA",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "723682386",
+          "username": "",
+          "firstName": "Abdullah Mu",
+          "lastName": "‘",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1643449101",
+          "username": "sultan_1209",
+          "firstName": "Sultan",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "887291886",
+          "username": "eco2r",
+          "firstName": "Faisal",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1080670476",
+          "username": "ssffx",
+          "firstName": "س",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7477046215",
+          "username": "Ahlamm900",
+          "firstName": "مس",
+          "lastName": "أحلام",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "5848812001",
+          "username": "Asjekls",
+          "firstName": "خدمات",
+          "lastName": "طلابية",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6186982579",
+          "username": "",
+          "firstName": "96114",
+          "lastName": "عبدالقوي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8261871878",
+          "username": "",
+          "firstName": "ام",
+          "lastName": "راشد",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1534784781",
+          "username": "draculaa67",
+          "firstName": "ضُحـى",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7032054971",
+          "username": "MS_AHLAMM",
+          "firstName": "الاستاذه",
+          "lastName": "احلام",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "692102624",
+          "username": "bbbbb071",
+          "firstName": "،",
+          "lastName": ",",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1173176193",
+          "username": "pzzlzzq",
+          "firstName": "Spirity",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "748470469",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7932238039",
+          "username": "jvncjvm",
+          "firstName": "شهد .",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1957849068",
+          "username": "Abdulrhman025",
+          "firstName": "AD",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "772958377",
+          "username": "xcn02",
+          "firstName": "𝟏𝟐",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7738263084",
+          "username": "",
+          "firstName": "Mohammed Abdelfattah",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7924042514",
+          "username": "BCGFHKF",
+          "firstName": "وجدان",
+          "lastName": "🇸🇦",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "4843196",
+          "username": "",
+          "firstName": "JOKO2000",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "6659327669",
+          "username": "R_EEM100",
+          "firstName": "الاستاذه/ أريام العتيبي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7359581497",
+          "username": "Ahlam9200",
+          "firstName": "د/",
+          "lastName": "أحلام",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7838599319",
+          "username": "Dr_Amal_Alanzi",
+          "firstName": "د/أمل",
+          "lastName": "العنزي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8266370544",
+          "username": "Dr_Huda_Academic",
+          "firstName": "د. هدى المطيري",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8267150173",
+          "username": "",
+          "firstName": "للاعــ/ـذار_الطبـ/ـيه_صحتـ/ـي_وتس_569377910",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1042987425",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7899765446",
+          "username": "MAJHHS",
+          "firstName": "MAEEN ALI",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1929156419",
+          "username": "",
+          "firstName": "MS_13",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1745928680",
+          "username": "bualii2",
+          "firstName": "HAH",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1839061203",
+          "username": "",
+          "firstName": "Rami",
+          "lastName": "Alharun",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1126815477",
+          "username": "Ns88000",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "7683001727",
+          "username": "AMEL_ALHMDE",
+          "firstName": "د/أمل",
+          "lastName": "الغامدي",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "601886957",
+          "username": "asdffgdhfg",
+          "firstName": "احمد",
+          "lastName": "الزهراني",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "8472618470",
+          "username": "omar37738",
+          "firstName": "عمر",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "1381663317",
+          "username": "",
+          "firstName": "MA ᥫ᭡",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        },
+        {
+          "userId": "180429561",
+          "username": "Rayed0o0",
+          "firstName": "رائد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "pending"
+        }
+      ],
+      "delaySeconds": 30,
+      "maxPerDay": 40,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUKChEwRFflBvzR/l//W0ivz5VDybrxlLrrAumWKCUXfv4dTCUFtIprHvIaMgeUlcb1lLibQL7Lkf5Dq7S/i/LCeXw213doivOp93r356Eob1LZpH+x6CffK9KZBJuBlNFbWDPei38eSCBoDkeTxEYkM0OUpqk6I7zqPMV1LPAKUxONSgg2wX6VSrmmWhmov/HGFgOaTxHs778SJFKfQQgoWn6mM+XZY6KeWSfJj0xGQPUls8LiK5JlPgWRc8QS91ANdklBVD1gq79vz30nSxrAPdyRsikUhmockcjMyAryFWTuZ9gLwBmZJ3Ane30HBM4Qcp6iMr8i8X6u0r/uJ7bts="
+        }
+      ]
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:33:21.517Z",
+    "error": "PeerFlood: استُنفدت جميع الحسابات (1). أُضيف 0 عضو.",
+    "completedAt": "2026-04-06T15:33:21.807Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [
+        "جميع الحسابات (1) وصلت لحد PeerFlood — أُضيف 0 عضو"
+      ]
+    }
+  },
+  {
+    "id": "job_1775489630181_6xy6x",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:33:50.181Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:33:50.181Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:33:50.182Z"
+  },
+  {
+    "id": "job_1775489640293_vo5d6",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:34:00.293Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:34:00.293Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:34:00.293Z"
+  },
+  {
+    "id": "job_1775489659696_gnp1y",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:34:19.696Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 3,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:34:19.696Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:34:19.696Z"
+  },
+  {
+    "id": "job_1775489692960_vq09u",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:34:52.960Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:34:52.960Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:34:52.960Z"
+  },
+  {
+    "id": "job_1775489731929_decjs",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:35:31.929Z",
+    "config": {
+      "group": "https://t.me/aviationcourses",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:35:31.929Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:35:31.930Z"
+  },
+  {
+    "id": "job_1775489760932_c3lbi",
+    "type": "extraction",
+    "status": "failed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-04-06T15:36:00.932Z",
+    "config": {
+      "group": "https://t.me/quotes_331",
+      "limit": 500,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_7707423847",
+    "startedAt": "2026-04-06T15:36:00.932Z",
+    "error": "Account health circuit open — paused until 2026-04-06T16:03:21.807Z",
+    "completedAt": "2026-04-06T15:36:00.932Z"
   }
 ]

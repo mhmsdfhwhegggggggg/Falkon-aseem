@@ -245,7 +245,8 @@ export function isNotFound(err: unknown): boolean {
  */
 export async function handleFloodWait(accountId: string, seconds: number): Promise<void> {
   const h = getHealth(accountId);
-  recordError(accountId, "flood");
+  // NOTE: Do NOT call recordError here — the caller already records the flood event.
+  // Double-recording inflates floodWaitCount and degrades health score twice per event.
 
   // Extra buffer: 10% on top, plus per-recurrence bonus
   const buffer = Math.ceil(seconds * 0.1) + (h.floodWaitCount * 5);

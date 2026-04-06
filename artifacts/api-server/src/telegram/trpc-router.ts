@@ -213,6 +213,7 @@ const addMembersRouter = router({
     .query(async ({ input }) => {
       const job = getJob(input.jobId);
       if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+      const isDone = job.status === "completed" || job.status === "failed" || job.status === "cancelled";
       return {
         jobId: job.id,
         status: job.status,
@@ -220,9 +221,12 @@ const addMembersRouter = router({
         total: job.total,
         added: job.result?.added || 0,
         failed: job.result?.failed || 0,
+        skipped: job.result?.skipped || 0,
         errors: job.result?.errors || [],
         error: job.error,
         completedAt: job.completedAt,
+        // Return members with updated statuses once job is done so phone can persist them
+        members: isDone ? (job.result?.members || null) : null,
       };
     }),
 });

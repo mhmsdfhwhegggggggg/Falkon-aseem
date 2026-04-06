@@ -204,9 +204,9 @@ export async function runAddMembers(job: Job) {
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
 
-    // ── Daily limit check ─────────────────────────────────────────────────────
-    if (!canAct(accountId, maxPerDay)) {
-      logger.warn({ accountId, jobId: job.id, maxPerDay }, "Daily limit reached, stopping job");
+    // ── Daily limit check (use currentAccId after rotation, not original accountId) ───
+    if (!canAct(currentAccId, maxPerDay)) {
+      logger.warn({ accountId: currentAccId, jobId: job.id, maxPerDay }, "Daily limit reached, stopping job");
       updateJob(job.id, {
         status: "completed",
         completedAt: new Date().toISOString(),
