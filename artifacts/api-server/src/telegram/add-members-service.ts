@@ -204,11 +204,18 @@ export async function runAddMembers(job: Job) {
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
 
-    // ── Daily limit check (use currentAccId after rotation, not original accountId) ───
+    // ── Daily limit / circuit check (use currentAccId after rotation) ───────────
     if (!canAct(currentAccId, maxPerDay)) {
-      logger.warn({ accountId: currentAccId, jobId: job.id, maxPerDay }, "Daily limit reached, stopping job");
+      const h = getHealth(currentAccId);
+      const isCircuitOpen = h.circuitOpen && Date.now() < h.circuitOpenUntil;
+      const cooldownMins = isCircuitOpen ? Math.ceil((h.circuitOpenUntil - Date.now()) / 60000) : 0;
+      const stopReason = isCircuitOpen
+        ? `⚠️ PeerFlood: الحساب محظور مؤقتاً (${cooldownMins} دقيقة متبقية). أضف حسابات إضافية أو انتظر.`
+        : `⚠️ تم الوصول للحد اليومي (${maxPerDay} إضافة/يوم) — يُعاد تعيينه خلال 24 ساعة`;
+      logger.warn({ accountId: currentAccId, jobId: job.id, isCircuitOpen, cooldownMins, maxPerDay }, "Stopping job: circuit/limit");
       updateJob(job.id, {
         status: "completed",
+        error: stopReason,
         completedAt: new Date().toISOString(),
         result: { added, failed, skipped, errors, members: membersToAdd },
       });

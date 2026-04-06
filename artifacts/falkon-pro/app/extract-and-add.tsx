@@ -85,6 +85,7 @@ export default function ExtractAndAddScreen() {
   const [savedFileId, setSavedFileId] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
   const [addStats, setAddStats] = useState({ added: 0, failed: 0, flood: 0 });
+  const [stopReason, setStopReason] = useState<string | null>(null);
 
   const addLog = useCallback((msg: string) =>
     setLogs((p) => [msg, ...p].slice(0, 100)), []);
@@ -161,17 +162,24 @@ export default function ExtractAndAddScreen() {
 
     const isRotating = error?.startsWith('🔄');
     const isFloodWait = error?.startsWith('⏳');
-    if (error && !isRotating && !isFloodWait) {
-      // Not a warning — log it
-    }
+    const isPeerFloodError = error?.startsWith('⚠️');
+
     if (isRotating) addLog(`🔄 تبديل حساب تلقائي...`);
     if (isFloodWait) addLog(`⏳ ${error?.replace('⏳ ', '')}`);
+    if (isPeerFloodError && status !== 'completed') addLog(error!);
     if (progress > 0 && progress % 10 === 0) addLog(`[إضافة] ${progress}/${total}: +${added} ✗${failed}`);
 
     if (status === 'completed' || status === 'failed') {
       if (status === 'completed') {
-        addLog(`[إضافة] ✓ انتهى: ${added} مضاف | ${failed} فاشل`);
+        if (error && added === 0) {
+          // PeerFlood or daily limit — show the real reason
+          setStopReason(error);
+          addLog(`[إضافة] ⚠️ توقف: ${added} مضاف — ${error}`);
+        } else {
+          addLog(`[إضافة] ✓ انتهى: ${added} مضاف | ${failed} فاشل`);
+        }
       } else {
+        setStopReason(error || 'فشل غير معروف');
         addLog(`[إضافة] ✗ فشل: ${error}`);
       }
       // Sync member statuses back to phone storage so the file shows real results
@@ -187,7 +195,7 @@ export default function ExtractAndAddScreen() {
           }));
         if (updates.length > 0) {
           membersStore.batchUpdateMemberStatuses(savedFileId, updates);
-          addLog(`[حفظ] ✓ تم تحديث حالة ${updates.length} عضو في الملف المحلي`);
+          addLog(`[حفظ] ✓ تم تحديث حالة ${updates.length} عضو`);
         }
       }
       setPhase('done');
@@ -288,6 +296,7 @@ export default function ExtractAndAddScreen() {
     setSavedFileId(null);
     setLogs([]);
     setAddStats({ added: 0, failed: 0, flood: 0 });
+    setStopReason(null);
   };
 
   const activeAccounts = localAccounts.activeAccounts;
@@ -370,10 +379,10 @@ export default function ExtractAndAddScreen() {
                     <React.Fragment key={step.key}>
                       {i > 0 && <View style={{ flex: 1, height: 2, backgroundColor: isDone ? palette.success : palette.border }} />}
                       <View style={{ alignItems: 'center', gap: 4 }}>
-                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: isDone ? palette.success : isActive ? palette.primary : palette.border, alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: isDone ? (stopReason && step.key === 'adding' ? palette.warning : palette.success) : isActive ? palette.primary : palette.border, alignItems: 'center', justifyContent: 'center' }}>
                           {isActive && !isDone
                             ? <ActivityIndicator color="#fff" size="small" />
-                            : <MaterialIcons name={isDone ? 'check' : step.icon} size={17} color="#fff" />}
+                            : <MaterialIcons name={isDone ? (stopReason && step.key === 'adding' ? 'warning' : 'check') : step.icon} size={17} color="#fff" />}
                         </View>
                         <Text style={{ color: isDone ? palette.success : isActive ? palette.primary : palette.muted, fontSize: 10, fontWeight: '700' }}>{step.label}</Text>
                       </View>
@@ -406,6 +415,20 @@ export default function ExtractAndAddScreen() {
                   <Text style={{ color: palette.muted, fontSize: 9, textTransform: 'uppercase' }}>Flood</Text>
                 </View>
               </View>
+
+              {/* PeerFlood / limit error banner */}
+              {stopReason && (phase === 'done' || phase === 'error') && (
+                <View style={{ backgroundColor: palette.warning + '15', borderRadius: 10, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: palette.warning + '40' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <MaterialIcons name="warning" size={14} color={palette.warning} />
+                    <Text style={{ color: palette.warning, fontSize: 12, fontWeight: '700' }}>توقفت الإضافة</Text>
+                  </View>
+                  <Text style={{ color: palette.warning, fontSize: 11, lineHeight: 17 }}>{stopReason}</Text>
+                  <Text style={{ color: palette.muted, fontSize: 10, marginTop: 4 }}>
+                    الحل: أضف حسابات إضافية للتدوير التلقائي، أو انتظر 30 دقيقة ثم أعد المحاولة.
+                  </Text>
+                </View>
+              )}
 
               {/* Add progress bar */}
               {phase === 'adding' && addProg && addProg.total > 0 && (

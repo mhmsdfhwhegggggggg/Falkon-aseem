@@ -229,16 +229,21 @@ export default function AddMembersScreen() {
           {jobId && job && (() => {
             const jobError: string | undefined = (job as any).error;
             const isPeerFloodWait = isRunning && !!jobError && (jobError.startsWith('⏳') || jobError.startsWith('🔄'));
+            const isStoppedWithError = !isRunning && job.status === 'completed' && !!jobError && job.added === 0;
             const cardColor = isPeerFloodWait ? palette.warning
+              : isStoppedWithError ? palette.warning
               : isRunning ? palette.primary
               : job.status === 'completed' ? palette.success
               : palette.error;
+            const statusLabel = isPeerFloodWait ? '⏳ PeerFlood — انتظار تلقائي'
+              : isRunning ? 'جاري الإضافة...'
+              : isStoppedWithError ? '⚠️ توقف بسبب قيد'
+              : job.status === 'completed' ? '✓ اكتمل'
+              : `✗ ${job.status}`;
             return (
             <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: cardColor + '60', marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                <Text style={{ color: cardColor, fontSize: 14, fontWeight: '700' }}>
-                  {isPeerFloodWait ? '⏳ PeerFlood — انتظار تلقائي' : isRunning ? 'جاري الإضافة...' : job.status === 'completed' ? '✓ اكتمل' : `✗ ${job.status}`}
-                </Text>
+                <Text style={{ color: cardColor, fontSize: 14, fontWeight: '700' }}>{statusLabel}</Text>
                 <Text style={{ color: palette.primary, fontSize: 13, fontWeight: '800' }}>
                   +{job.added} / ✗{job.failed}
                 </Text>
@@ -257,7 +262,15 @@ export default function AddMembersScreen() {
                   </Text>
                 </View>
               )}
-              {!isPeerFloodWait && job.errors.slice(-3).map((e, i) => (
+              {isStoppedWithError && (
+                <View style={{ backgroundColor: palette.warning + '15', borderRadius: 8, padding: 10, marginBottom: 6 }}>
+                  <Text style={{ color: palette.warning, fontSize: 12, lineHeight: 18 }}>{jobError}</Text>
+                  <Text style={{ color: palette.muted, fontSize: 11, marginTop: 4 }}>
+                    اذهب لشاشة صحة الحسابات لإعادة ضبط الـcircuit، أو أضف حسابات إضافية للتدوير التلقائي.
+                  </Text>
+                </View>
+              )}
+              {!isPeerFloodWait && !isStoppedWithError && job.errors.slice(-3).map((e, i) => (
                 <Text key={i} style={{ color: palette.error, fontSize: 11 }}>{e}</Text>
               ))}
             </View>
