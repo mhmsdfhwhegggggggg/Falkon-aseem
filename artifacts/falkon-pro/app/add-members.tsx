@@ -21,23 +21,18 @@ import { useMembersStore } from '@/lib/members-store';
 type AddMode = 'from-file' | 'by-username' | 'by-id';
 
 const MODE_CONFIG = {
-  'from-file': { label: 'From File', icon: 'folder-open' as const, color: '#8B5CF6', desc: 'Add members from a saved extraction file' },
-  'by-username': { label: 'By Username', icon: 'alternate-email' as const, color: '#34D399', desc: 'Enter @usernames (one per line)' },
-  'by-id': { label: 'By User ID', icon: 'fingerprint' as const, color: '#60A5FA', desc: 'Enter Telegram numeric IDs' },
+  'from-file': { label: 'من ملف', icon: 'folder-open' as const, color: '#8B5CF6', desc: 'إضافة أعضاء من ملف استخراج محفوظ' },
+  'by-username': { label: 'بالاسم', icon: 'alternate-email' as const, color: '#34D399', desc: 'أدخل @اسم_المستخدم (سطر لكل مستخدم)' },
+  'by-id': { label: 'بالـID', icon: 'fingerprint' as const, color: '#60A5FA', desc: 'أدخل الأرقام التعريفية لتيليغرام' },
 };
 
-const DELAYS = [
-  { label: '30 ثانية', value: 30 },
-  { label: '45 ثانية', value: 45 },
-  { label: 'دقيقة', value: 60 },
-  { label: 'دقيقتين', value: 120 },
-];
-
-const MAX_PER_DAY_OPTIONS = [
-  { label: '20/يوم', value: 20 },
-  { label: '40/يوم', value: 40 },
-  { label: '60/يوم', value: 60 },
-  { label: '80/يوم', value: 80 },
+const QUICK_DELAYS = [
+  { label: '1ث', value: '1' },
+  { label: '3ث', value: '3' },
+  { label: '5ث', value: '5' },
+  { label: '10ث', value: '10' },
+  { label: '30ث', value: '30' },
+  { label: '60ث', value: '60' },
 ];
 
 export default function AddMembersScreen() {
@@ -49,8 +44,8 @@ export default function AddMembersScreen() {
   const [targetGroup, setTargetGroup] = useState('');
   const [selectedFileId, setSelectedFileId] = useState<string>(paramFileId ?? '');
   const [textInput, setTextInput] = useState('');
-  const [delay, setDelay] = useState(30);
-  const [maxPerDay, setMaxPerDay] = useState(40);
+  const [delayText, setDelayText] = useState('3');
+  const [maxPerDayText, setMaxPerDayText] = useState('500');
   const [jobId, setJobId] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   // Track the active file ID at job-start time via ref (avoids stale closure in useEffect)
@@ -149,6 +144,9 @@ export default function AddMembersScreen() {
       // Track which file to update when this job completes
       activeFileIdRef.current = mode === 'from-file' ? selectedFileId : null;
       setIsRunning(true);
+      const delaySecs = Math.max(1, Math.min(1000, parseInt(delayText) || 3));
+      const maxDay = Math.max(1, parseInt(maxPerDayText) || 500);
+
       const result = await startMut.mutateAsync({
         targetGroup: targetGroup.trim(),
         mode: inlineMembers ? 'from-phone' : mode,
@@ -156,11 +154,11 @@ export default function AddMembersScreen() {
         fileId: !inlineMembers && mode === 'from-file' ? selectedFileId : undefined,
         usernames: mode === 'by-username' ? lines : undefined,
         userIds: mode === 'by-id' ? lines : undefined,
-        delaySeconds: delay,
-        maxPerDay,
+        delaySeconds: delaySecs,
+        maxPerDay: maxDay,
         accountId: primaryAccount.id,
         sessionString: primaryAccount.sessionString,
-        allAccounts: allAccountsList, // rotation pool
+        allAccounts: allAccountsList,
       });
       setJobId(result.jobId);
     } catch (err: any) {
@@ -180,14 +178,14 @@ export default function AddMembersScreen() {
             <MaterialIcons name="arrow-back" size={22} color={palette.foreground} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: palette.muted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 }}>Operations</Text>
-            <Text style={{ color: palette.foreground, fontSize: 22, fontWeight: '800' }}>Add Members</Text>
+            <Text style={{ color: palette.muted, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1 }}>العمليات</Text>
+            <Text style={{ color: palette.foreground, fontSize: 22, fontWeight: '800' }}>إضافة أعضاء</Text>
           </View>
           <TouchableOpacity
             style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10, backgroundColor: palette.primary + '20' }}
             onPress={() => router.push('/members-files' as any)}
           >
-            <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>Files ({files.length})</Text>
+            <Text style={{ color: palette.primary, fontSize: 12, fontWeight: '700' }}>الملفات ({files.length})</Text>
           </TouchableOpacity>
         </View>
 
@@ -279,13 +277,13 @@ export default function AddMembersScreen() {
 
           {/* Target Group */}
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
-            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>Target Group / Channel</Text>
+            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>المجموعة / القناة الهدف</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: palette.background, borderRadius: 10, borderWidth: 1, borderColor: palette.border, paddingHorizontal: 12, gap: 8 }}>
               <MaterialIcons name="group-add" size={16} color={palette.muted} />
               <TextInput
                 value={targetGroup}
                 onChangeText={setTargetGroup}
-                placeholder="@groupname or t.me/link or Group ID"
+                placeholder="@group أو t.me/link أو Group ID"
                 placeholderTextColor={palette.muted}
                 style={{ flex: 1, color: palette.foreground, fontSize: 14, paddingVertical: 12 }}
                 autoCapitalize="none"
@@ -296,7 +294,7 @@ export default function AddMembersScreen() {
 
           {/* Mode */}
           <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
-            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>Add Source</Text>
+            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>مصدر الإضافة</Text>
             <View style={{ gap: 8 }}>
               {(Object.entries(MODE_CONFIG) as [AddMode, typeof MODE_CONFIG[AddMode]][]).map(([id, cfg]) => (
                 <TouchableOpacity
@@ -318,15 +316,15 @@ export default function AddMembersScreen() {
           {/* From File selector */}
           {mode === 'from-file' && (
             <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
-              <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>Select File</Text>
+              <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700', marginBottom: 10 }}>اختر ملفاً</Text>
               {membersStore.isLoading ? (
                 <ActivityIndicator color={palette.primary} />
               ) : files.length === 0 ? (
                 <View style={{ alignItems: 'center', paddingVertical: 16, gap: 8 }}>
                   <MaterialIcons name="folder-off" size={32} color={palette.muted} />
-                  <Text style={{ color: palette.muted, fontSize: 13 }}>No saved files. Run an extraction first.</Text>
+                  <Text style={{ color: palette.muted, fontSize: 13 }}>لا توجد ملفات محفوظة. قم بالاستخراج أولاً.</Text>
                   <TouchableOpacity onPress={() => router.push('/extraction' as any)} style={{ backgroundColor: palette.primary, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 }}>
-                    <Text style={{ color: '#fff', fontWeight: '700' }}>Go to Extraction</Text>
+                    <Text style={{ color: '#fff', fontWeight: '700' }}>انتقل للاستخراج</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -355,9 +353,9 @@ export default function AddMembersScreen() {
             <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 14 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>
-                  {mode === 'by-username' ? 'Usernames' : 'User IDs'}
+                  {mode === 'by-username' ? 'أسماء المستخدمين' : 'معرّفات المستخدمين'}
                 </Text>
-                <Text style={{ color: palette.muted, fontSize: 11 }}>{parseLines(textInput).length} entries</Text>
+                <Text style={{ color: palette.muted, fontSize: 11 }}>{parseLines(textInput).length} إدخال</Text>
               </View>
               <TextInput
                 value={textInput}
@@ -371,47 +369,84 @@ export default function AddMembersScreen() {
                 autoCapitalize="none"
               />
               <Text style={{ color: palette.muted, fontSize: 11, marginTop: 6 }}>
-                {mode === 'by-username' ? 'One username per line. @ is optional.' : 'One numeric Telegram user ID per line.'}
+                {mode === 'by-username' ? 'مستخدم واحد في كل سطر. @ اختيارية.' : 'رقم تعريفي واحد في كل سطر.'}
               </Text>
             </View>
           )}
 
           {/* Execution Settings */}
-          <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 16, gap: 14 }}>
-            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>Execution Settings</Text>
-            <View>
-              <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600', marginBottom: 8 }}>Delay Between Adds (seconds)</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {DELAYS.map((d) => (
+          <View style={{ backgroundColor: palette.surface, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: palette.border, marginBottom: 16, gap: 16 }}>
+            <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '800' }}>إعدادات التنفيذ</Text>
+
+            {/* Delay input */}
+            <View style={{ gap: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '700' }}>التأخير بين كل إضافة (ثانية)</Text>
+                <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '700' }}>
+                  {parseInt(delayText) >= 1 && parseInt(delayText) <= 1000 ? `${delayText}ث` : '—'}
+                </Text>
+              </View>
+
+              {/* Quick select chips */}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {QUICK_DELAYS.map((d) => (
                   <TouchableOpacity
                     key={d.value}
-                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: delay === d.value ? palette.primary : palette.background, borderWidth: 1, borderColor: delay === d.value ? palette.primary : palette.border, alignItems: 'center', opacity: isRunning ? 0.5 : 1 }}
-                    onPress={() => !isRunning && setDelay(d.value)}
+                    style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: delayText === d.value ? palette.primary : palette.background, borderWidth: 1, borderColor: delayText === d.value ? palette.primary : palette.border, opacity: isRunning ? 0.5 : 1 }}
+                    onPress={() => !isRunning && setDelayText(d.value)}
                   >
-                    <Text style={{ color: delay === d.value ? '#fff' : palette.muted, fontSize: 11, fontWeight: '700' }}>{d.label}</Text>
+                    <Text style={{ color: delayText === d.value ? '#fff' : palette.muted, fontSize: 12, fontWeight: '700' }}>{d.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+
+              {/* Free input */}
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: palette.background, borderRadius: 12, borderWidth: 1.5, borderColor: palette.border, paddingHorizontal: 14, gap: 8 }}>
+                <MaterialIcons name="timer" size={16} color={palette.muted} />
+                <TextInput
+                  value={delayText}
+                  onChangeText={(v) => setDelayText(v.replace(/[^0-9]/g, ''))}
+                  placeholder="أدخل أي رقم (1 – 1000)"
+                  placeholderTextColor={palette.muted}
+                  keyboardType="numeric"
+                  editable={!isRunning}
+                  style={{ flex: 1, color: palette.foreground, fontSize: 15, fontWeight: '700', paddingVertical: 13 }}
+                />
+                <Text style={{ color: palette.muted, fontSize: 13 }}>ثانية</Text>
+              </View>
+              <Text style={{ color: palette.muted, fontSize: 11 }}>
+                الحد الأدنى 1 ثانية · الحد الأقصى 1000 ثانية
+              </Text>
             </View>
+
             <View style={{ height: 1, backgroundColor: palette.border }} />
-            <View>
-              <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '600', marginBottom: 8 }}>Max Adds Per Day</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {MAX_PER_DAY_OPTIONS.map((o) => (
-                  <TouchableOpacity
-                    key={o.value}
-                    style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: maxPerDay === o.value ? palette.warning : palette.background, borderWidth: 1, borderColor: maxPerDay === o.value ? palette.warning : palette.border, alignItems: 'center', opacity: isRunning ? 0.5 : 1 }}
-                    onPress={() => !isRunning && setMaxPerDay(o.value)}
-                  >
-                    <Text style={{ color: maxPerDay === o.value ? '#000' : palette.muted, fontSize: 11, fontWeight: '700' }}>{o.label}</Text>
-                  </TouchableOpacity>
-                ))}
+
+            {/* Max per day input */}
+            <View style={{ gap: 8 }}>
+              <Text style={{ color: palette.foreground, fontSize: 13, fontWeight: '700' }}>أقصى عدد إضافات في اليوم</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: palette.background, borderRadius: 12, borderWidth: 1.5, borderColor: palette.border, paddingHorizontal: 14, gap: 8 }}>
+                <MaterialIcons name="today" size={16} color={palette.muted} />
+                <TextInput
+                  value={maxPerDayText}
+                  onChangeText={(v) => setMaxPerDayText(v.replace(/[^0-9]/g, ''))}
+                  placeholder="مثال: 500"
+                  placeholderTextColor={palette.muted}
+                  keyboardType="numeric"
+                  editable={!isRunning}
+                  style={{ flex: 1, color: palette.foreground, fontSize: 15, fontWeight: '700', paddingVertical: 13 }}
+                />
+                <Text style={{ color: palette.muted, fontSize: 13 }}>/ يوم</Text>
               </View>
+              <Text style={{ color: palette.muted, fontSize: 11 }}>
+                ضع رقماً كبيراً إذا لا تريد حداً يومياً
+              </Text>
             </View>
-            <View style={{ backgroundColor: palette.info + '15', borderRadius: 10, padding: 10, flexDirection: 'row', gap: 8 }}>
-              <MaterialIcons name="info" size={16} color={palette.info} />
-              <Text style={{ color: palette.info, fontSize: 11, flex: 1 }}>
-                Delay {delay}s between adds. Max {maxPerDay}/day. Anti-ban protection active.
+
+            {/* Summary */}
+            <View style={{ backgroundColor: '#34D39915', borderRadius: 10, padding: 10, flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+              <MaterialIcons name="bolt" size={16} color="#34D399" />
+              <Text style={{ color: '#34D399', fontSize: 11, flex: 1, lineHeight: 16 }}>
+                سيضيف عضواً كل {delayText || '3'} ثانية · يتوقف بعد {maxPerDayText || '500'} إضافة يومياً · التبديل التلقائي عند PeerFlood فعّال
               </Text>
             </View>
           </View>
@@ -421,15 +456,15 @@ export default function AddMembersScreen() {
             <TouchableOpacity style={{ borderRadius: 14, overflow: 'hidden' }} onPress={handleStart} disabled={startMut.isPending}>
               <LinearGradient colors={['#065F46', '#34D399']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
                 {startMut.isPending ? <ActivityIndicator color="#fff" /> : <MaterialIcons name="person-add" size={20} color="#fff" />}
-                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '800' }}>
-                  {startMut.isPending ? 'Starting...' : 'Start Adding Members'}
+                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '800' }}>
+                  {startMut.isPending ? 'جارٍ البدء...' : 'ابدأ الإضافة'}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
           ) : (
             <View style={{ backgroundColor: palette.success + '10', borderRadius: 14, padding: 16, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8, borderWidth: 1, borderColor: palette.success + '40' }}>
               <ActivityIndicator color={palette.success} />
-              <Text style={{ color: palette.success, fontSize: 15, fontWeight: '800' }}>Adding... ({progress}%)</Text>
+              <Text style={{ color: palette.success, fontSize: 15, fontWeight: '800' }}>جارٍ الإضافة... ({progress}%)</Text>
             </View>
           )}
         </ScrollView>

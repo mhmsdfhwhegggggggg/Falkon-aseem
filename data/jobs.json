@@ -29826,7 +29826,7 @@
   {
     "id": "job_1775496075749_nm763",
     "type": "add_members",
-    "status": "running",
+    "status": "failed",
     "progress": 0,
     "total": 200,
     "createdAt": "2026-04-06T17:21:15.749Z",
@@ -31647,13 +31647,14 @@
     },
     "accountId": "acc_7707423847",
     "startedAt": "2026-04-06T17:21:15.750Z",
-    "error": "⏳ PeerFlood — انتظار 31 دقيقة ثم الاستئناف تلقائياً (أُضيف 0 حتى الآن · محاولة 1/5)",
+    "error": "Server restarted — job interrupted",
     "result": {
       "added": 0,
       "failed": 0,
       "skipped": 0,
       "errors": []
-    }
+    },
+    "completedAt": "2026-04-06T17:33:12.459Z"
   },
   {
     "id": "job_1775496177262_ylcxz",
@@ -31681,7 +31682,7 @@
   {
     "id": "job_1775496321936_u9hw8",
     "type": "add_members",
-    "status": "running",
+    "status": "failed",
     "progress": 0,
     "total": 10000,
     "createdAt": "2026-04-06T17:25:21.936Z",
@@ -121702,12 +121703,13 @@
     },
     "accountId": "acc_7707423847",
     "startedAt": "2026-04-06T17:25:21.936Z",
-    "error": "⏳ PeerFlood — انتظار 27 دقيقة ثم الاستئناف (أُضيف 0 · محاولة 1/5)",
+    "error": "Server restarted — job interrupted",
     "result": {
       "added": 0,
       "failed": 0,
       "skipped": 0,
       "errors": []
-    }
+    },
+    "completedAt": "2026-04-06T17:33:12.460Z"
   }
 ]
