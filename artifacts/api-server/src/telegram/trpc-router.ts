@@ -79,6 +79,35 @@ const accountsRouter = router({
       return { success: true };
     }),
 
+  importSession: procedure
+    .input(z.object({ sessionString: z.string().min(10) }))
+    .mutation(async ({ input }) => {
+      const { TelegramClient, Api } = await import("telegram");
+      const { StringSession } = await import("telegram/sessions/index.js");
+      const { API_ID, API_HASH } = await import("./client-manager.js");
+      const session = new StringSession(input.sessionString.trim());
+      const client = new TelegramClient(session, API_ID, API_HASH, {
+        connectionRetries: 2,
+        useWSS: false,
+        timeout: 15,
+      });
+      await client.connect();
+      try {
+        const me = await client.getMe() as any;
+        const userId = String(me.id);
+        const phone = me.phone ? `+${me.phone}` : "";
+        const firstName = me.firstName || "";
+        const lastName = me.lastName || "";
+        const username = me.username || "";
+        const savedSession = (client.session as InstanceType<typeof StringSession>).save();
+        await client.disconnect();
+        return { userId, phone, firstName, lastName, username, sessionString: savedSession };
+      } catch (err) {
+        await client.disconnect().catch(() => {});
+        throw err;
+      }
+    }),
+
   remove: procedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {

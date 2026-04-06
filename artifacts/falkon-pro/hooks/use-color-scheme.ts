@@ -1,5 +1,4 @@
-import { useColorScheme as useNativeColorScheme } from "react-native";
-
+// Force dark mode always — FALKON PRO is a dark-themed professional app
 export function useColorScheme() {
-  return useNativeColorScheme() ?? "dark";
+  return "dark" as const;
 }

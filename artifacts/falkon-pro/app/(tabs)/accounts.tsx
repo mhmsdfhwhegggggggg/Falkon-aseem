@@ -19,7 +19,7 @@ import { router } from 'expo-router';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AuthStep = 'idle' | 'pick_mode' | 'enter_phone' | 'enter_phones' | 'enter_code' | 'enter_password' | 'success' | 'bulk_done';
+type AuthStep = 'idle' | 'pick_mode' | 'enter_phone' | 'enter_phones' | 'enter_code' | 'enter_password' | 'success' | 'bulk_done' | 'enter_session';
 
 interface QueuedPhone {
   phone: string;
@@ -77,9 +77,31 @@ export default function AccountsScreen() {
   const localStore = useAccountsStore();
 
   // ── tRPC (auth only — server does not store sessions) ────────────────────────
+  // Import session
+  const [sessionStr, setSessionStr] = useState('');
+  const [sessionLoading, setSessionLoading] = useState(false);
+
   const startAuthMut = trpc.accounts.startAuth.useMutation();
   const confirmAuthMut = trpc.accounts.confirmAuth.useMutation();
   const resendMut = trpc.accounts.resendCode.useMutation();
+  const importSessionMut = trpc.accounts.importSession.useMutation();
+
+  const handleImportSession = useCallback(async () => {
+    const s = sessionStr.trim();
+    if (s.length < 10) return Alert.alert('خطأ', 'الصق نص الجلسة (Session String) الصحيح');
+    setSessionLoading(true);
+    try {
+      const result = await importSessionMut.mutateAsync({ sessionString: s });
+      await saveAuthResult(result);
+      setSessionStr('');
+      setAuthStep('success');
+      setTimeout(() => { setAuthStep('idle'); resetSingle(); }, 2000);
+    } catch (err: any) {
+      Alert.alert('خطأ في الاستيراد', err.message || 'الجلسة غير صالحة أو منتهية الصلاحية');
+    } finally {
+      setSessionLoading(false);
+    }
+  }, [sessionStr]);
 
   const accounts = localStore.accounts;
   const filtered = accounts.filter(
@@ -345,7 +367,7 @@ export default function AccountsScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={{ backgroundColor: '#10B98115', borderRadius: 18, padding: 20, borderWidth: 1.5, borderColor: '#10B98140', flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                style={{ backgroundColor: '#10B98115', borderRadius: 18, padding: 20, marginBottom: 12, borderWidth: 1.5, borderColor: '#10B98140', flexDirection: 'row', alignItems: 'center', gap: 16 }}
                 onPress={() => { setAuthStep('enter_phones'); setBulkText(''); }}
               >
                 <View style={{ width: 50, height: 50, borderRadius: 16, backgroundColor: '#10B98120', alignItems: 'center', justifyContent: 'center' }}>
@@ -357,6 +379,50 @@ export default function AccountsScreen() {
                 </View>
                 <MaterialIcons name="chevron-right" size={20} color={p.muted} />
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{ backgroundColor: '#3B82F615', borderRadius: 18, padding: 20, borderWidth: 1.5, borderColor: '#3B82F640', flexDirection: 'row', alignItems: 'center', gap: 16 }}
+                onPress={() => { setAuthStep('enter_session'); setSessionStr(''); }}
+              >
+                <View style={{ width: 50, height: 50, borderRadius: 16, backgroundColor: '#3B82F620', alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialIcons name="key" size={26} color="#3B82F6" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: p.foreground, fontSize: 16, fontWeight: '800', marginBottom: 4 }}>استيراد جلسة
+                    <Text style={{ color: '#3B82F6', fontSize: 12, fontWeight: '700' }}>  حصري</Text>
+                  </Text>
+                  <Text style={{ color: p.muted, fontSize: 13 }}>الصق Session String من Pyrogram أو Telethon</Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={20} color={p.muted} />
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* ── Import Session String ──────────────────────────────────────────── */}
+          {authStep === 'enter_session' && (
+            <>
+              <ModalHeader title="استيراد جلسة" onBack={() => setAuthStep('pick_mode')}
+                subtitle="ادعم Pyrogram · Telethon · GramJS · TDLib" />
+              <View style={{ backgroundColor: '#3B82F610', borderRadius: 12, padding: 12, marginBottom: 14, flexDirection: 'row', gap: 8, alignItems: 'flex-start' }}>
+                <MaterialIcons name="info-outline" size={15} color="#3B82F6" />
+                <Text style={{ color: '#3B82F6', fontSize: 12, flex: 1, lineHeight: 18 }}>
+                  أنشئ Session String من خلال سكريبت Python ثم الصقه هنا. الجلسة تُخزّن على الجهاز فقط.
+                </Text>
+              </View>
+              <View style={{ backgroundColor: p.background, borderRadius: 14, borderWidth: 1, borderColor: '#3B82F640', padding: 14, marginBottom: 12 }}>
+                <TextInput
+                  value={sessionStr}
+                  onChangeText={setSessionStr}
+                  placeholder="1BVtsOGIBu1..."
+                  placeholderTextColor={p.muted}
+                  multiline
+                  numberOfLines={4}
+                  style={{ color: '#3B82F6', fontSize: 12, fontFamily: 'monospace', minHeight: 80, textAlignVertical: 'top' }}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              <PrimaryBtn label="استيراد والتحقق" loading={sessionLoading} onPress={handleImportSession} palette={p} color="#3B82F6" />
             </>
           )}
 
@@ -540,29 +606,39 @@ export default function AccountsScreen() {
     <View style={{ flex: 1, backgroundColor: p.background }}>
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
 
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 }}>
-          <View>
-            <Text style={{ color: p.muted, fontSize: 12, fontWeight: '500', textTransform: 'uppercase', letterSpacing: 1 }}>Telegram</Text>
-            <Text style={{ color: p.foreground, fontSize: 24, fontWeight: '800', marginTop: 2 }}>الحسابات</Text>
+        {/* ── Header ── */}
+        <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <View>
+              <Text style={{ color: '#6B7280', fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1.5 }}>FALKON PRO</Text>
+              <Text style={{ color: '#F9FAFB', fontSize: 26, fontWeight: '900', marginTop: 2 }}>الحسابات</Text>
+            </View>
+            <TouchableOpacity
+              style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F59E0B', borderRadius: 22, paddingHorizontal: 16, paddingVertical: 10, gap: 6, shadowColor: '#F59E0B', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}
+              onPress={() => setAuthStep('pick_mode')}
+            >
+              <MaterialIcons name="add" size={18} color="#000" />
+              <Text style={{ color: '#000', fontSize: 13, fontWeight: '800' }}>إضافة حساب</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: p.primary, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, gap: 6 }}
-            onPress={() => setAuthStep('pick_mode')}
-          >
-            <MaterialIcons name="add" size={16} color="#fff" />
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>إضافة</Text>
-          </TouchableOpacity>
-        </View>
 
-        {/* Stats bar */}
-        {accounts.length > 0 && (
-          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 14 }}>
-            <StatChip icon="people" label={`${accounts.length} حساب`} color={p.primary} palette={p} />
-            <StatChip icon="check-circle" label={`${accounts.filter(a => a.isActive).length} نشط`} color="#10B981" palette={p} />
-            <StatChip icon="how-to-reg" label={`${accounts.reduce((s, a) => s + a.dailyAdded, 0)} اليوم`} color="#FBBF24" palette={p} />
-          </View>
-        )}
+          {/* Stats cards row */}
+          {accounts.length > 0 && (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              {[
+                { label: 'إجمالي', value: accounts.length, icon: 'people', color: '#8B5CF6' },
+                { label: 'نشط', value: accounts.filter(a => a.isActive).length, icon: 'check-circle', color: '#34D399' },
+                { label: 'أُضيف اليوم', value: accounts.reduce((s, a) => s + (a.dailyAdded || 0), 0), icon: 'person-add', color: '#F59E0B' },
+              ].map((stat, i) => (
+                <View key={i} style={{ flex: 1, backgroundColor: '#0D1117', borderRadius: 14, padding: 12, borderWidth: 1, borderColor: '#1a2235', alignItems: 'center', gap: 4 }}>
+                  <MaterialIcons name={stat.icon as any} size={20} color={stat.color} />
+                  <Text style={{ color: '#F9FAFB', fontSize: 20, fontWeight: '900' }}>{stat.value}</Text>
+                  <Text style={{ color: '#6B7280', fontSize: 10 }}>{stat.label}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
         {/* Search */}
         <View style={{ marginHorizontal: 20, marginBottom: 16 }}>
@@ -772,55 +848,146 @@ function BulkProgress({ queue, current, added, errors, palette }: {
 }
 
 function AccountCard({ account, palette, onRemove, onToggle }: any) {
-  const initials = (account.firstName?.[0] || account.phone.slice(-2)).toUpperCase();
-  const colors2 = ['#8B5CF6', '#10B981', '#3B82F6', '#F59E0B', '#EF4444'];
-  const color = colors2[account.phone.length % colors2.length] || '#8B5CF6';
+  const [expanded, setExpanded] = React.useState(false);
+  const [showProxy, setShowProxy] = React.useState(false);
+  const [proxyInput, setProxyInput] = React.useState('');
+
+  const initials = ((account.firstName?.[0] || '') + (account.lastName?.[0] || '') || account.phone.slice(-2)).toUpperCase();
+  const avatarColors = ['#8B5CF6', '#10B981', '#3B82F6', '#F59E0B', '#EC4899'];
+  const avatarColor = avatarColors[account.phone.length % avatarColors.length] || '#8B5CF6';
+
+  const dailyLimit = 40;
+  const used = Math.min(account.dailyAdded, dailyLimit);
+  const pct = (used / dailyLimit) * 100;
+  const barColor = pct >= 90 ? '#F87171' : pct >= 60 ? '#FBBF24' : '#34D399';
+  const statusColor = account.isActive ? '#34D399' : '#6B7280';
+
+  // Days since added
+  const daysSince = account.addedAt
+    ? Math.floor((Date.now() - new Date(account.addedAt).getTime()) / 86400000)
+    : 0;
+
+  const handleSetProxy = () => {
+    Alert.prompt
+      ? Alert.prompt('تعيين بروكسي', 'أدخل: host:port:username:password', (text) => {
+          if (text) Alert.alert('تم', `البروكسي: ${text}`);
+        })
+      : Alert.alert('بروكسي', 'ميزة البروكسي متاحة على تطبيق الهاتف');
+  };
+
   return (
-    <View style={{ backgroundColor: palette.surface, borderRadius: 18, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: palette.border }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: color + '20', alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color, fontSize: 16, fontWeight: '800' }}>{initials}</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: palette.foreground, fontSize: 14, fontWeight: '700' }}>
-            {account.firstName} {account.lastName}
-          </Text>
-          <Text style={{ color: palette.muted, fontSize: 12 }}>
-            {account.phone}{account.username ? ` · @${account.username}` : ''}
-          </Text>
-        </View>
-        <View style={{ gap: 6, alignItems: 'flex-end' }}>
-          <TouchableOpacity onPress={onToggle} style={{
-            paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
-            backgroundColor: (account.isActive ? '#10B981' : '#9CA3AF') + '20',
-          }}>
-            <Text style={{ color: account.isActive ? '#10B981' : '#9CA3AF', fontSize: 10, fontWeight: '700' }}>
-              {account.isActive ? '● نشط' : '○ معطّل'}
+    <View style={{ backgroundColor: '#0D1117', borderRadius: 18, marginBottom: 12, borderWidth: 1, borderColor: '#1a2235', overflow: 'hidden' }}>
+      {/* Status accent bar */}
+      <View style={{ height: 3, backgroundColor: statusColor, opacity: 0.8 }} />
+
+      <View style={{ padding: 16 }}>
+        {/* Row 1: Avatar + Name + Status toggle */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          {/* Avatar */}
+          <View style={{ position: 'relative' }}>
+            <View style={{
+              width: 52, height: 52, borderRadius: 26,
+              backgroundColor: avatarColor + '25',
+              alignItems: 'center', justifyContent: 'center',
+              borderWidth: 2, borderColor: avatarColor + '60',
+            }}>
+              <Text style={{ color: avatarColor, fontSize: 18, fontWeight: '900' }}>{initials}</Text>
+            </View>
+            {/* Online dot */}
+            <View style={{
+              position: 'absolute', bottom: 0, right: 0,
+              width: 14, height: 14, borderRadius: 7,
+              backgroundColor: statusColor,
+              borderWidth: 2, borderColor: '#0D1117',
+            }} />
+          </View>
+
+          {/* Name + phone */}
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={{ color: '#F9FAFB', fontSize: 15, fontWeight: '800' }} numberOfLines={1}>
+              {[account.firstName, account.lastName].filter(Boolean).join(' ') || account.phone}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onRemove}>
-            <MaterialIcons name="delete-outline" size={18} color="#F87171" />
-          </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ color: '#6B7280', fontSize: 12 }}>{account.phone}</Text>
+              {account.username ? (
+                <Text style={{ color: '#3B82F6', fontSize: 12 }}>@{account.username}</Text>
+              ) : null}
+            </View>
+          </View>
+
+          {/* Actions */}
+          <View style={{ gap: 6, alignItems: 'flex-end' }}>
+            <TouchableOpacity onPress={onToggle} style={{
+              paddingHorizontal: 12, paddingVertical: 5, borderRadius: 10,
+              backgroundColor: account.isActive ? '#34D39920' : '#6B728020',
+              borderWidth: 1, borderColor: account.isActive ? '#34D39940' : '#6B728040',
+            }}>
+              <Text style={{ color: statusColor, fontSize: 11, fontWeight: '800' }}>
+                {account.isActive ? '● نشط' : '○ معطّل'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setExpanded(!expanded)} style={{ padding: 4 }}>
+              <MaterialIcons name={expanded ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={20} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={{ flexDirection: 'row', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: palette.border, gap: 16, alignItems: 'center' }}>
-        <MiniStat label="أُضيف اليوم" value={account.dailyAdded} palette={palette} />
-        <MiniStat label="المعرف" value={account.userId || '—'} palette={palette} />
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity
-          style={{
-            flexDirection: 'row', alignItems: 'center', gap: 4,
-            backgroundColor: palette.primary + '15',
-            borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
-            borderWidth: 1, borderColor: palette.primary + '30',
-          }}
-          onPress={() => router.push({ pathname: '/account-health', params: { accountId: account.id } } as any)}
-        >
-          <MaterialIcons name="monitor-heart" size={13} color={palette.primary} />
-          <Text style={{ color: palette.primary, fontSize: 11, fontWeight: '700' }}>فحص الصحة</Text>
-        </TouchableOpacity>
+
+        {/* Row 2: Daily limit bar */}
+        <View style={{ marginTop: 12, gap: 4 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ color: '#6B7280', fontSize: 11 }}>الحد اليومي</Text>
+            <Text style={{ color: barColor, fontSize: 11, fontWeight: '700' }}>{used} / {dailyLimit}</Text>
+          </View>
+          <View style={{ height: 4, backgroundColor: '#1a2235', borderRadius: 2, overflow: 'hidden' }}>
+            <View style={{ width: `${pct}%`, height: '100%', backgroundColor: barColor, borderRadius: 2 }} />
+          </View>
+        </View>
+
+        {/* Row 3: Quick stats chips */}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#34D39915', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+            <MaterialIcons name="person-add" size={11} color="#34D399" />
+            <Text style={{ color: '#34D399', fontSize: 11, fontWeight: '700' }}>{account.dailyAdded} اليوم</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F59E0B15', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+            <MaterialIcons name="calendar-today" size={11} color="#F59E0B" />
+            <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '700' }}>{daysSince} يوم</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#6B728015', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+            <MaterialIcons name="fingerprint" size={11} color="#9CA3AF" />
+            <Text style={{ color: '#9CA3AF', fontSize: 11, fontWeight: '700' }}>ID: {account.userId?.slice(0, 8) || '—'}</Text>
+          </View>
+        </View>
+
+        {/* Expanded section */}
+        {expanded && (
+          <View style={{ marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: '#1a2235', gap: 10 }}>
+            {/* Action buttons grid */}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <ActionBtn icon="monitor-heart" label="صحة الحساب" color="#F59E0B"
+                onPress={() => router.push({ pathname: '/account-health', params: { accountId: account.id } } as any)} />
+              <ActionBtn icon="shield" label="تعيين بروكسي" color="#3B82F6" onPress={handleSetProxy} />
+              <ActionBtn icon="manage-accounts" label="تعديل الملف" color="#8B5CF6"
+                onPress={() => Alert.alert('قريباً', 'تعديل الملف الشخصي قادم قريباً')} />
+              <ActionBtn icon="delete-outline" label="حذف" color="#F87171" onPress={onRemove} />
+            </View>
+          </View>
+        )}
       </View>
     </View>
+  );
+}
+
+function ActionBtn({ icon, label, color, onPress }: any) {
+  return (
+    <TouchableOpacity onPress={onPress} style={{
+      flex: 1, alignItems: 'center', gap: 4,
+      backgroundColor: color + '15', borderRadius: 10,
+      paddingVertical: 8, borderWidth: 1, borderColor: color + '30',
+    }}>
+      <MaterialIcons name={icon} size={16} color={color} />
+      <Text style={{ color, fontSize: 9, fontWeight: '700', textAlign: 'center' }}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
