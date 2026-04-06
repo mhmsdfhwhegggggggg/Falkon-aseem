@@ -51,6 +51,7 @@ import {
   quietHourMultiplier,
   getHealth,
   setWarmupMode,
+  resetCircuit,
   type DelayConfig,
 } from "./anti-ban.js";
 import { logger } from "../lib/logger.js";
@@ -200,6 +201,8 @@ export async function runAddMembers(job: Job) {
   let skipped = 0;
   const errors: string[] = [];
   let consecutivePeerFloods = 0;
+  let peerFloodRecoveries = 0;
+  const MAX_PEER_FLOOD_RECOVERIES = 5; // Wait and retry up to 5 times before giving up
 
   for (let i = 0; i < membersToAdd.length; i++) {
     const member = membersToAdd[i]!;
@@ -208,11 +211,33 @@ export async function runAddMembers(job: Job) {
     if (!canAct(currentAccId, maxPerDay)) {
       const h = getHealth(currentAccId);
       const isCircuitOpen = h.circuitOpen && Date.now() < h.circuitOpenUntil;
+
+      if (isCircuitOpen && peerFloodRecoveries < MAX_PEER_FLOOD_RECOVERIES) {
+        // Circuit is open at loop start — wait for it to expire, then continue
+        peerFloodRecoveries++;
+        const waitMs = Math.max(0, h.circuitOpenUntil - Date.now()) + 20_000;
+        const waitMins = Math.ceil(waitMs / 60_000);
+        logger.warn({ accountId: currentAccId, jobId: job.id, waitMins }, "Circuit open at loop top — waiting for recovery");
+        updateJob(job.id, {
+          status: "running",
+          error: `⏳ PeerFlood — انتظار ${waitMins} دقيقة ثم الاستئناف (أُضيف ${added} · محاولة ${peerFloodRecoveries}/${MAX_PEER_FLOOD_RECOVERIES})`,
+          result: { added, failed, skipped, errors, members: membersToAdd },
+        });
+        await sleep(waitMs);
+        for (const acc of allAccounts) resetCircuit(acc.id);
+        currentAccIdx = 0;
+        currentAccId = allAccounts[0]!.id;
+        try { client = await connectAccount(0); } catch (_) {}
+        updateJob(job.id, { status: "running", error: undefined });
+        i--; // retry same member
+        continue;
+      }
+
       const cooldownMins = isCircuitOpen ? Math.ceil((h.circuitOpenUntil - Date.now()) / 60000) : 0;
       const stopReason = isCircuitOpen
         ? `⚠️ PeerFlood: الحساب محظور مؤقتاً (${cooldownMins} دقيقة متبقية). أضف حسابات إضافية أو انتظر.`
         : `⚠️ تم الوصول للحد اليومي (${maxPerDay} إضافة/يوم) — يُعاد تعيينه خلال 24 ساعة`;
-      logger.warn({ accountId: currentAccId, jobId: job.id, isCircuitOpen, cooldownMins, maxPerDay }, "Stopping job: circuit/limit");
+      logger.warn({ accountId: currentAccId, jobId: job.id, isCircuitOpen, cooldownMins, maxPerDay }, "Stopping job: limit exhausted");
       updateJob(job.id, {
         status: "completed",
         error: stopReason,
@@ -340,15 +365,63 @@ export async function runAddMembers(job: Job) {
 
         const nextIdx = currentAccIdx + 1;
         if (nextIdx >= allAccounts.length) {
-          // All accounts exhausted — stop gracefully
-          errors.push(`جميع الحسابات (${allAccounts.length}) وصلت لحد PeerFlood — أُضيف ${added} عضو`);
+          // All accounts exhausted — check if we can recover by waiting
+          if (peerFloodRecoveries >= MAX_PEER_FLOOD_RECOVERIES) {
+            // Exhausted all recovery attempts — stop gracefully
+            const msg = `⚠️ PeerFlood متكرر بعد ${MAX_PEER_FLOOD_RECOVERIES} محاولات انتظار. أُضيف ${added} عضو. أضف حسابات إضافية للتدوير.`;
+            errors.push(msg);
+            updateJob(job.id, {
+              status: "completed",
+              error: msg,
+              completedAt: new Date().toISOString(),
+              result: { added, failed, skipped, errors, members: membersToAdd },
+            });
+            return;
+          }
+
+          // ── PEER FLOOD RECOVERY: Wait for circuit cooldown, then retry ──────
+          peerFloodRecoveries++;
+          const hNow = getHealth(currentAccId);
+          const baseWait = Math.max(0, hNow.circuitOpenUntil - Date.now());
+          const waitMs = baseWait + 20_000; // +20s buffer after circuit resets
+          const waitMins = Math.ceil(waitMs / 60_000);
+
+          logger.warn({
+            accountId: currentAccId,
+            jobId: job.id,
+            waitMins,
+            recovery: `${peerFloodRecoveries}/${MAX_PEER_FLOOD_RECOVERIES}`,
+            addedSoFar: added,
+          }, "PeerFlood recovery: waiting for cooldown then resuming");
+
           updateJob(job.id, {
-            status: "completed",
-            error: `PeerFlood: استُنفدت جميع الحسابات (${allAccounts.length}). أُضيف ${added} عضو.`,
-            completedAt: new Date().toISOString(),
+            status: "running",
+            error: `⏳ PeerFlood — انتظار ${waitMins} دقيقة ثم الاستئناف تلقائياً (أُضيف ${added} حتى الآن · محاولة ${peerFloodRecoveries}/${MAX_PEER_FLOOD_RECOVERIES})`,
             result: { added, failed, skipped, errors, members: membersToAdd },
           });
-          return;
+
+          await sleep(waitMs);
+
+          // Reset all account circuits after cooldown
+          for (const acc of allAccounts) resetCircuit(acc.id);
+          consecutivePeerFloods = 0;
+
+          // Reconnect with first account
+          currentAccIdx = 0;
+          currentAccId = allAccounts[0]!.id;
+          try {
+            client = await connectAccount(0);
+            logger.info({ accountId: currentAccId, added }, "PeerFlood recovery: reconnected, resuming adds");
+          } catch (connErr) {
+            logger.error({ accountId: currentAccId, connErr }, "Failed to reconnect after PeerFlood cooldown");
+            errors.push(`فشل إعادة الاتصال بعد الانتظار`);
+          }
+
+          updateJob(job.id, { status: "running", error: undefined });
+          member.status = "flood";
+          member.error = `PeerFlood (استُؤنف بعد ${waitMins} دقيقة)`;
+          i--; // retry this member with refreshed account
+          continue;
         }
 
         // Switch to next account
