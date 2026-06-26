@@ -6,11 +6,11 @@
     "lastName": "",
     "username": "K_maliy",
     "userId": "7707423847",
-    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAULMBTGPW9GXiRMQfLuWwH6C0nQyBCs5/mZRbCBeqDXVq9zrq5Rf+Lb7NIsSYjau5+Yf6CqxNNaC+Htv7spd4pBYRHhabucfkbfDnTMNgFWhREnFN6Mtgal/puruB4jU2RPQ1pC4sKLSqtt7bFVHmRo0l66SGZQx5j7OUERarP7GnwaOwz+o05P8AcuUZc58CwLC9piQKxIKFRMMacunfmHNWdjbMimBqH9aLqWV7aLgNFXcaPKRavThmVFvZrdeVdn0c4Fn0VFz29/IhY0pCZRXJxspqVoUzu1VU2bksrlKqlqR29gztK4O0+55E5Ynv1lgR+dJEkwIYA3b9SxZd6QU=",
-    "addedAt": "2026-04-06T22:55:11.180Z",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM=",
+    "addedAt": "2026-06-26T18:40:15.246Z",
     "isActive": true,
     "dailyAdded": 0,
-    "lastReset": "2026-04-06"
+    "lastReset": "2026-06-26"
   },
   {
     "id": "acc_8253909207",
@@ -50,5 +50,18 @@
     "isActive": true,
     "dailyAdded": 0,
     "lastReset": "2026-05-15"
+  },
+  {
+    "id": "acc_8945405440",
+    "phone": "+966597604752",
+    "firstName": "لنفثث",
+    "lastName": "ناسبيس",
+    "username": "",
+    "userId": "8945405440",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8=",
+    "addedAt": "2026-06-26T18:43:00.733Z",
+    "isActive": true,
+    "dailyAdded": 0,
+    "lastReset": "2026-06-26"
   }
 ]

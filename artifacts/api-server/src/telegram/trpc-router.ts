@@ -136,6 +136,7 @@ const extractionRouter = router({
       excludeBots: z.boolean().default(true),
       lastSeenDays: z.number().min(0).max(3650).default(0),  // 0 = no filter
       dataFilter: z.enum(["all", "with-username", "without-username", "with-phone"]).default("all"),
+      onlineOnly: z.boolean().default(false),
       mode: z.enum(["members", "admins", "subscribers", "contacts"]).default("members"),
       accountId: z.string(),
       sessionString: z.string().optional(), // phone-stored session
@@ -154,6 +155,7 @@ const extractionRouter = router({
         excludeBots: input.excludeBots,
         lastSeenDays: input.lastSeenDays,
         dataFilter: input.dataFilter,
+        onlineOnly: input.onlineOnly,
         mode: input.mode,
         sessionString: input.sessionString, // stored in job config (in-memory only)
       }, input.accountId);

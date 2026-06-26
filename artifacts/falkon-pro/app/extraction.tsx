@@ -146,6 +146,8 @@ export default function ExtractionScreen() {
     const account = activeAccounts[0]!;
     const sessionString = await localAccounts.getSession(account.id);
     const lastSeenDays = getLastSeenDays();
+    const preset = LAST_SEEN_PRESETS[lastSeenPreset]!;
+    const onlineOnly = (preset as any).onlineOnly ?? false;
 
     try {
       setIsRunning(true);
@@ -156,6 +158,7 @@ export default function ExtractionScreen() {
         excludeBots,
         lastSeenDays,
         dataFilter,
+        onlineOnly,
         mode,
         accountId: account.id,
         sessionString: sessionString || undefined,

@@ -124,5 +124,293 @@
     "startedAt": "2026-05-15T20:45:31.678Z",
     "completedAt": "2026-05-15T20:45:31.809Z",
     "error": "401: AUTH_KEY_UNREGISTERED (caused by users.GetUsers)"
+  },
+  {
+    "id": "job_1782499580874_vg4rz",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T18:46:20.874Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 100000,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T18:46:20.874Z",
+    "completedAt": "2026-06-26T18:47:26.091Z",
+    "result": {
+      "extracted": 6
+    }
+  },
+  {
+    "id": "job_1782499865602_owca3",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T18:51:05.602Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 100000,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T18:51:05.603Z",
+    "completedAt": "2026-06-26T18:52:09.939Z",
+    "result": {
+      "extracted": 6
+    }
+  },
+  {
+    "id": "job_1782500097505_620ee",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T18:54:57.505Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 100000,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T18:54:57.505Z",
+    "completedAt": "2026-06-26T18:56:01.451Z",
+    "result": {
+      "extracted": 6
+    }
+  },
+  {
+    "id": "job_1782500163708_pmzgo",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T18:56:03.708Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [
+        {
+          "userId": "1257158172",
+          "username": "asmaa12216",
+          "firstName": "Asoomh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7657466742",
+          "username": "",
+          "firstName": "أستغفر الله العظيم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1780609184",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "738320033",
+          "username": "llac96",
+          "firstName": "Hesa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782471252",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5374188521",
+          "username": "aamm661",
+          "firstName": "A7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "163454141",
+          "username": "jasmeen12",
+          "firstName": "Yasmeen",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "450986999",
+          "username": "jokr707",
+          "firstName": "A_D7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        }
+      ],
+      "delaySeconds": 15,
+      "maxPerDay": 40,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T18:56:03.709Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 6,
+      "errors": []
+    },
+    "completedAt": "2026-06-26T18:56:05.646Z"
+  },
+  {
+    "id": "job_1782500468535_as6jr",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T19:01:08.535Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 100000,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:01:08.535Z",
+    "completedAt": "2026-06-26T19:02:13.734Z",
+    "result": {
+      "extracted": 6
+    }
+  },
+  {
+    "id": "job_1782500535872_ecynb",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T19:02:15.872Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [
+        {
+          "userId": "1257158172",
+          "username": "asmaa12216",
+          "firstName": "Asoomh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7657466742",
+          "username": "",
+          "firstName": "أستغفر الله العظيم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1780609184",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "738320033",
+          "username": "llac96",
+          "firstName": "Hesa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782471252",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5374188521",
+          "username": "aamm661",
+          "firstName": "A7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "163454141",
+          "username": "jasmeen12",
+          "firstName": "Yasmeen",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "450986999",
+          "username": "jokr707",
+          "firstName": "A_D7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        }
+      ],
+      "delaySeconds": 15,
+      "maxPerDay": 40,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:02:15.872Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 6,
+      "errors": []
+    },
+    "completedAt": "2026-06-26T19:02:17.472Z"
   }
 ]
