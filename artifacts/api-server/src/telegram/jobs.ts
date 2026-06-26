@@ -1,152 +1,185 @@
 /**
- * JOBS STORE — In-Memory with Periodic Persistence
- * ==================================================
- * Critical for 500+ concurrent users:
- * - All reads/writes go to in-memory Map (μs latency vs ms file I/O)
- * - Periodic flush every 30s to disk (durability without performance hit)
- * - Race-condition-safe: no concurrent file writes
- * - Session strings are STRIPPED before disk persistence (security)
+ * JOBS STORE v5.0 — PostgreSQL Hybrid (In-Memory + PostgreSQL)
+ * =============================================================
+ * القراءات: من الذاكرة O(1) — سريعة لاستعلامات الحالة
+ * الكتابات: ذاكرة أولاً + PostgreSQL كل 2s (batch)
+ * Boot: يُحمَّل من PostgreSQL (يستأنف بعد Restart)
+ * يدعم 1000+ مستخدم متزامن
  */
 
-import fs from "fs";
-import path from "path";
-
-const DATA_DIR = process.env["DATA_DIR"] || path.join(process.cwd(), "../../data");
-const JOBS_FILE = path.join(DATA_DIR, "jobs.json");
+import { dbPool } from "./session-store.js";
+import { logger } from "../lib/logger.js";
 
 export type JobStatus = "queued" | "running" | "completed" | "failed" | "cancelled";
-export type JobType = "extraction" | "add_members" | "bulk_message" | "extract_and_add";
+export type JobType   = "extraction" | "add_members" | "bulk_message" | "extract_and_add";
 
 export interface MemberRecord {
-  userId: string;
-  accessHash?: string;   // REQUIRED for adding by ID — stored at extraction time
-  username: string;
-  firstName: string;
-  lastName: string;
-  isOnline: boolean;
-  phone?: string;
-  lastSeen?: string;
-  status: "pending" | "added" | "failed" | "flood" | "already_member" | "privacy";
-  error?: string;
+  userId:      string;
+  accessHash?: string;
+  username:    string;
+  firstName:   string;
+  lastName:    string;
+  isOnline:    boolean;
+  phone?:      string;
+  lastSeen?:   string;
+  status:      "pending" | "added" | "failed" | "flood" | "already_member" | "privacy";
+  error?:      string;
 }
 
 export interface Job {
-  id: string;
-  type: JobType;
-  status: JobStatus;
-  progress: number;
-  total: number;
-  createdAt: string;
-  startedAt?: string;
+  id:           string;
+  type:         JobType;
+  status:       JobStatus;
+  progress:     number;
+  total:        number;
+  createdAt:    string;
+  startedAt?:   string;
   completedAt?: string;
-  config: Record<string, unknown>;
+  config:       Record<string, unknown>;
   result?: {
-    members?: MemberRecord[];
-    extracted?: number;
-    added?: number;
-    failed?: number;
-    skipped?: number;
-    errors?: string[];
+    members?:       MemberRecord[];
+    extracted?:     number;
+    added?:         number;
+    failed?:        number;
+    skipped?:       number;
+    errors?:        string[];
     accountHealth?: number;
   };
-  error?: string;
-  accountId?: string;
+  error?:       string;
+  accountId?:   string;
   savedFileId?: string;
+  ownerHwid?:   string;
 }
 
-// ─── In-memory store (the only source of truth at runtime) ───────────────────
+const INIT_SQL = `
+  CREATE TABLE IF NOT EXISTS falkon_jobs (
+    id            TEXT PRIMARY KEY,
+    type          TEXT    NOT NULL,
+    status        TEXT    NOT NULL DEFAULT 'queued',
+    progress      INTEGER NOT NULL DEFAULT 0,
+    total         INTEGER NOT NULL DEFAULT 0,
+    created_at    TEXT    NOT NULL,
+    started_at    TEXT,
+    completed_at  TEXT,
+    config_json   JSONB   NOT NULL DEFAULT '{}',
+    result_json   JSONB,
+    error         TEXT,
+    account_id    TEXT,
+    saved_file_id TEXT,
+    owner_hwid    TEXT DEFAULT 'default'
+  );
+  CREATE INDEX IF NOT EXISTS idx_falkon_jobs_status  ON falkon_jobs(status);
+  CREATE INDEX IF NOT EXISTS idx_falkon_jobs_account ON falkon_jobs(account_id);
+  CREATE INDEX IF NOT EXISTS idx_falkon_jobs_owner   ON falkon_jobs(owner_hwid);
+  CREATE INDEX IF NOT EXISTS idx_falkon_jobs_created ON falkon_jobs(created_at DESC);
+`;
+
+let initialized = false;
+async function ensureSchema() {
+  if (initialized) return;
+  await dbPool.query(INIT_SQL);
+  initialized = true;
+  logger.info("jobs-store: PostgreSQL schema ready");
+}
 
 const jobsMap = new Map<string, Job>();
 let flushPending = false;
+const flushQueue = new Set<string>();
 
-function ensureDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+function schedulePgFlush(jobId: string) {
+  flushQueue.add(jobId);
+  if (flushPending) return;
+  flushPending = true;
+  setTimeout(async () => {
+    flushPending = false;
+    const ids = [...flushQueue]; flushQueue.clear();
+    try {
+      await ensureSchema();
+      for (const id of ids) {
+        const job = jobsMap.get(id);
+        if (!job) continue;
+        const cfg = { ...job.config }; delete cfg["sessionString"];
+        const res = job.result ? { ...job.result, members: undefined } : undefined;
+        dbPool.query(
+          `INSERT INTO falkon_jobs
+             (id,type,status,progress,total,created_at,started_at,completed_at,config_json,result_json,error,account_id,saved_file_id,owner_hwid)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+           ON CONFLICT (id) DO UPDATE SET
+             status=$3, progress=$4, total=$5, started_at=$7, completed_at=$8,
+             result_json=$10, error=$11, saved_file_id=$13`,
+          [job.id, job.type, job.status, job.progress, job.total,
+           job.createdAt, job.startedAt ?? null, job.completedAt ?? null,
+           JSON.stringify(cfg), res ? JSON.stringify(res) : null,
+           job.error ?? null, job.accountId ?? null,
+           job.savedFileId ?? null, job.ownerHwid ?? "default"]
+        ).catch((e: any) => logger.warn({ jobId: id, err: String(e) }, "jobs: PG flush failed"));
+      }
+    } catch (err) {
+      logger.error({ err: String(err) }, "jobs: batch flush failed");
+    }
+  }, 2000);
 }
 
-// ─── Boot: load from disk once ───────────────────────────────────────────────
-
-function bootLoad() {
-  ensureDir();
-  if (!fs.existsSync(JOBS_FILE)) return;
+async function bootLoad() {
+  await ensureSchema();
   try {
-    const raw = fs.readFileSync(JOBS_FILE, "utf-8");
-    const jobs = JSON.parse(raw) as Job[];
-    // Only load completed/failed/cancelled — running/queued jobs are invalid after restart
-    for (const job of jobs) {
-      if (job.status === "running" || job.status === "queued") {
-        job.status = "failed";
-        job.error = "Server restarted — job interrupted";
-        job.completedAt = new Date().toISOString();
-      }
-      // Strip session strings on load (safety)
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await dbPool.query(
+      "SELECT * FROM falkon_jobs WHERE created_at > $1 ORDER BY created_at DESC LIMIT 1000",
+      [cutoff]
+    );
+    for (const row of res.rows) {
+      const wasRunning = row.status === "running" || row.status === "queued";
+      const job: Job = {
+        id: row.id, type: row.type,
+        status: wasRunning ? "failed" : row.status,
+        progress: row.progress, total: row.total,
+        createdAt: row.created_at, startedAt: row.started_at ?? undefined,
+        completedAt: row.completed_at ?? (wasRunning ? new Date().toISOString() : undefined),
+        config: typeof row.config_json === "string" ? JSON.parse(row.config_json) : (row.config_json ?? {}),
+        result: row.result_json ? (typeof row.result_json === "string" ? JSON.parse(row.result_json) : row.result_json) : undefined,
+        error: row.error ?? (wasRunning ? "Server restarted — job interrupted" : undefined),
+        accountId: row.account_id ?? undefined,
+        savedFileId: row.saved_file_id ?? undefined,
+        ownerHwid: row.owner_hwid ?? "default",
+      };
       if (job.config["sessionString"]) delete job.config["sessionString"];
       jobsMap.set(job.id, job);
     }
-  } catch {
-    // corrupted file — start fresh
-  }
-}
-
-bootLoad();
-
-// ─── Periodic flush to disk (non-blocking, debounced) ────────────────────────
-
-function scheduleFlush() {
-  if (flushPending) return;
-  flushPending = true;
-  setTimeout(() => {
-    flushPending = false;
-    flushToDisk();
-  }, 5000); // batch writes: flush max once every 5s
-}
-
-function flushToDisk() {
-  try {
-    ensureDir();
-    // Strip session strings and large member arrays before persisting
-    const jobs = [...jobsMap.values()].map((job) => {
-      const config = { ...job.config };
-      delete config["sessionString"]; // NEVER persist session strings to disk
-      const result = job.result
-        ? { ...job.result, members: undefined } // don't persist large member arrays
-        : undefined;
-      return { ...job, config, result };
-    });
-    // Keep only last 500 jobs on disk (oldest jobs dropped first)
-    const toSave = jobs.slice(-500);
-    fs.writeFileSync(JOBS_FILE, JSON.stringify(toSave, null, 2));
+    logger.info({ loaded: jobsMap.size }, "jobs-store: loaded from PostgreSQL");
   } catch (err) {
-    // Never crash on flush failure
-    console.error("[jobs] flush failed:", err);
+    logger.error({ err: String(err) }, "jobs-store: boot load failed");
   }
 }
 
-// Auto-flush every 30s regardless
-setInterval(flushToDisk, 30_000);
+bootLoad().catch((err) => logger.error({ err: String(err) }, "jobs-store: boot failed"));
 
-// Flush on graceful shutdown
-process.on("SIGTERM", () => { flushToDisk(); });
-process.on("SIGINT",  () => { flushToDisk(); });
+setInterval(() => {
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  let removed = 0;
+  for (const [id, job] of jobsMap) {
+    if (["completed","failed","cancelled"].includes(job.status) && job.completedAt &&
+        new Date(job.completedAt).getTime() < cutoff) {
+      jobsMap.delete(id); removed++;
+    }
+  }
+  if (removed > 0) logger.info({ removed }, "jobs: cleaned old jobs from memory");
+}, 60 * 60 * 1000);
 
-// ─── Public API — all O(1) in-memory operations ──────────────────────────────
-
-export function loadJobs(): Job[] {
-  return [...jobsMap.values()];
+export function loadJobs(ownerHwid?: string): Job[] {
+  const all = [...jobsMap.values()];
+  if (!ownerHwid) return all;
+  return all.filter((j) => !j.ownerHwid || j.ownerHwid === ownerHwid || j.ownerHwid === "default");
 }
 
-export function createJob(type: JobType, config: Record<string, unknown>, accountId?: string): Job {
+export function createJob(type: JobType, config: Record<string, unknown>, accountId?: string, ownerHwid?: string): Job {
   const job: Job = {
     id: `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    type,
-    status: "queued",
-    progress: 0,
-    total: 0,
-    createdAt: new Date().toISOString(),
-    config,   // session string lives here in-memory only; stripped before disk
-    accountId,
+    type, status: "queued", progress: 0, total: 0,
+    createdAt: new Date().toISOString(), config, accountId, ownerHwid: ownerHwid ?? "default",
   };
   jobsMap.set(job.id, job);
-  scheduleFlush();
+  schedulePgFlush(job.id);
   return job;
 }
 
@@ -155,24 +188,10 @@ export function updateJob(id: string, updates: Partial<Job>): Job | null {
   if (!existing) return null;
   const updated = { ...existing, ...updates };
   jobsMap.set(id, updated);
-  scheduleFlush();
+  schedulePgFlush(id);
   return updated;
 }
 
 export function getJob(id: string): Job | undefined {
   return jobsMap.get(id);
 }
-
-// Clean up completed jobs older than 24h to prevent memory growth
-setInterval(() => {
-  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-  for (const [id, job] of jobsMap) {
-    if (
-      (job.status === "completed" || job.status === "failed" || job.status === "cancelled") &&
-      job.completedAt &&
-      new Date(job.completedAt).getTime() < cutoff
-    ) {
-      jobsMap.delete(id);
-    }
-  }
-}, 60 * 60 * 1000); // run hourly
