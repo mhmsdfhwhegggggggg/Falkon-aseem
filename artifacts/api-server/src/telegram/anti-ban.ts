@@ -444,3 +444,81 @@ export function resetAllCircuits(): string[] {
   logger.info({ count: reset.length }, "All circuits manually reset");
   return reset;
 }
+
+
+// ─── PostgreSQL Health Persistence v3.0 ──────────────────────────────────────
+// يحفظ health scores في PostgreSQL كل 5 دقائق
+// عند الـ Boot: يُستعاد الـ health state من قاعدة البيانات
+
+import { dbPool } from "./session-store.js";
+
+const HEALTH_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS falkon_health (
+    account_id        TEXT PRIMARY KEY,
+    score             INTEGER   NOT NULL DEFAULT 100,
+    total_added       INTEGER   NOT NULL DEFAULT 0,
+    total_errors      INTEGER   NOT NULL DEFAULT 0,
+    flood_count       INTEGER   NOT NULL DEFAULT 0,
+    peer_flood_count  INTEGER   NOT NULL DEFAULT 0,
+    circuit_open      BOOLEAN   NOT NULL DEFAULT FALSE,
+    circuit_open_until BIGINT   NOT NULL DEFAULT 0,
+    warmup_mode       BOOLEAN   NOT NULL DEFAULT FALSE,
+    updated_at        TEXT      NOT NULL DEFAULT NOW()::TEXT
+  );
+`;
+
+let healthTableReady = false;
+async function ensureHealthTable() {
+  if (healthTableReady) return;
+  try { await dbPool.query(HEALTH_TABLE_SQL); healthTableReady = true; } catch { /* ignore */ }
+}
+
+// ─── Load health state on boot ────────────────────────────────────────────────
+async function loadHealthFromPg() {
+  await ensureHealthTable();
+  try {
+    const res = await dbPool.query("SELECT * FROM falkon_health");
+    for (const row of res.rows) {
+      const existing = healthStore.get(row.account_id) ?? {
+        accountId: row.account_id, score: row.score,
+        totalAdded: row.total_added, totalErrors: row.total_errors,
+        floodWaitCount: row.flood_count, peerFloodCount: row.peer_flood_count,
+        lastFloodAt: 0, lastPeerFloodAt: 0,
+        circuitOpen: row.circuit_open, circuitOpenUntil: Number(row.circuit_open_until),
+        dailyWindow: [], warmupMode: row.warmup_mode, warmupActionsLeft: 0, createdAt: Date.now(),
+      };
+      healthStore.set(row.account_id, existing);
+    }
+    logger.info({ loaded: res.rows.length }, "anti-ban: health state loaded from PostgreSQL");
+  } catch (err) {
+    logger.warn({ err: String(err) }, "anti-ban: health load failed (using fresh state)");
+  }
+}
+
+loadHealthFromPg().catch(() => {});
+
+// ─── Flush health state to PostgreSQL every 5 minutes ─────────────────────────
+setInterval(async () => {
+  await ensureHealthTable();
+  const entries = [...healthStore.entries()];
+  if (entries.length === 0) return;
+  try {
+    for (const [accountId, h] of entries) {
+      await dbPool.query(
+        `INSERT INTO falkon_health
+           (account_id, score, total_added, total_errors, flood_count, peer_flood_count,
+            circuit_open, circuit_open_until, warmup_mode, updated_at)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW()::TEXT)
+         ON CONFLICT (account_id) DO UPDATE SET
+           score=$2, total_added=$3, total_errors=$4, flood_count=$5,
+           peer_flood_count=$6, circuit_open=$7, circuit_open_until=$8,
+           warmup_mode=$9, updated_at=NOW()::TEXT`,
+        [accountId, h.score, h.totalAdded, h.totalErrors, h.floodWaitCount,
+         h.peerFloodCount, h.circuitOpen, h.circuitOpenUntil, h.warmupMode]
+      );
+    }
+    logger.debug({ flushed: entries.length }, "anti-ban: health flushed to PostgreSQL");
+  } catch (err) {
+    logger.warn({ err: String(err) }, "anti-ban: health flush failed");
+  }
+}, 5 * 60 * 1000);
