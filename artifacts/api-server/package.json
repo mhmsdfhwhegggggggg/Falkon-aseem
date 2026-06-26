@@ -28,7 +28,8 @@
     "superjson": "^2.2.6",
     "telegram": "^2.26.22",
     "utf-8-validate": "^6.0.6",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "pg": "^8.13.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
@@ -38,6 +39,7 @@
     "esbuild": "^0.27.3",
     "esbuild-plugin-pino": "^2.3.3",
     "pino-pretty": "^13",
-    "thread-stream": "3.1.0"
+    "thread-stream": "3.1.0",
+    "@types/pg": "^8.11.0"
   }
 }
