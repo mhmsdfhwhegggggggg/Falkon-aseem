@@ -412,5 +412,29 @@
       "errors": []
     },
     "completedAt": "2026-06-26T19:02:17.472Z"
+  },
+  {
+    "id": "job_1782500849166_bjc5e",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T19:07:29.166Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 100000,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "onlineOnly": false,
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:07:29.167Z",
+    "completedAt": "2026-06-26T19:08:33.833Z",
+    "result": {
+      "extracted": 6
+    }
   }
 ]
