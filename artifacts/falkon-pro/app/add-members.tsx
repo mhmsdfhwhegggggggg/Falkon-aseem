@@ -148,10 +148,15 @@ export default function AddMembersScreen() {
       const delaySecs = Math.max(1, Math.min(1000, parseInt(delayText) || 3));
       const maxDay = Math.max(1, parseInt(maxPerDayText) || 500);
 
+      // Source group: needed for channels.GetParticipant fallback (resolves accessHash=0 members)
+      const selectedFile = mode === 'from-file' ? membersStore.files.find((f) => f.id === selectedFileId) : undefined;
+      const sourceGroupUrl = selectedFile?.sourceGroup || undefined;
+
       const result = await startMut.mutateAsync({
         targetGroup: targetGroup.trim(),
         mode: inlineMembers ? 'from-phone' : mode,
         members: inlineMembers,
+        sourceGroup: sourceGroupUrl,
         fileId: !inlineMembers && mode === 'from-file' ? selectedFileId : undefined,
         usernames: mode === 'by-username' ? lines : undefined,
         userIds: mode === 'by-id' ? lines : undefined,

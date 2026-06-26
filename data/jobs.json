@@ -436,5 +436,2373 @@
     "result": {
       "extracted": 6
     }
+  },
+  {
+    "id": "job_1782501285337_tx3un",
+    "type": "extraction",
+    "status": "completed",
+    "progress": 200,
+    "total": 200,
+    "createdAt": "2026-06-26T19:14:45.337Z",
+    "config": {
+      "group": "https://t.me/qyassjobs",
+      "limit": 200,
+      "filterActive": false,
+      "excludeBots": true,
+      "lastSeenDays": 0,
+      "dataFilter": "all",
+      "onlineOnly": false,
+      "mode": "members"
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:14:45.337Z",
+    "completedAt": "2026-06-26T19:14:49.254Z",
+    "result": {
+      "extracted": 200
+    }
+  },
+  {
+    "id": "job_1782501291043_cmyn3",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 200,
+    "total": 200,
+    "createdAt": "2026-06-26T19:14:51.043Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [
+        {
+          "userId": "1257158172",
+          "username": "asmaa12216",
+          "firstName": "Asoomh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7657466742",
+          "username": "",
+          "firstName": "أستغفر الله العظيم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1780609184",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "738320033",
+          "username": "llac96",
+          "firstName": "Hesa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782471252",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5374188521",
+          "username": "aamm661",
+          "firstName": "A7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "163454141",
+          "username": "jasmeen12",
+          "firstName": "Yasmeen",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "450986999",
+          "username": "jokr707",
+          "firstName": "A_D7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2026014335",
+          "username": "",
+          "firstName": "•❥❥²⁰²⁶",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5334138277",
+          "username": "Nawara444",
+          "firstName": "𝒩𝒪ℛ𝒜ℋ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6257780295",
+          "username": "",
+          "firstName": "Fatimah",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "125993829",
+          "username": "tai_lili",
+          "firstName": "Taif",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782501026",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "972645159",
+          "username": "anfal5an",
+          "firstName": "Anfal",
+          "lastName": "Ahmad",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782498798",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "685409762",
+          "username": "xxsoso77",
+          "firstName": "SOS…….",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "625156061",
+          "username": "Y44200",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "420773842",
+          "username": "",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5763948172",
+          "username": "M14D1M",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "814536537",
+          "username": "",
+          "firstName": "M",
+          "lastName": "..",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782485474",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "940709322",
+          "username": "wrood0x",
+          "firstName": "Nono",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1172554345",
+          "username": "Edrakformath",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8733700508",
+          "username": "r999i4",
+          "firstName": "44",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5902310",
+          "username": "",
+          "firstName": "Neamah",
+          "lastName": "Saeed",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782494538",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "40800632",
+          "username": "sooleeta",
+          "firstName": "ṠΌ̵σŁє̐Є̲Ŧŋ̴",
+          "lastName": "..",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782473715",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7519414411",
+          "username": "FA8AD5",
+          "firstName": "🅕🅐",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1876753667",
+          "username": "qwerpwn",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "898361154",
+          "username": "klali2020",
+          "firstName": "علي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1216889315",
+          "username": "salma2013",
+          "firstName": "salma",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "966531520636",
+          "lastSeen": "1782469942",
+          "status": "pending"
+        },
+        {
+          "userId": "379245986",
+          "username": "",
+          "firstName": "Shosho",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5395083258",
+          "username": "tuwaiq1",
+          "firstName": "Tr",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2064376128",
+          "username": "",
+          "firstName": "شيخة الحربي",
+          "lastName": "🌺",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782477323",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1890837865",
+          "username": "amira_0o0",
+          "firstName": "Amira",
+          "lastName": "..",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782477064",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2130310512",
+          "username": "Mahmmad_AL_Rogi",
+          "firstName": "الثابت",
+          "lastName": "Muhammad",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782491256",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8978728650",
+          "username": "",
+          "firstName": "Majd",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782453385",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "796224501",
+          "username": "",
+          "firstName": "riiiّ .",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8484535506",
+          "username": "",
+          "firstName": "Rood",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782463494",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1065607757",
+          "username": "",
+          "firstName": "♡",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6982456784",
+          "username": "Bent_Abui",
+          "firstName": "بًنِتٌـ أبًوٌي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "831077176",
+          "username": "crvv3",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1255803389",
+          "username": "",
+          "firstName": "Aisha",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782495093",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "665691577",
+          "username": "",
+          "firstName": "𝑴𝑶𝑯𝑨𝑵𝑨𝑫𓅓²⁷•",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "541386018",
+          "username": "Rsm1493",
+          "firstName": "نسمة 🧡",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "481980168",
+          "username": "At_eeo",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "588412156",
+          "username": "esoo21",
+          "firstName": "Esraa 🧡",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6460384008",
+          "username": "Rbeeba2",
+          "firstName": "R",
+          "lastName": "B",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8184805275",
+          "username": "hii3_a1",
+          "firstName": "R🤍",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "726447373",
+          "username": "Faisal03578",
+          "firstName": "Mohammed Alromih",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782496667",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "153631782",
+          "username": "NOoOoRA1",
+          "firstName": "نـواره",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "541157151",
+          "username": "AbdulrhmanEid",
+          "firstName": "Abdulrhman",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782500266",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8324554299",
+          "username": "Nada_Al13",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782479178",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "666194034",
+          "username": "",
+          "firstName": "N",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782486841",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1279789138",
+          "username": "",
+          "firstName": "🌷Mm",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782496828",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8130723831",
+          "username": "",
+          "firstName": "nader",
+          "lastName": "alharbi",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782491687",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1460530053",
+          "username": "iwu4y",
+          "firstName": "*",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1647690593",
+          "username": "",
+          "firstName": "ام فيصل",
+          "lastName": "اا",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"1647690593\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "682346963",
+          "username": "",
+          "firstName": "Mona.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1325519828",
+          "username": "",
+          "firstName": "Nori",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782497969",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "693982156",
+          "username": "Ghada_Alharthi",
+          "firstName": "Ghada",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "174852415",
+          "username": "",
+          "firstName": "ᴴ، حَــنانْ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"174852415\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "641397820",
+          "username": "",
+          "firstName": "ام الين🤍.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782478163",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1200558660",
+          "username": "",
+          "firstName": "ABS",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1060998558",
+          "username": "doody14311",
+          "firstName": "ع",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8103342412",
+          "username": "",
+          "firstName": "الصين",
+          "lastName": "2025",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782374878",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8373678018",
+          "username": "aberrsi",
+          "firstName": "Amal.🎈",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6067575491",
+          "username": "",
+          "firstName": "Afrah",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782491443",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2142415006",
+          "username": "",
+          "firstName": "@",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1183931779",
+          "username": "",
+          "firstName": "B✨",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782492994",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5106711080",
+          "username": "",
+          "firstName": "S",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782490865",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5336600124",
+          "username": "Sulaiman116",
+          "firstName": "Sulaiman M",
+          "lastName": "S",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782421987",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6734674765",
+          "username": "",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "966532346668",
+          "lastSeen": "1782501067",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "861016744",
+          "username": "",
+          "firstName": "أم فهد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"861016744\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "8599165634",
+          "username": "",
+          "firstName": "عيووش",
+          "lastName": "ً",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1066133870",
+          "username": "Amal_tw",
+          "firstName": "Am. S 💐",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782479551",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "653094271",
+          "username": "",
+          "firstName": "🪞",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "722065358",
+          "username": "",
+          "firstName": "صـَـــ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8801495828",
+          "username": "",
+          "firstName": "sh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782501172",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "272838512",
+          "username": "Nooor_91",
+          "firstName": "Noor🌱",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "192659054",
+          "username": "rv_ww3",
+          "firstName": "Wajd",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782500343",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "589023038",
+          "username": "",
+          "firstName": "آحمد",
+          "lastName": "~",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"589023038\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "1011929835",
+          "username": "",
+          "firstName": "S",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7927597910",
+          "username": "",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782405387",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "307983960",
+          "username": "Sara96x",
+          "firstName": "💎",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782421084",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1423614373",
+          "username": "",
+          "firstName": "TamaraT",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5477156056",
+          "username": "",
+          "firstName": "Omar",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782500465",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "876978763",
+          "username": "",
+          "firstName": "Q",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"876978763\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "1015950764",
+          "username": "",
+          "firstName": "إيمان",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"1015950764\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "265086066",
+          "username": "asa19998",
+          "firstName": "Saad",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5648593583",
+          "username": "NA22Il",
+          "firstName": "NOURAH✨",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6580723941",
+          "username": "",
+          "firstName": "محمد",
+          "lastName": "العاصمي",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782460816",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8308915220",
+          "username": "",
+          "firstName": "🍁ام محمد🍁",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2070815264",
+          "username": "",
+          "firstName": "Sara 🦢",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1745221951",
+          "username": "",
+          "firstName": "🦋",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1037129106",
+          "username": "",
+          "firstName": "مّ 🪿❤️‍🩹*",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782479359",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "155462761",
+          "username": "amtorky81",
+          "firstName": "آم تــركي🫶🏻",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1361879856",
+          "username": "Oct_18",
+          "firstName": "DE",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7415061239",
+          "username": "Faris37777",
+          "firstName": "Faris",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2140136870",
+          "username": "",
+          "firstName": "Raed",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782429462",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1024569579",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8015570981",
+          "username": "",
+          "firstName": "Reyam",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782493617",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "761582034",
+          "username": "frooha90",
+          "firstName": "فرح",
+          "lastName": "..",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "754621619",
+          "username": "Aa_1160",
+          "firstName": "Ohoud.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "863607359",
+          "username": "",
+          "firstName": "🍓 ~T~🍓",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782501038",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "189739",
+          "username": "",
+          "firstName": "ALanood",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "971432999",
+          "username": "D23332s",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "9985955",
+          "username": "Chem_Moha96",
+          "firstName": "M",
+          "lastName": "H",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782500364",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "258732972",
+          "username": "am_elias",
+          "firstName": "الحمدلله",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "270420138",
+          "username": "",
+          "firstName": "-",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "71482424",
+          "username": "ar001111",
+          "firstName": "Arwa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "459705313",
+          "username": "AM34km",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "521125110",
+          "username": "",
+          "firstName": ".",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782495135",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7964586016",
+          "username": "",
+          "firstName": "Doja",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1894287380",
+          "username": "",
+          "firstName": "لمياء .",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782436772",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6207902103",
+          "username": "MARIAM4111",
+          "firstName": "Mariam",
+          "lastName": "",
+          "isOnline": true,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5351363492",
+          "username": "",
+          "firstName": "🎀",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "513571518",
+          "username": "",
+          "firstName": "■",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782394002",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "266080641",
+          "username": "ohood0",
+          "firstName": "عهود الجهني",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782496247",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "175523780",
+          "username": "",
+          "firstName": "SsMm️",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5152086100",
+          "username": "xeeii_8",
+          "firstName": "OCTOBER",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782492336",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1309821669",
+          "username": "",
+          "firstName": "Aljazy",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "691744783",
+          "username": "ronzi502",
+          "firstName": "Rahma",
+          "lastName": "Alonzi",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8063095972",
+          "username": "talaaa57",
+          "firstName": "E..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782477875",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "781939315",
+          "username": "gdhdtkd",
+          "firstName": "G",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6267742856",
+          "username": "",
+          "firstName": "تركيه",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"6267742856\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "5646198900",
+          "username": "",
+          "firstName": "❤️",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6544423691",
+          "username": "MuSa3d_55",
+          "firstName": "MuSa3d_55",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782485269",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "134464108",
+          "username": "",
+          "firstName": "أم تميم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "352651266",
+          "username": "km_879",
+          "firstName": "عبدالحكيم الشهري.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782384504",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "357645262",
+          "username": "",
+          "firstName": "☺️",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"357645262\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "1337510764",
+          "username": "",
+          "firstName": "Salazmi",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782204553",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8013430040",
+          "username": "",
+          "firstName": "♕̵̵̇αвσ",
+          "lastName": "ĸнαωℓαн ⚜️",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1944150224",
+          "username": "nesmdq",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "509847047",
+          "username": "joud_alwehaibi",
+          "firstName": "جـود",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782224435",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2045104059",
+          "username": "",
+          "firstName": "مرام",
+          "lastName": "العنزي",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1022703905",
+          "username": "reemii92",
+          "firstName": "رَ",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782497523",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "766405692",
+          "username": "",
+          "firstName": "أثير الخزاعي",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"766405692\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "8419380762",
+          "username": "",
+          "firstName": "♥️",
+          "lastName": "♥️",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7112118331",
+          "username": "",
+          "firstName": "Rihab",
+          "lastName": "Kim",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782256267",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "447821192",
+          "username": "Salmaabdullah",
+          "firstName": "Salma",
+          "lastName": "Abdullah",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782489463",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "862660191",
+          "username": "ishg5",
+          "firstName": "Shahad.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "802490984",
+          "username": "",
+          "firstName": "N",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5650784203",
+          "username": "",
+          "firstName": "Sultan",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"5650784203\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "6058179767",
+          "username": "",
+          "firstName": "H",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "628211395",
+          "username": "",
+          "firstName": "heam",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"628211395\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "476251050",
+          "username": "jj_m11",
+          "firstName": "𝕁𝕎𝔸ℍℝ.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1095571031",
+          "username": "Monaalboti",
+          "firstName": "….",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "996600003",
+          "username": "",
+          "firstName": "G",
+          "lastName": "Harb",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "775340502",
+          "username": "Fahed124021",
+          "firstName": "فهد بن حمود",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8267415705",
+          "username": "",
+          "firstName": "ورووود🌺🌸🌼🌷🪻",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"8267415705\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "623002849",
+          "username": "",
+          "firstName": "رغد",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"623002849\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "5514152929",
+          "username": "",
+          "firstName": "B",
+          "lastName": "A",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1214705952",
+          "username": "harbee22",
+          "firstName": "🌹",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "125779213",
+          "username": "",
+          "firstName": "ابو غانم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "304436108",
+          "username": "sara_alotbi",
+          "firstName": "Bb🌷🌷",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782495167",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1726056131",
+          "username": "",
+          "firstName": "M",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "432153339",
+          "username": "",
+          "firstName": "🦋🦋",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"432153339\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "863224363",
+          "username": "",
+          "firstName": "Amani",
+          "lastName": "Alshehri",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782499644",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "445895102",
+          "username": "amaniff",
+          "firstName": "Amani",
+          "lastName": "Foad",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782113138",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7127104528",
+          "username": "o3nn1",
+          "firstName": "-",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5939897680",
+          "username": "nada17i",
+          "firstName": "Nada🧡",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782248963",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "524123211",
+          "username": "",
+          "firstName": "زهرة",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782496298",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "276704905",
+          "username": "mm1009ma",
+          "firstName": "..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7696424612",
+          "username": "",
+          "firstName": "مريم",
+          "lastName": "المولد",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782350471",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "258377740",
+          "username": "",
+          "firstName": "..🕊️🤍",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"258377740\",\"className\":\"PeerUser\""
+        },
+        {
+          "userId": "930248567",
+          "username": "Fi_55",
+          "firstName": "٤٣",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7799012",
+          "username": "",
+          "firstName": "🤍",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1548999834",
+          "username": "",
+          "firstName": "m🤲",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782498577",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "792215388",
+          "username": "",
+          "firstName": "R",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782428742",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "620281711",
+          "username": "",
+          "firstName": "Ro0oje💕",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6815391176",
+          "username": "mrz866",
+          "firstName": ".",
+          "lastName": ".",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1060344951",
+          "username": "",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "2105904521",
+          "username": "vprixvt",
+          "firstName": "FA",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1015085350",
+          "username": "xnoura_turki",
+          "firstName": "نـوارة",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "560640829",
+          "username": "",
+          "firstName": "Sh",
+          "lastName": "M",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782477707",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1154353148",
+          "username": "",
+          "firstName": "s",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "243862247",
+          "username": "",
+          "firstName": "اموله",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782480692",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "781781017",
+          "username": "fatimahssa",
+          "firstName": "fatimah",
+          "lastName": "🌸",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1361235260",
+          "username": "",
+          "firstName": "Nada",
+          "lastName": "🦋.",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782318223",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5029147636",
+          "username": "nano_subaei",
+          "firstName": "nona",
+          "lastName": "🕊️",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "838990322",
+          "username": "Fofa00x",
+          "firstName": "Fofa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782475532",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1337083718",
+          "username": "",
+          "firstName": "Mesh..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782476591",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "578687822",
+          "username": "rgesa",
+          "firstName": "Rًَ",
+          "lastName": "َ",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1301800158",
+          "username": "",
+          "firstName": "saad",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782434808",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "600875378",
+          "username": "xfa6mah0",
+          "firstName": "ف🌿",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782497708",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "895155219",
+          "username": "",
+          "firstName": "……..",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5097560038",
+          "username": "cdsgas",
+          "firstName": ".",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "250545388",
+          "username": "",
+          "firstName": "sl",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1470273675",
+          "username": "",
+          "firstName": "N",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1781978682",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "427665089",
+          "username": "loool_89",
+          "firstName": "L",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1029519934",
+          "username": "aboodi14",
+          "firstName": "عبدالرحيم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782495988",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1389773457",
+          "username": "",
+          "firstName": "ندوش",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"1389773457\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "1033757943",
+          "username": "b_wou",
+          "firstName": "🤍.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782430593",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "982792696",
+          "username": "",
+          "firstName": "ابتهاج عسيري",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782117928",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "702970582",
+          "username": "",
+          "firstName": "سَ.",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "708003294",
+          "username": "loool1089",
+          "firstName": "لـيلـى♥️",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6147571958",
+          "username": "",
+          "firstName": "الحمدلله",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"6147571958\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "531721366",
+          "username": "asrarm2020",
+          "firstName": "A",
+          "lastName": "M",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782475280",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "983080697",
+          "username": "NjoudNAM",
+          "firstName": "Njoud",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "1669654355",
+          "username": "",
+          "firstName": "Mohammed",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782470431",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "425090016",
+          "username": "",
+          "firstName": "Maryam",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "6435345569",
+          "username": "sksjsjw32",
+          "firstName": "...",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "8599615704",
+          "username": "",
+          "firstName": "🕊️🕊️",
+          "lastName": "..",
+          "isOnline": false,
+          "phone": "",
+          "status": "failed",
+          "error": "Could not find the input entity for {\"userId\":\"8599615704\",\"className\":\"PeerUser"
+        },
+        {
+          "userId": "756183599",
+          "username": "F_f9922",
+          "firstName": "A",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782490550",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "969595464",
+          "username": "ghayda155",
+          "firstName": "🎞📷غيداء",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        }
+      ],
+      "delaySeconds": 15,
+      "maxPerDay": 40,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:14:51.043Z",
+    "result": {
+      "added": 0,
+      "failed": 18,
+      "skipped": 182,
+      "errors": [
+        "1647690593: Could not find the input entity for {\"userId\":\"1647690593\",\"className\":\"PeerUser",
+        "174852415: Could not find the input entity for {\"userId\":\"174852415\",\"className\":\"PeerUser\"",
+        "861016744: Could not find the input entity for {\"userId\":\"861016744\",\"className\":\"PeerUser\"",
+        "589023038: Could not find the input entity for {\"userId\":\"589023038\",\"className\":\"PeerUser\"",
+        "876978763: Could not find the input entity for {\"userId\":\"876978763\",\"className\":\"PeerUser\"",
+        "1015950764: Could not find the input entity for {\"userId\":\"1015950764\",\"className\":\"PeerUser",
+        "6267742856: Could not find the input entity for {\"userId\":\"6267742856\",\"className\":\"PeerUser",
+        "357645262: Could not find the input entity for {\"userId\":\"357645262\",\"className\":\"PeerUser\"",
+        "766405692: Could not find the input entity for {\"userId\":\"766405692\",\"className\":\"PeerUser\"",
+        "5650784203: Could not find the input entity for {\"userId\":\"5650784203\",\"className\":\"PeerUser",
+        "628211395: Could not find the input entity for {\"userId\":\"628211395\",\"className\":\"PeerUser\"",
+        "8267415705: Could not find the input entity for {\"userId\":\"8267415705\",\"className\":\"PeerUser",
+        "623002849: Could not find the input entity for {\"userId\":\"623002849\",\"className\":\"PeerUser\"",
+        "432153339: Could not find the input entity for {\"userId\":\"432153339\",\"className\":\"PeerUser\"",
+        "258377740: Could not find the input entity for {\"userId\":\"258377740\",\"className\":\"PeerUser\"",
+        "1389773457: Could not find the input entity for {\"userId\":\"1389773457\",\"className\":\"PeerUser",
+        "6147571958: Could not find the input entity for {\"userId\":\"6147571958\",\"className\":\"PeerUser",
+        "8599615704: Could not find the input entity for {\"userId\":\"8599615704\",\"className\":\"PeerUser"
+      ]
+    },
+    "completedAt": "2026-06-26T19:16:05.076Z"
+  },
+  {
+    "id": "job_1782501592608_o69x3",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-06-26T19:19:52.608Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [],
+      "delaySeconds": 1,
+      "maxPerDay": 500,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:19:52.608Z",
+    "completedAt": "2026-06-26T19:19:52.608Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [
+        "لا يوجد أعضاء للإضافة"
+      ]
+    }
+  },
+  {
+    "id": "job_1782501616222_b6r8p",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-06-26T19:20:16.222Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [],
+      "delaySeconds": 1,
+      "maxPerDay": 500,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:20:16.222Z",
+    "completedAt": "2026-06-26T19:20:16.222Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [
+        "لا يوجد أعضاء للإضافة"
+      ]
+    }
+  },
+  {
+    "id": "job_1782501637202_qowd0",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 6,
+    "total": 6,
+    "createdAt": "2026-06-26T19:20:37.202Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [
+        {
+          "userId": "1257158172",
+          "accessHash": "6596265425636706233",
+          "username": "asmaa12216",
+          "firstName": "Asoomh",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "7657466742",
+          "accessHash": "-1685185568966395478",
+          "username": "",
+          "firstName": "أستغفر الله العظيم",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1780609184",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "738320033",
+          "accessHash": "-7045165342303316149",
+          "username": "llac96",
+          "firstName": "Hesa",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "lastSeen": "1782471252",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "5374188521",
+          "accessHash": "-7773054456188778945",
+          "username": "aamm661",
+          "firstName": "A7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "163454141",
+          "accessHash": "-6047057696721891551",
+          "username": "jasmeen12",
+          "firstName": "Yasmeen",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        },
+        {
+          "userId": "450986999",
+          "accessHash": "1100892241608308630",
+          "username": "jokr707",
+          "firstName": "A_D7",
+          "lastName": "",
+          "isOnline": false,
+          "phone": "",
+          "status": "privacy",
+          "error": "لا صلاحية كتابة"
+        }
+      ],
+      "delaySeconds": 1,
+      "maxPerDay": 500,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:20:37.202Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 6,
+      "errors": []
+    },
+    "completedAt": "2026-06-26T19:20:38.855Z"
+  },
+  {
+    "id": "job_1782501676505_6eouc",
+    "type": "add_members",
+    "status": "completed",
+    "progress": 0,
+    "total": 0,
+    "createdAt": "2026-06-26T19:21:16.505Z",
+    "config": {
+      "targetGroup": "https://t.me/qrankremmhhh",
+      "mode": "from-phone",
+      "members": [],
+      "delaySeconds": 3,
+      "maxPerDay": 500,
+      "warmup": false,
+      "allAccounts": [
+        {
+          "id": "acc_8945405440",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUGsUfeZ3ABHPvfHHRg3n/9R9Mt098nffRzJEaD6BLR4upu3a0i4BmqJ0XXZNM68+0qn28lXXKiNxSFySdizT4U/k/wOBab1boj/uHXrKDKrXiAn32vkaZDFIZTIgZ0h4ztyGeZ9v/i4vBX84TTtTtgKoUWdfx5j4LeVsCCILwzFh8Gl0xgIpBeishR73pNz7X+HI/uzMgLtq+c/KVkjeDiA8hRUzew9TdtC+l6rY8sGcK21hPxVViM/BJej8CDmMmz60i8Jlz8NxbhUhOPLUC9O5rK+b+obUXH09Stb3NU6vTqxgEoAimzc19viv/k9K1rAsxEobx1kXMfr9Mq5yNR8="
+        },
+        {
+          "id": "acc_7707423847",
+          "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUG8n8/+y5KYvzfAVDpJ3hPUl7LEkAzDRizJSeFd3OFTeqDfztSnT4LUjwdSkX1V5Kb1Rl8zYbMDvuaLD1cs8yx/VBT/MFJCA2Asl5nkDm25g2mtlPmtTqnRSG2C4WfMn9u5a6ygGrVwhxmfZIWPGyrzGKRgOMaVhDM8iK/CkGkmOka+6cY1246MWi2dppmKL5ovxtXFojxsE6G1lNNRo+vHxqvhj1uN37YlRsIe9gp2SH2tMWyBoyNe83SZyud9Rb4BSgdlWybrqBW0hj1SvVcsu7gF4r7QUBSeoHv2epa47mfP64Pw/QRdhoYadWEXg6N2hh8aPGXQPansuqEtUFZM="
+        }
+      ]
+    },
+    "accountId": "acc_8945405440",
+    "startedAt": "2026-06-26T19:21:16.506Z",
+    "completedAt": "2026-06-26T19:21:16.506Z",
+    "result": {
+      "added": 0,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [
+        "لا يوجد أعضاء للإضافة"
+      ]
+    }
   }
 ]

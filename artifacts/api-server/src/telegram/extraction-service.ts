@@ -101,9 +101,11 @@ function pushUser(
   if (!applyFilters(user, filters)) return false;
   if (user.username) setCachedEntity(user.username, user);
   setCachedEntity(uid, user);
+  // Never store "0" as accessHash — it's invalid and causes InviteToChannel failures
+  const rawHash = user.accessHash?.toString();
   members.push({
     userId:     uid,
-    accessHash: user.accessHash?.toString() || undefined,
+    accessHash: (rawHash && rawHash !== "0") ? rawHash : undefined,
     username:   user.username  || "",
     firstName:  user.firstName || "",
     lastName:   user.lastName  || "",

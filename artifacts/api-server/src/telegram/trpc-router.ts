@@ -228,6 +228,7 @@ const addMembersRouter = router({
       usernames: z.array(z.string()).optional(),
       userIds: z.array(z.string()).optional(),
       members: z.array(MemberRecordSchema).optional(), // phone-stored members sent inline
+      sourceGroup: z.string().optional(),             // source group to resolve accessHash via GetParticipant
       delaySeconds: z.number().min(1).max(1000).default(3),
       maxPerDay: z.number().min(1).max(10000).default(500),
       accountId: z.string(),
@@ -251,7 +252,8 @@ const addMembersRouter = router({
         fileId: input.fileId,
         usernames: input.usernames,
         userIds: input.userIds,
-        members: input.members, // phone-stored members (inline)
+        members: input.members,     // phone-stored members (inline)
+        sourceGroup: input.sourceGroup, // source group for GetParticipant fallback
         delaySeconds: input.delaySeconds,
         maxPerDay: input.maxPerDay,
         warmup: input.warmup,
