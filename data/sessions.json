@@ -6,10 +6,49 @@
     "lastName": "",
     "username": "K_maliy",
     "userId": "7707423847",
-    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUKChEwRFflBvzR/l//W0ivz5VDybrxlLrrAumWKCUXfv4dTCUFtIprHvIaMgeUlcb1lLibQL7Lkf5Dq7S/i/LCeXw213doivOp93r356Eob1LZpH+x6CffK9KZBJuBlNFbWDPei38eSCBoDkeTxEYkM0OUpqk6I7zqPMV1LPAKUxONSgg2wX6VSrmmWhmov/HGFgOaTxHs778SJFKfQQgoWn6mM+XZY6KeWSfJj0xGQPUls8LiK5JlPgWRc8QS91ANdklBVD1gq79vz30nSxrAPdyRsikUhmockcjMyAryFWTuZ9gLwBmZJ3Ane30HBM4Qcp6iMr8i8X6u0r/uJ7bts=",
-    "addedAt": "2026-04-05T22:41:41.138Z",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAULMBTGPW9GXiRMQfLuWwH6C0nQyBCs5/mZRbCBeqDXVq9zrq5Rf+Lb7NIsSYjau5+Yf6CqxNNaC+Htv7spd4pBYRHhabucfkbfDnTMNgFWhREnFN6Mtgal/puruB4jU2RPQ1pC4sKLSqtt7bFVHmRo0l66SGZQx5j7OUERarP7GnwaOwz+o05P8AcuUZc58CwLC9piQKxIKFRMMacunfmHNWdjbMimBqH9aLqWV7aLgNFXcaPKRavThmVFvZrdeVdn0c4Fn0VFz29/IhY0pCZRXJxspqVoUzu1VU2bksrlKqlqR29gztK4O0+55E5Ynv1lgR+dJEkwIYA3b9SxZd6QU=",
+    "addedAt": "2026-04-06T22:55:11.180Z",
     "isActive": true,
-    "dailyAdded": 4,
+    "dailyAdded": 0,
     "lastReset": "2026-04-06"
+  },
+  {
+    "id": "acc_8253909207",
+    "phone": "+213562557978",
+    "firstName": "ام فهد",
+    "lastName": "",
+    "username": "",
+    "userId": "8253909207",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUIp/znjAPvbc1t7MdJGpdoD32IPWL66oAOjSEky7wcGBKfA8OI84sudjzppQZVAzr+zj3a6iR5cSyMQdlWZqWD2BIbOUZq4SolC3kaeFtqaA+/ZKi/dbC3RU+yXHRX2+pO8XlqchTtDplrvC1pQZEQhG0cJB0Xszguq44KCrIASZz0PTFnbhxUUKCwnuSTEODPKp+BLRFz+x3JDFouiKW8RgMN4WjerdQQSotA85If/Qzmyimi2RESo//GfSGYDf/hZUbhg50xZEHSrI5OmEeX10yJzKrRW1UFo6i6v85ZmJW8/2ujGqyoJ/aLKg40FkQ25nOPF/qkdNZVHVxebRies=",
+    "addedAt": "2026-05-14T23:45:06.770Z",
+    "isActive": true,
+    "dailyAdded": 0,
+    "lastReset": "2026-05-14"
+  },
+  {
+    "id": "acc_7739914380",
+    "phone": "+213780196456",
+    "firstName": "البتول",
+    "lastName": "",
+    "username": "",
+    "userId": "7739914380",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUIYuaBjH12kHGRTVimI6RpI0ib1TE5c3/8FeXbBYujDgwqZxyFLsQ23O3iQoeG7V/RaPOMDf7MVTNeqzzO0QGNJr/q0bBPsd4vzWn87QJPkzu8epiIpgEVRI0sW3G0fF1hVNbwSJfHrVK8EZCKJ6fPtqGf8P61EEeFO1ACQ4fdkS36tuc6Sh27AcGWaZYN8lCu7+HZFWAm7aDneOcl8AhoPoFByurXFDUX6xcyGg64zYbywjmdnmZPwL/JCkvaO66Qj8UlLMoPVF3bcj8+Evxb51q1rvAD30HeGyxyIo5SOkqQ5sqrgrsVL70qMrxHGAZo6ZFT9ma2GPBl+E0/ZSwfI=",
+    "addedAt": "2026-05-14T23:46:13.038Z",
+    "isActive": true,
+    "dailyAdded": 0,
+    "lastReset": "2026-05-14"
+  },
+  {
+    "id": "acc_7299009418",
+    "phone": "+213675291959",
+    "firstName": "Mohamed",
+    "lastName": "Hocien",
+    "username": "",
+    "userId": "7299009418",
+    "sessionString": "1BAAOMTQ5LjE1NC4xNjcuOTEAUEXA7NRe/L+mGo88DvghTTYcgVVsLr1xThA1RbOvW6Fxg4djTg9QEZQrCWrbY1a0WdPtvB1wnU3mebG5eZ0Rd811JSK75SgpcNPeX+ZkHj/2JCJXitNaeEk+LaKaKDixzWJh2OrN6V0yhvXJnqLvzXIglznYEeMNVX63Ggw4JSbphSNWX+fsQxL104yOqsLPiC9Asg6QL5dxUh3HQONFBOGffQT2L+kpeRS/3ZmIjIlu+F13LjOLdSflf3iXOcljTb0i2EXwFRGz3rirP8qc3a8OVSbAzpzC0UzUv/JP4DfKzoZ1Qv2pBazGnfKMyax26KUpOyXpWFU1B4m1owYmm3E=",
+    "addedAt": "2026-05-14T23:47:50.176Z",
+    "isActive": true,
+    "dailyAdded": 0,
+    "lastReset": "2026-05-15"
   }
 ]
