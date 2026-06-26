@@ -1,19 +1,12 @@
 /**
- * ADD MEMBERS SERVICE v3.0 — SPEED FIRST
- * ========================================
- * Adds members as fast as Telegram allows with automatic error recovery.
- *
- * Flow per member:
- *   1. Resolve entity (cached after first lookup)
- *   2. InviteToChannel (or AddChatUser fallback for basic groups)
- *   3. Wait delaySeconds between successful adds
- *
- * Error handling:
- *   - FloodWait   → wait exact seconds Telegram says, then continue
- *   - PeerFlood   → rotate to next account immediately, retry same member
- *   - Already     → skip instantly (no delay)
- *   - Privacy     → skip instantly (no delay)
- *   - NotFound    → skip, cache invalid (no delay)
+ * ADD MEMBERS SERVICE v4.0 — MAXIMUM POWER
+ * ==========================================
+ * إصلاحات جوهرية:
+ *   1. إعادة حل targetEntity لكل حساب جديد — كان خطأ جذرياً
+ *   2. تغطية 15+ نوع خطأ كانت تُسقط الإضافات صامتةً
+ *   3. contact-import trick لتجاوز بعض قيود الخصوصية
+ *   4. إعادة المحاولة الذكية مع الحساب التالي قبل التخطي
+ *   5. كشف امتلاء المجموعة والتوقف الفوري
  */
 
 import { Api } from "telegram";
@@ -21,379 +14,337 @@ import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job, type MemberRecord } from "./jobs.js";
 import { loadMembersFile } from "./members-files.js";
 import { loadAccounts, resetDailyCountsIfNeeded } from "./session-store.js";
-import { getCachedEntity, isKnownInvalid, markInvalid, resolveEntity } from "./entity-cache.js";
+import { isKnownInvalid, markInvalid, resolveEntity } from "./entity-cache.js";
 import {
-  sleep,
-  parseFloodWait,
-  isPeerFlood,
-  isPrivacyError,
-  isAlreadyMember,
-  isNotFound,
-  handleFloodWait,
-  recordAction,
-  recordError,
-  resetCircuit,
+  sleep, parseFloodWait, isPeerFlood, isPrivacyError,
+  isAlreadyMember, isNotFound, handleFloodWait,
+  recordAction, recordError, resetCircuit,
 } from "./anti-ban.js";
 import { logger } from "../lib/logger.js";
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Small jitter: ±20% of delayMs so adds are never perfectly uniform */
-function jitter(ms: number): number {
-  const pct = 0.2;
-  const delta = ms * pct;
-  return Math.round(ms - delta + Math.random() * delta * 2);
+function errMsg(e: unknown): string { return e instanceof Error ? e.message : String(e); }
+
+/** أخطاء يجب تخطيها فوراً */
+function isSkippable(err: unknown): { skip: boolean; reason: string } {
+  const m = errMsg(err).toUpperCase();
+  const patterns: [string[], string][] = [
+    [["USER_NOT_MUTUAL_CONTACT"],           "لا تواصل متبادل"],
+    [["USER_CHANNELS_TOO_MUCH"],            "في عدد كافٍ من القنوات"],
+    [["INPUT_USER_DEACTIVATED","USER_DEACTIVATED"], "حساب محذوف"],
+    [["USER_BOT"],                          "حساب بوت"],
+    [["USER_KICKED"],                       "مطرود"],
+    [["USER_BANNED_IN_CHANNEL"],            "محظور في القناة"],
+    [["USER_BLOCKED"],                      "حجب الحساب"],
+    [["PEER_ID_INVALID","PEER_ID_NOT_SUPPORTED"], "مستخدم غير صالح"],
+    [["USER_PRIVACY","PRIVACY_KEY_INVALID"],"إعدادات الخصوصية"],
+    [["CHAT_WRITE_FORBIDDEN"],              "لا صلاحية كتابة"],
+    [["USER_RESTRICTED"],                   "مقيّد"],
+    [["BOTS_TOO_MUCH"],                     "عدد بوتات كافٍ"],
+    [["PARTICIPANT_VERSION_OUTDATED"],      "إصدار قديم"],
+  ];
+  for (const [pats, reason] of patterns) {
+    if (pats.some((p) => m.includes(p))) return { skip: true, reason };
+  }
+  return { skip: false, reason: "" };
 }
 
-// ─── Main function ────────────────────────────────────────────────────────────
+/** أخطاء تعني توقف العملية بالكامل */
+function isFatal(err: unknown): string | null {
+  const m = errMsg(err).toUpperCase();
+  if (m.includes("USERS_TOO_MUCH"))      return "المجموعة ممتلئة";
+  if (m.includes("CHAT_ADMIN_REQUIRED")) return "يتطلب صلاحيات أدمن";
+  if (m.includes("CHANNEL_PRIVATE"))     return "القناة خاصة";
+  return null;
+}
+
+type Client = Awaited<ReturnType<typeof getClient>>;
+
+/** اتصال + حل targetEntity في خطوة واحدة */
+async function connectAndResolve(
+  acc: { id: string; sessionString?: string },
+  targetGroup: string
+): Promise<{ client: Client; targetEntity: any }> {
+  const client = acc.sessionString
+    ? await getClientFromSession(acc.sessionString, acc.id)
+    : await getClient(acc.id);
+  const targetEntity = await resolveEntity(client, targetGroup);
+  return { client, targetEntity };
+}
+
+/** استيراد كجهة اتصال للحصول على InputUser صحيح (يتجاوز بعض قيود الخصوصية) */
+async function tryImportContact(client: Client, phone: string): Promise<Api.InputUser | null> {
+  try {
+    const res = await client.invoke(new Api.contacts.ImportContacts({
+      contacts: [new Api.InputPhoneContact({
+        clientId: BigInt(Math.floor(Math.random() * 1e10)) as any,
+        phone, firstName: "u", lastName: "",
+      })],
+    })) as any;
+    const u = res.users?.[0];
+    if (u?.id && u?.accessHash)
+      return new Api.InputUser({ userId: u.id, accessHash: u.accessHash });
+  } catch { /* ignore */ }
+  return null;
+}
+
+/** بناء InputUser من userId+accessHash المخزّن */
+function buildInputUser(m: MemberRecord): Api.InputUser | null {
+  if (m.userId && m.accessHash) {
+    try {
+      return new Api.InputUser({ userId: BigInt(m.userId) as any, accessHash: BigInt(m.accessHash) as any });
+    } catch { return null; }
+  }
+  return null;
+}
+
+/** تجميع قائمة الأعضاء من المصدر */
+async function buildList(cfg: any): Promise<MemberRecord[]> {
+  const { mode, fileId, usernames, userIds, members: inline } = cfg;
+  if (inline?.length) return inline.filter((m: MemberRecord) => m.status === "pending");
+  if (mode === "from-file" && fileId) {
+    const f = loadMembersFile(fileId);
+    return f ? f.members.filter((m) => m.status === "pending") : [];
+  }
+  if (mode === "by-username" && usernames)
+    return (usernames as string[]).map((u: string) => u.trim().replace(/^@/, ""))
+      .filter(Boolean).map((u: string) => ({ userId: "", username: u, firstName: "", lastName: "", isOnline: false, status: "pending" as const }));
+  if (mode === "by-id" && userIds)
+    return (userIds as string[]).filter(Boolean)
+      .map((id: string) => ({ userId: id, username: "", firstName: "", lastName: "", isOnline: false, status: "pending" as const }));
+  return [];
+}
+
+// ─── الدالة الرئيسية ──────────────────────────────────────────────────────────
 
 export async function runAddMembers(job: Job) {
   const cfg = job.config as {
-    targetGroup: string;
-    mode: "from-file" | "by-username" | "by-id" | "from-phone";
-    fileId?: string;
-    usernames?: string[];
-    userIds?: string[];
-    delaySeconds: number;
-    maxPerDay: number;
-    warmup?: boolean;
-    sessionString?: string;
-    members?: MemberRecord[];
-    allAccounts?: Array<{ id: string; sessionString?: string }>;
+    targetGroup: string; mode: string; fileId?: string;
+    usernames?: string[]; userIds?: string[]; delaySeconds: number;
+    maxPerDay: number; warmup?: boolean; sessionString?: string;
+    members?: MemberRecord[]; allAccounts?: Array<{ id: string; sessionString?: string }>;
   };
 
-  const {
-    targetGroup,
-    mode,
-    fileId,
-    usernames,
-    userIds,
-    delaySeconds = 3,
-    maxPerDay = 200,
-  } = cfg;
-
+  const { targetGroup, delaySeconds = 3, maxPerDay = 200 } = cfg;
   const accountId = job.accountId!;
-  const sessionString = cfg.sessionString;
-  const inlineMembers = cfg.members;
 
-  // Multi-account rotation pool
   const allAccounts: Array<{ id: string; sessionString?: string }> =
-    cfg.allAccounts?.length ? cfg.allAccounts : [{ id: accountId, sessionString }];
+    cfg.allAccounts?.length ? cfg.allAccounts : [{ id: accountId, sessionString: cfg.sessionString }];
 
-  logger.info(
-    { jobId: job.id, mode, targetGroup, delaySeconds, maxPerDay, accounts: allAccounts.length },
-    "add-members v3 start"
-  );
+  logger.info({ jobId: job.id, mode: cfg.mode, targetGroup, accounts: allAccounts.length, maxPerDay }, "add-members v4 start");
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });
 
-  // Reset daily count if needed
   const accountData = loadAccounts().find((a) => a.id === accountId);
   if (accountData) resetDailyCountsIfNeeded(accountData);
 
-  // ── Build members list ───────────────────────────────────────────────────────
-
-  let membersToAdd: MemberRecord[] = [];
-
-  if (inlineMembers && inlineMembers.length > 0) {
-    membersToAdd = inlineMembers.filter((m) => m.status === "pending");
-  } else if (mode === "from-file" && fileId) {
-    const file = loadMembersFile(fileId);
-    if (!file) {
-      updateJob(job.id, { status: "failed", error: `File ${fileId} not found`, completedAt: new Date().toISOString() });
-      return;
-    }
-    membersToAdd = file.members.filter((m) => m.status === "pending");
-  } else if (mode === "by-username" && usernames) {
-    membersToAdd = usernames
-      .map((u) => u.trim().replace(/^@/, ""))
-      .filter(Boolean)
-      .map((u) => ({ userId: "", username: u, firstName: "", lastName: "", isOnline: false, status: "pending" as const }));
-  } else if (mode === "by-id" && userIds) {
-    membersToAdd = userIds
-      .filter(Boolean)
-      .map((id) => ({ userId: id, username: "", firstName: "", lastName: "", isOnline: false, status: "pending" as const }));
-  }
-
-  if (membersToAdd.length === 0) {
-    updateJob(job.id, { status: "completed", completedAt: new Date().toISOString(), result: { added: 0, failed: 0, skipped: 0, errors: [] } });
+  const list = await buildList(cfg);
+  if (list.length === 0) {
+    updateJob(job.id, { status: "completed", completedAt: new Date().toISOString(), result: { added: 0, failed: 0, skipped: 0, errors: ["لا يوجد أعضاء للإضافة"] } });
     return;
   }
+  updateJob(job.id, { total: list.length });
 
-  updateJob(job.id, { total: membersToAdd.length });
-
-  // ── Account rotation state ───────────────────────────────────────────────────
+  // ── حالة الاتصال ──────────────────────────────────────────────────────────
 
   let accIdx = 0;
   let currentAccId = allAccounts[0]!.id;
-
-  const connectAccount = async (idx: number) => {
-    const acc = allAccounts[idx]!;
-    return acc.sessionString
-      ? getClientFromSession(acc.sessionString, acc.id)
-      : getClient(acc.id);
-  };
-
-  let client: Awaited<ReturnType<typeof getClient>>;
+  let client: Client;
   let targetEntity: any;
 
   try {
-    client = await connectAccount(0);
-    targetEntity = await resolveEntity(client, targetGroup);
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    updateJob(job.id, { status: "failed", error: `فشل حل الهدف: ${msg}`, completedAt: new Date().toISOString() });
+    ({ client, targetEntity } = await connectAndResolve(allAccounts[0]!, targetGroup));
+    logger.info({ accId: currentAccId, targetGroup }, "✓ Initial connect OK");
+  } catch (err) {
+    updateJob(job.id, { status: "failed", error: `فشل الاتصال: ${errMsg(err)}`, completedAt: new Date().toISOString() });
     return;
   }
 
-  // ── Stats ────────────────────────────────────────────────────────────────────
+  // ── تدوير للحساب التالي (مع إعادة حل الهدف) ─────────────────────────────
 
-  let added = 0;
-  let failed = 0;
-  let skipped = 0;
+  const rotateNext = async (): Promise<boolean> => {
+    if (accIdx + 1 >= allAccounts.length) return false;
+    accIdx++;
+    currentAccId = allAccounts[accIdx]!.id;
+    updateJob(job.id, { status: "running", error: `🔄 تدوير → الحساب ${accIdx + 1}/${allAccounts.length}` });
+    try {
+      // ⭐ المهم: إعادة حل targetEntity بالحساب الجديد
+      ({ client, targetEntity } = await connectAndResolve(allAccounts[accIdx]!, targetGroup));
+      logger.info({ newAcc: currentAccId }, "✓ Rotated + re-resolved target");
+      updateJob(job.id, { status: "running", error: undefined });
+      return true;
+    } catch (e) {
+      logger.warn({ err: errMsg(e) }, "Rotation connection failed");
+      return false;
+    }
+  };
+
+  const rotateAllAndWait = async (): Promise<boolean> => {
+    accIdx = 0; currentAccId = allAccounts[0]!.id;
+    updateJob(job.id, { status: "running", error: "⏳ جميع الحسابات PeerFlood — انتظار 5 دقائق..." });
+    await sleep(5 * 60_000);
+    for (const a of allAccounts) resetCircuit(a.id);
+    try {
+      ({ client, targetEntity } = await connectAndResolve(allAccounts[0]!, targetGroup));
+      updateJob(job.id, { status: "running", error: undefined });
+      return true;
+    } catch { return false; }
+  };
+
+  // ── الإحصاءات ─────────────────────────────────────────────────────────────
+
+  let added = 0, failed = 0, skipped = 0, peerFloodRounds = 0;
   const errors: string[] = [];
-  let dailyCount = 0;
-  const MAX_PEER_FLOOD_ROTATIONS = allAccounts.length * 3; // max total PeerFlood switches
-  let peerFloodTotal = 0;
+  const MAX_ROUNDS = 3;
 
-  // ── Main loop ────────────────────────────────────────────────────────────────
+  // ── الحلقة الرئيسية ───────────────────────────────────────────────────────
 
-  for (let i = 0; i < membersToAdd.length; i++) {
-    const member = membersToAdd[i]!;
+  for (let i = 0; i < list.length; i++) {
+    const m = list[i]!;
+    const id = m.username || m.userId;
 
-    // Daily limit check
-    if (dailyCount >= maxPerDay) {
-      updateJob(job.id, {
-        status: "completed",
-        error: `✓ تم الوصول للحد اليومي: ${maxPerDay} إضافة`,
-        completedAt: new Date().toISOString(),
-        result: { added, failed, skipped, errors, members: membersToAdd },
-      });
+    // حد يومي
+    if (added >= maxPerDay) {
+      updateJob(job.id, { status: "completed", error: `✓ الحد اليومي: ${maxPerDay}`, completedAt: new Date().toISOString(), result: { added, failed, skipped, errors, members: list } });
       return;
     }
 
-    // Skip cached-invalid members instantly
-    const identifier = member.username || member.userId;
-    if (identifier && isKnownInvalid(identifier)) {
-      member.status = "failed";
-      member.error = "مستخدم غير صالح (مخزن مؤقتاً)";
-      failed++;
-      skipped++;
-      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
+    // تخطي المحفوظين كغير صالحين
+    if (id && isKnownInvalid(id)) {
+      m.status = "failed"; m.error = "غير صالح (ذاكرة)";
+      failed++; skipped++;
+      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
       continue;
     }
 
-    // ── Resolve entity ───────────────────────────────────────────────────────
-    // Priority: 1) cached entity  2) InputUser from accessHash  3) username lookup  4) fail
+    // ── حل كيان المستخدم ──────────────────────────────────────────────────
 
-    let userEntity: any;
-    try {
-      // Check entity cache first (populated by extraction in same session)
-      const cached = member.username
-        ? getCachedEntity(member.username) ?? (member.userId ? getCachedEntity(member.userId) : null)
-        : member.userId ? getCachedEntity(member.userId) : null;
+    let userEntity: any = buildInputUser(m); // أسرع — بدون API call
 
-      if (cached) {
-        userEntity = cached;
-      } else if (member.userId && member.accessHash) {
-        // Build InputUser directly from stored userId + accessHash — no API call needed
-        userEntity = new Api.InputUser({
-          userId: BigInt(member.userId),
-          accessHash: BigInt(member.accessHash),
-        });
-      } else if (member.username) {
-        userEntity = await resolveEntity(client, member.username);
-      } else if (member.userId) {
-        // No username, no accessHash — try resolving by ID (will likely fail for channels)
-        userEntity = await resolveEntity(client, member.userId);
-      } else {
-        member.status = "failed";
-        member.error = "لا يوجد username أو ID";
-        failed++;
-        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
+    if (!userEntity && m.username) {
+      try {
+        userEntity = await resolveEntity(client, m.username);
+      } catch (err) {
+        const fw = parseFloodWait(err);
+        if (fw !== null) {
+          recordError(currentAccId, "flood");
+          updateJob(job.id, { status: "running", error: `⏳ FloodWait ${fw}s...` });
+          await handleFloodWait(currentAccId, fw);
+          updateJob(job.id, { status: "running", error: undefined });
+          i--; continue;
+        }
+        if (isNotFound(err)) {
+          if (id) markInvalid(id, "Not found");
+          m.status = "failed"; m.error = "غير موجود"; failed++; skipped++;
+          updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
+          continue;
+        }
+        m.status = "failed"; m.error = `فشل الحل: ${errMsg(err).slice(0, 60)}`; failed++;
+        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
         continue;
       }
-    } catch (err: unknown) {
-      if (isNotFound(err)) {
-        if (identifier) markInvalid(identifier, "Not found");
-        member.status = "failed";
-        member.error = "مستخدم غير موجود";
-        failed++;
-        skipped++;
-        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
-        continue;
-      }
+    }
 
-      const floodSecs = parseFloodWait(err);
-      if (floodSecs !== null) {
-        recordError(currentAccId, "flood");
-        updateJob(job.id, {
-          status: "running",
-          error: `⏳ FloodWait ${floodSecs}s — جارٍ الانتظار...`,
-          result: { added, failed, skipped, errors, members: membersToAdd },
-        });
-        await handleFloodWait(currentAccId, floodSecs);
-        updateJob(job.id, { status: "running", error: undefined });
-        i--;
-        continue;
-      }
+    if (!userEntity && m.userId) {
+      try { userEntity = await resolveEntity(client, m.userId); } catch { /* يفشل لاحقاً */ }
+    }
 
-      member.status = "failed";
-      member.error = err instanceof Error ? err.message : String(err);
-      failed++;
-      errors.push(`${identifier}: ${member.error}`);
-      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
+    if (!userEntity && (m as any).phone) {
+      userEntity = await tryImportContact(client, (m as any).phone);
+    }
+
+    if (!userEntity) {
+      m.status = "failed"; m.error = "لا يمكن حل المستخدم"; failed++; skipped++;
+      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
       continue;
     }
 
-    // ── Invoke add ────────────────────────────────────────────────────────────
+    // ── محاولة الإضافة ────────────────────────────────────────────────────
 
     try {
       try {
         await client.invoke(new Api.channels.InviteToChannel({ channel: targetEntity, users: [userEntity] }));
-      } catch (innerErr: unknown) {
-        const msg = innerErr instanceof Error ? innerErr.message : String(innerErr);
-        if (msg.includes("CHAT_ID_INVALID") || msg.includes("PEER_ID_INVALID")) {
-          await client.invoke(new Api.messages.AddChatUser({ chatId: targetEntity.id, userId: userEntity, fwdLimit: 50 }));
-        } else {
-          throw innerErr;
-        }
+      } catch (inner) {
+        const im = errMsg(inner).toUpperCase();
+        if (im.includes("CHAT_ID_INVALID") || im.includes("NOT_MODIFIED")) {
+          await client.invoke(new Api.messages.AddChatUser({
+            chatId: (targetEntity as any).chatId ?? (targetEntity as any).id,
+            userId: userEntity, fwdLimit: 50,
+          }));
+        } else throw inner;
       }
 
-      // ── SUCCESS ─────────────────────────────────────────────────────────────
-      member.status = "added";
-      added++;
-      dailyCount++;
+      // ✓ نجاح
+      m.status = "added"; added++;
       recordAction(currentAccId);
+      logger.info({ acc: currentAccId, user: id, added, total: list.length }, "✓ Added");
+      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
+      if (i < list.length - 1) await sleep(Math.round(delaySeconds * 1000 * (0.8 + Math.random() * 0.4)));
 
-      logger.info({ account: currentAccId, user: member.username || member.userId, added, total: membersToAdd.length }, "✓ added");
+    } catch (err) {
 
-      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
-
-      // Only delay AFTER successful adds — skip/fail moves instantly
-      if (i < membersToAdd.length - 1) {
-        await sleep(jitter(delaySeconds * 1000));
+      // توقف كامل
+      const fatalMsg = isFatal(err);
+      if (fatalMsg) {
+        updateJob(job.id, { status: "completed", error: `🛑 ${fatalMsg}`, completedAt: new Date().toISOString(), result: { added, failed, skipped, errors, members: list } });
+        return;
       }
 
-    } catch (err: unknown) {
-
+      // عضو موجود
       if (isAlreadyMember(err)) {
-        member.status = "already_member";
-        skipped++;
-        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
-        // No delay for already-member (instant skip)
-
-      } else if (isPrivacyError(err)) {
-        member.status = "privacy";
-        member.error = "إعدادات الخصوصية";
-        skipped++;
-        if (member.username) markInvalid(member.username, "Privacy");
-        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
-        // No delay for privacy errors (instant skip)
-
-      } else if (isPeerFlood(err)) {
-        recordError(currentAccId, "peer_flood");
-        peerFloodTotal++;
-
-        const nextIdx = accIdx + 1;
-        if (nextIdx < allAccounts.length) {
-          // Rotate to next account immediately
-          accIdx = nextIdx;
-          currentAccId = allAccounts[nextIdx]!.id;
-
-          updateJob(job.id, {
-            status: "running",
-            error: `🔄 PeerFlood → الحساب ${accIdx + 1}/${allAccounts.length}`,
-            result: { added, failed, skipped, errors, members: membersToAdd },
-          });
-
-          try {
-            client = await connectAccount(accIdx);
-            updateJob(job.id, { status: "running", error: undefined });
-          } catch (connErr) {
-            logger.error({ connErr }, "Failed to connect next account");
-          }
-
-          member.status = "flood";
-          member.error = `PeerFlood → حساب ${accIdx + 1}`;
-          i--; // retry same member with new account
-          continue;
-
-        } else if (peerFloodTotal >= MAX_PEER_FLOOD_ROTATIONS) {
-          // All accounts exhausted — stop
-          const msg = `⚠️ جميع الحسابات وصلت لـPeerFlood. أُضيف ${added} عضو.`;
-          errors.push(msg);
-          updateJob(job.id, {
-            status: "completed",
-            error: msg,
-            completedAt: new Date().toISOString(),
-            result: { added, failed, skipped, errors, members: membersToAdd },
-          });
-          return;
-
-        } else {
-          // All accounts PeerFlooded — wait & reset from first account
-          accIdx = 0;
-          currentAccId = allAccounts[0]!.id;
-          const waitMs = 5 * 60 * 1000; // 5 minutes cooldown
-          const waitMins = 5;
-
-          updateJob(job.id, {
-            status: "running",
-            error: `⏳ جميع الحسابات PeerFlood — انتظار ${waitMins} دقيقة ثم الاستئناف`,
-            result: { added, failed, skipped, errors, members: membersToAdd },
-          });
-
-          await sleep(waitMs);
-          for (const acc of allAccounts) resetCircuit(acc.id);
-
-          try {
-            client = await connectAccount(0);
-            updateJob(job.id, { status: "running", error: undefined });
-          } catch (_) {}
-
-          member.status = "flood";
-          member.error = `PeerFlood — استُؤنف بعد ${waitMins} دقيقة`;
-          i--;
-          continue;
-        }
-
-      } else {
-        const floodSecs = parseFloodWait(err);
-        if (floodSecs !== null) {
-          member.status = "flood";
-          member.error = `FloodWait ${floodSecs}s`;
-          recordError(currentAccId, "flood");
-
-          updateJob(job.id, {
-            status: "running",
-            error: `⏳ FloodWait ${floodSecs}s — جارٍ الانتظار...`,
-            result: { added, failed, skipped, errors, members: membersToAdd },
-          });
-
-          await handleFloodWait(currentAccId, floodSecs);
-          updateJob(job.id, { status: "running", error: undefined });
-          i--; // retry same member
-          continue;
-        }
-
-        // Other error — skip and move on
-        member.status = "failed";
-        member.error = err instanceof Error ? err.message : String(err);
-        failed++;
-        errors.push(`${identifier}: ${member.error}`);
-        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: membersToAdd } });
+        m.status = "already_member"; skipped++;
+        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
+        continue;
       }
+
+      // قابل للتخطي
+      const { skip, reason } = isSkippable(err);
+      if (skip || isPrivacyError(err)) {
+        m.status = "privacy"; m.error = reason || "خصوصية";
+        if (id) markInvalid(id, reason || "Privacy");
+        skipped++;
+        updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
+        continue;
+      }
+
+      // PeerFlood
+      if (isPeerFlood(err)) {
+        recordError(currentAccId, "peer_flood");
+        logger.warn({ acc: currentAccId }, "PeerFlood — rotating");
+        const ok = await rotateNext();
+        if (ok) { m.status = "pending"; i--; continue; }
+        peerFloodRounds++;
+        if (peerFloodRounds >= MAX_ROUNDS) {
+          updateJob(job.id, { status: "completed", error: `⚠️ جميع الحسابات PeerFlood — أُضيف ${added}`, completedAt: new Date().toISOString(), result: { added, failed, skipped, errors, members: list } });
+          return;
+        }
+        const waitOk = await rotateAllAndWait();
+        if (!waitOk) {
+          updateJob(job.id, { status: "completed", error: "⚠️ فشل الاتصال بعد الانتظار", completedAt: new Date().toISOString(), result: { added, failed, skipped, errors, members: list } });
+          return;
+        }
+        m.status = "pending"; i--; continue;
+      }
+
+      // FloodWait
+      const fw = parseFloodWait(err);
+      if (fw !== null) {
+        recordError(currentAccId, "flood");
+        m.status = "flood"; m.error = `FloodWait ${fw}s`;
+        updateJob(job.id, { status: "running", error: `⏳ FloodWait ${fw}s...`, result: { added, failed, skipped, errors, members: list } });
+        await handleFloodWait(currentAccId, fw);
+        updateJob(job.id, { status: "running", error: undefined });
+        m.status = "pending"; i--; continue;
+      }
+
+      // خطأ غير معروف
+      m.status = "failed"; m.error = errMsg(err).slice(0, 80);
+      failed++; errors.push(`${id}: ${m.error}`);
+      logger.warn({ acc: currentAccId, err: m.error, user: id }, "Unknown add error");
+      updateJob(job.id, { progress: i + 1, result: { added, failed, skipped, errors, members: list } });
     }
   }
 
-  // ── Done ──────────────────────────────────────────────────────────────────
-
-  logger.info({ jobId: job.id, added, failed, skipped, total: membersToAdd.length }, "add-members v3 done");
-
-  updateJob(job.id, {
-    status: "completed",
-    progress: membersToAdd.length,
-    completedAt: new Date().toISOString(),
-    result: { added, failed, skipped, errors, members: membersToAdd },
-  });
+  logger.info({ jobId: job.id, added, failed, skipped }, "add-members v4 done");
+  updateJob(job.id, { status: "completed", progress: list.length, completedAt: new Date().toISOString(), result: { added, failed, skipped, errors, members: list } });
 }
