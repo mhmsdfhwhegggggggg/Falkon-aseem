@@ -14,6 +14,11 @@ import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } fr
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
+import {
+  createLicense, activateLicense, verifyLicense,
+  listLicenses, revokeLicense, renewLicense, getLicenseLogs,
+  type LicenseTier,
+} from "./license-service.js";
 import { requestApiOtp, confirmApiOtpAndGetCredentials } from "./api-credentials-service.js";
 import { setAccountApiCredentials } from "./client-manager.js";
 import { checkAndAutoReply } from "./auto-reply-service.js";
