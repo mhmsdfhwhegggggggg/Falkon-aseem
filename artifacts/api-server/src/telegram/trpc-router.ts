@@ -600,278 +600,133 @@ const proxyRouter = router({
     }),
 });
 
+// ─── Admin auth helper ────────────────────────────────────────────────────────
+const ADMIN_SECRET = process.env["ADMIN_SECRET_KEY"] ?? "";
+
+function requireAdmin(secret: string) {
+  if (!ADMIN_SECRET) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "ADMIN_SECRET_KEY not set" });
+  if (secret !== ADMIN_SECRET)  throw new TRPCError({ code: "UNAUTHORIZED",            message: "Invalid admin secret" });
+}
+
+// ─── License Router (user-facing) ────────────────────────────────────────────
 const licenseRouter = router({
+  // Step 1 of onboarding — validate + bind phone + HWID on first use
   activate: procedure
-    .input(z.object({ key: z.string(), hwid: z.string().optional() }))
-    .mutation(async ({ input }) => {
-      const key = input.key.toUpperCase().trim();
-      const validPattern = /^FLK-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-      if (!validPattern.test(key)) {
-        return { success: false, error: "Invalid license key format" };
-      }
-      return { success: true, tier: "professional", expiresAt: null, key };
-    }),
-
-  validate: procedure
-    .input(z.object({ hwid: z.string() }))
-    .query(() => {
-      return { valid: true, tier: "professional" };
-    }),
-});
-
-// ─── Auto-Reply Router ────────────────────────────────────────────────────────
-const AutoReplyRuleSchema = z.object({
-  id: z.string(),
-  trigger: z.string().min(1),
-  response: z.string().min(1),
-  matchType: z.enum(["contains", "exact", "startsWith"]).default("contains"),
-  enabled: z.boolean().default(true),
-});
-
-const autoReplyRouter = router({
-  check: procedure
     .input(z.object({
-      sessionString: z.string().min(10),
-      rules: z.array(AutoReplyRuleSchema).max(100),
-      limitDialogs: z.number().min(1).max(50).default(10),
-      limitMessages: z.number().min(1).max(50).default(20),
+      licenseKey: z.string().min(10),
+      phone:      z.string().min(7),
+      hwid:       z.string().min(4),
     }))
     .mutation(async ({ input }) => {
-      const result = await checkAndAutoReply(
-        input.sessionString,
-        input.rules,
-        input.limitDialogs,
-        input.limitMessages,
-      );
+      const { activateLicense } = await import("./license-service.js");
+      const result = await activateLicense({ licenseKey: input.licenseKey, phone: input.phone, hwid: input.hwid });
+      if (!result.valid) throw new TRPCError({ code: "FORBIDDEN", message: result.error ?? "ترخيص غير صالح" });
       return result;
     }),
-});
 
-// ─── Scheduler Router ─────────────────────────────────────────────────────────
-const schedulerRouter = router({
-  create: procedure
+  // Called on every app startup — fast (60s in-memory cache)
+  verify: procedure
     .input(z.object({
-      name: z.string().min(1).max(100),
-      taskType: z.enum(["extraction", "add-members", "bulk-message"]),
-      scheduledAt: z.number().int().min(0),
-      params: z.record(z.unknown()),
+      licenseKey: z.string().min(10),
+      hwid:       z.string().min(4),
     }))
-    .mutation(({ input }) => {
-      const job = createScheduledJob({
-        name: input.name,
-        taskType: input.taskType,
-        scheduledAt: input.scheduledAt,
-        params: input.params,
-      });
-      return job;
+    .query(async ({ input }) => {
+      const { verifyLicense } = await import("./license-service.js");
+      const result = await verifyLicense({ licenseKey: input.licenseKey, hwid: input.hwid });
+      if (!result.valid) throw new TRPCError({ code: "FORBIDDEN", message: result.error ?? "ترخيص غير صالح" });
+      return result;
     }),
 
-  list: procedure.query(() => {
-    return { jobs: listScheduledJobs() };
-  }),
+  // For displaying license info in app settings
+  status: procedure
+    .input(z.object({ licenseKey: z.string(), hwid: z.string() }))
+    .query(async ({ input }) => {
+      const { verifyLicense } = await import("./license-service.js");
+      return await verifyLicense({ licenseKey: input.licenseKey, hwid: input.hwid });
+    }),
+});
 
-  delete: procedure
-    .input(z.object({ id: z.string() }))
-    .mutation(({ input }) => {
-      const deleted = deleteScheduledJob(input.id);
-      if (!deleted) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+// ─── Admin Router (protected by ADMIN_SECRET_KEY env var) ────────────────────
+const adminRouter = router({
+  createLicense: procedure
+    .input(z.object({
+      adminSecret: z.string(),
+      phone:       z.string().min(7),
+      days:        z.number().min(1).max(3650),
+      tier:        z.enum(["basic", "pro", "enterprise"]).default("pro"),
+      maxAccounts: z.number().min(1).max(100).default(5),
+      notes:       z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      requireAdmin(input.adminSecret);
+      const { createLicense } = await import("./license-service.js");
+      const expiresAt = new Date(Date.now() + input.days * 86_400_000);
+      const license = await createLicense({
+        phone: input.phone, expiresAt,
+        tier: input.tier as any, maxAccounts: input.maxAccounts,
+        notes: input.notes, createdBy: "admin",
+      });
+      logger.info({ phone: input.phone, key: license.licenseKey }, "Admin created license");
+      return license;
+    }),
+
+  listLicenses: procedure
+    .input(z.object({
+      adminSecret: z.string(),
+      status: z.enum(["pending","active","expired","revoked"]).optional(),
+      phone:  z.string().optional(),
+    }))
+    .query(async ({ input }) => {
+      requireAdmin(input.adminSecret);
+      const { listLicenses } = await import("./license-service.js");
+      return await listLicenses({ status: input.status as any, phone: input.phone });
+    }),
+
+  revoke: procedure
+    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), reason: z.string().optional() }))
+    .mutation(async ({ input }) => {
+      requireAdmin(input.adminSecret);
+      const { revokeLicense } = await import("./license-service.js");
+      const ok = await revokeLicense(input.licenseKey, input.reason);
+      if (!ok) throw new TRPCError({ code: "NOT_FOUND", message: "License not found" });
       return { success: true };
     }),
 
-  due: procedure.query(() => {
-    return { jobs: getPendingJobsDue() };
-  }),
-});
-
-// ─── Chatters Router ──────────────────────────────────────────────────────────
-const chattersRouter = router({
-  start: procedure
-    .input(z.object({
-      group:         z.string().min(1),
-      limit:         z.number().min(1).max(100000).default(500),
-      lastDays:      z.number().min(0).max(365).default(30),
-      excludeBots:   z.boolean().default(true),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
+  renew: procedure
+    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), days: z.number().min(1).max(3650) }))
     .mutation(async ({ input }) => {
-      const job = createJob("chatter-extraction", input.accountId, {
-        group: input.group, limit: input.limit,
-        lastDays: input.lastDays, excludeBots: input.excludeBots,
-        sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runChatterExtraction(job));
-      return { jobId: job.id };
+      requireAdmin(input.adminSecret);
+      const { renewLicense } = await import("./license-service.js");
+      const newExpiry = new Date(Date.now() + input.days * 86_400_000);
+      const license = await renewLicense(input.licenseKey, newExpiry);
+      if (!license) throw new TRPCError({ code: "NOT_FOUND", message: "License not found" });
+      return license;
     }),
 
-  status: procedure
-    .input(z.object({ jobId: z.string() }))
-    .query(({ input }) => {
-      const job = getJob(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
-      return job;
-    }),
-});
-
-// ─── Contacts Filter Router ───────────────────────────────────────────────────
-const contactsFilterRouter = router({
-  start: procedure
-    .input(z.object({
-      phones:        z.array(z.string()).min(1).max(10000),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
-    .mutation(async ({ input }) => {
-      const job = createJob("contacts-filter", input.accountId, {
-        phones: input.phones, sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runContactsFilter(job));
-      return { jobId: job.id };
-    }),
-
-  status: procedure
-    .input(z.object({ jobId: z.string() }))
-    .query(({ input }) => {
-      const job = getJob(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
-      return job;
-    }),
-});
-
-// ─── Group Manager Router ─────────────────────────────────────────────────────
-const groupManagerRouter = router({
-  join: procedure
-    .input(z.object({
-      groups:        z.array(z.string()).min(1).max(1000),
-      delaySeconds:  z.number().min(1).max(60).default(3),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
-    .mutation(async ({ input }) => {
-      const job = createJob("join-groups", input.accountId, {
-        groups: input.groups, delaySeconds: input.delaySeconds, sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runJoinGroups(job));
-      return { jobId: job.id };
-    }),
-
-  leave: procedure
-    .input(z.object({
-      groups:        z.array(z.string()).optional(),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
-    .mutation(async ({ input }) => {
-      const job = createJob("leave-groups", input.accountId, {
-        groups: input.groups, sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runLeaveGroups(job));
-      return { jobId: job.id };
-    }),
-
-  sendToAll: procedure
-    .input(z.object({
-      message:       z.string().min(1),
-      delaySeconds:  z.number().min(1).max(120).default(5),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
-    .mutation(async ({ input }) => {
-      const job = createJob("send-to-joined", input.accountId, {
-        message: input.message, delaySeconds: input.delaySeconds, sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runSendToJoined(job));
-      return { jobId: job.id };
-    }),
-
-  listJoined: procedure
-    .input(z.object({ accountId: z.string(), sessionString: z.string().min(10) }))
+  logs: procedure
+    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), limit: z.number().min(1).max(200).default(50) }))
     .query(async ({ input }) => {
-      const groups = await listJoinedGroups(input.sessionString, input.accountId);
-      return { groups };
+      requireAdmin(input.adminSecret);
+      const { getLicenseLogs } = await import("./license-service.js");
+      return await getLicenseLogs(input.licenseKey, input.limit);
     }),
 
-  extractAdmins: procedure
-    .input(z.object({
-      group:         z.string().min(1),
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-    }))
-    .mutation(async ({ input }) => {
-      const job = createJob("extract-admins", input.accountId, {
-        group: input.group, sessionString: input.sessionString,
-      });
-      workerPool.submit(() => runExtractAdmins(job));
-      return { jobId: job.id };
-    }),
-
-  updateProfile: procedure
-    .input(z.object({
-      accountId:     z.string().min(1),
-      sessionString: z.string().min(10),
-      firstName:     z.string().optional(),
-      lastName:      z.string().optional(),
-      bio:           z.string().optional(),
-    }))
-    .mutation(async ({ input }) => {
-      return updateAccountProfile(input.sessionString, input.accountId, {
-        firstName: input.firstName,
-        lastName:  input.lastName,
-        bio:       input.bio,
-      });
-    }),
-
-  status: procedure
-    .input(z.object({ jobId: z.string() }))
-    .query(({ input }) => {
-      const job = getJob(input.jobId);
-      if (!job) throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
-      return job;
+  stats: procedure
+    .input(z.object({ adminSecret: z.string() }))
+    .query(async ({ input }) => {
+      requireAdmin(input.adminSecret);
+      const { listLicenses } = await import("./license-service.js");
+      const [all, active, expired, revoked] = await Promise.all([
+        listLicenses(), listLicenses({ status: "active" }),
+        listLicenses({ status: "expired" }), listLicenses({ status: "revoked" }),
+      ]);
+      const expiringSoon = active.filter(l =>
+        Math.ceil((new Date(l.expiresAt).getTime() - Date.now()) / 86400000) < 7
+      );
+      return { total: all.length, active: active.length, expired: expired.length, revoked: revoked.length, expiringSoon: expiringSoon.length };
     }),
 });
 
-
-// ─── API Credentials Router (my.telegram.org extraction) ─────────────────────
-const apiCredentialsRouter = router({
-  // Step 1: Send OTP to user's Telegram app via my.telegram.org
-  requestOtp: procedure
-    .input(z.object({ phone: z.string().min(7) }))
-    .mutation(async ({ input }) => {
-      const result = await requestApiOtp(input.phone);
-      return result; // { sessionId }
-    }),
-
-  // Step 2: Confirm OTP → get API_ID + API_HASH → store on account
-  confirmOtp: procedure
-    .input(z.object({
-      sessionId: z.string(),
-      otp:       z.string().min(4),
-      accountId: z.string().optional(), // if provided, save to this account
-    }))
-    .mutation(async ({ input }) => {
-      const creds = await confirmApiOtpAndGetCredentials(input.sessionId, input.otp);
-
-      // If accountId provided, persist credentials to this account
-      if (input.accountId) {
-        // Update in-memory client manager
-        setAccountApiCredentials(input.accountId, creds.apiId, creds.apiHash);
-
-        // Persist to database
-        const { upsertAccount, getAccount } = await import("./session-store.js");
-        const acc = getAccount(input.accountId);
-        if (acc) {
-          await upsertAccount({ ...acc, apiId: creds.apiId, apiHash: creds.apiHash });
-          logger.info({ accountId: input.accountId, apiId: creds.apiId }, "API credentials saved to account");
-        }
-      }
-
-      return {
-        apiId:   creds.apiId,
-        apiHash: creds.apiHash,
-        message: "تم استخراج بيانات API بنجاح",
-      };
-    }),
-});
 
 export const appRouter = router({
   accounts:       accountsRouter,
@@ -884,6 +739,7 @@ export const appRouter = router({
   jobs:           jobsRouter,
   stats:          statsRouter,
   license:        licenseRouter,
+  admin:          adminRouter,
   system:         systemRouter,
   autoReply:      autoReplyRouter,
   scheduler:      schedulerRouter,
