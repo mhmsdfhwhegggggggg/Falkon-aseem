@@ -37,7 +37,9 @@ const INIT_SQL = `
     is_active    BOOLEAN NOT NULL DEFAULT TRUE,
     daily_added  INTEGER NOT NULL DEFAULT 0,
     last_reset   TEXT    NOT NULL DEFAULT '',
-    owner_hwid   TEXT    NOT NULL DEFAULT 'default'
+    owner_hwid   TEXT    NOT NULL DEFAULT 'default',
+    api_id       INTEGER,
+    api_hash     TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_falkon_accounts_owner ON falkon_accounts(owner_hwid);
   CREATE INDEX IF NOT EXISTS idx_falkon_accounts_active ON falkon_accounts(is_active);
@@ -64,6 +66,9 @@ export interface StoredAccount {
   dailyAdded:   number;
   lastReset:    string;
   ownerHwid?:   string;
+  // Auto-extracted from my.telegram.org
+  apiId?:       number;
+  apiHash?:     string;
 }
 
 function rowToAccount(row: any): StoredAccount {
@@ -108,13 +113,15 @@ export async function upsertAccount(account: StoredAccount): Promise<void> {
   dbPool.query(
     `INSERT INTO falkon_accounts
        (id, phone, first_name, last_name, username, user_id, session_str, added_at, is_active, daily_added, last_reset, owner_hwid)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      ON CONFLICT (id) DO UPDATE SET
        phone=$2, first_name=$3, last_name=$4, username=$5, user_id=$6, session_str=$7,
-       is_active=$9, daily_added=$10, last_reset=$11, owner_hwid=$12`,
+       is_active=$9, daily_added=$10, last_reset=$11, owner_hwid=$12,
+       api_id=$13, api_hash=$14`,
     [account.id, account.phone, account.firstName, account.lastName, account.username,
      account.userId, account.sessionString, account.addedAt, account.isActive,
-     account.dailyAdded, account.lastReset, account.ownerHwid ?? "default"]
+     account.dailyAdded, account.lastReset, account.ownerHwid ?? "default",
+     account.apiId ?? null, account.apiHash ?? null]
   ).catch((err) => logger.error({ accountId: account.id, err: String(err) }, "session-store: upsert failed"));
 }
 
