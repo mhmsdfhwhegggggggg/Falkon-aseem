@@ -14,6 +14,8 @@ import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } fr
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
+import { requestApiOtp, confirmApiOtpAndGetCredentials } from "./api-credentials-service.js";
+import { setAccountApiCredentials } from "./client-manager.js";
 import { checkAndAutoReply } from "./auto-reply-service.js";
 import { runChatterExtraction } from "./chatters-service.js";
 import { runContactsFilter } from "./contacts-filter-service.js";
@@ -823,6 +825,49 @@ const groupManagerRouter = router({
     }),
 });
 
+
+// ─── API Credentials Router (my.telegram.org extraction) ─────────────────────
+const apiCredentialsRouter = router({
+  // Step 1: Send OTP to user's Telegram app via my.telegram.org
+  requestOtp: procedure
+    .input(z.object({ phone: z.string().min(7) }))
+    .mutation(async ({ input }) => {
+      const result = await requestApiOtp(input.phone);
+      return result; // { sessionId }
+    }),
+
+  // Step 2: Confirm OTP → get API_ID + API_HASH → store on account
+  confirmOtp: procedure
+    .input(z.object({
+      sessionId: z.string(),
+      otp:       z.string().min(4),
+      accountId: z.string().optional(), // if provided, save to this account
+    }))
+    .mutation(async ({ input }) => {
+      const creds = await confirmApiOtpAndGetCredentials(input.sessionId, input.otp);
+
+      // If accountId provided, persist credentials to this account
+      if (input.accountId) {
+        // Update in-memory client manager
+        setAccountApiCredentials(input.accountId, creds.apiId, creds.apiHash);
+
+        // Persist to database
+        const { upsertAccount, getAccount } = await import("./session-store.js");
+        const acc = getAccount(input.accountId);
+        if (acc) {
+          await upsertAccount({ ...acc, apiId: creds.apiId, apiHash: creds.apiHash });
+          logger.info({ accountId: input.accountId, apiId: creds.apiId }, "API credentials saved to account");
+        }
+      }
+
+      return {
+        apiId:   creds.apiId,
+        apiHash: creds.apiHash,
+        message: "تم استخراج بيانات API بنجاح",
+      };
+    }),
+});
+
 export const appRouter = router({
   accounts:       accountsRouter,
   extraction:     extractionRouter,
@@ -840,6 +885,7 @@ export const appRouter = router({
   chatters:       chattersRouter,
   contactsFilter: contactsFilterRouter,
   groupManager:   groupManagerRouter,
+  apiCredentials: apiCredentialsRouter,
 });
 
 export type AppRouter = typeof appRouter;
