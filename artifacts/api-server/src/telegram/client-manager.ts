@@ -156,14 +156,29 @@ function buildProxyOption(proxy: ProxyConfig): Record<string, unknown> {
   return opt;
 }
 
+// Per-account API credentials cache (populated from my.telegram.org extraction)
+const accountApiCredentials = new Map<string, { apiId: number; apiHash: string }>();
+
+export function setAccountApiCredentials(accountId: string, apiId: number, apiHash: string) {
+  accountApiCredentials.set(accountId, { apiId, apiHash });
+  logger.info({ accountId, apiId }, "Per-account API credentials stored");
+}
+
 async function createAndPoolClient(
   accountId: string,
   sessionString: string,
-  proxy?: ProxyConfig
+  proxy?: ProxyConfig,
+  customApiId?: number,
+  customApiHash?: string,
 ): Promise<TelegramClient> {
   const session = new StringSession(sessionString);
   const device = getDeviceProfile(accountId);
   const connectionOptions: Record<string, unknown> = { ...BASE_CONNECTION_OPTIONS, ...device };
+
+  // Use per-account credentials if available, otherwise fall back to server-wide env vars
+  const perAccCreds = accountApiCredentials.get(accountId);
+  const effectiveApiId   = customApiId   ?? perAccCreds?.apiId   ?? API_ID;
+  const effectiveApiHash = customApiHash ?? perAccCreds?.apiHash ?? API_HASH;
 
   // Apply proxy if provided or found in cache
   const effectiveProxy = proxy ?? proxyCache.get(accountId);
@@ -172,8 +187,9 @@ async function createAndPoolClient(
     logger.debug({ accountId, proxy: `${effectiveProxy.type}://${effectiveProxy.host}:${effectiveProxy.port}` }, "Using proxy");
   }
 
-  logger.debug({ accountId, device: device.deviceModel }, "Connecting with device profile");
-  const client = new TelegramClient(session, API_ID, API_HASH, connectionOptions as any);
+  const usingCustomCreds = effectiveApiId !== API_ID;
+  logger.debug({ accountId, device: device.deviceModel, usingCustomCreds, apiId: effectiveApiId }, "Connecting with device profile");
+  const client = new TelegramClient(session, effectiveApiId, effectiveApiHash, connectionOptions as any);
 
   await client.connect();
 
