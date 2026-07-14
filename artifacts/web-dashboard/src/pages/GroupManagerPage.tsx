@@ -42,15 +42,24 @@ export function GroupManagerPage() {
     const lines = inputData.split('\n').map(l => l.trim()).filter(Boolean);
 
     if (activeTab === 'join') {
-      if (!lines.length) return toast.error('يرجى إدخال الروابط');
+      if (!lines.length) {
+        toast.error('يرجى إدخال الروابط');
+        return;
+      }
       joinMut.mutate({ groups: lines, delaySeconds: parseInt(delay, 10), accountId: activeAccount.id });
     } else if (activeTab === 'leave') {
       leaveMut.mutate({ groups: lines.length ? lines : undefined, accountId: activeAccount.id });
     } else if (activeTab === 'sendToAll') {
-      if (!inputData) return toast.error('يرجى إدخال الرسالة');
+      if (!inputData) {
+        toast.error('يرجى إدخال الرسالة');
+        return;
+      }
       sendToAllMut.mutate({ message: inputData, delaySeconds: parseInt(delay, 10), accountId: activeAccount.id });
     } else if (activeTab === 'extractAdmins') {
-      if (!inputData) return toast.error('يرجى إدخال المجموعة');
+      if (!inputData) {
+        toast.error('يرجى إدخال المجموعة');
+        return;
+      }
       extractAdminsMut.mutate({ group: inputData.trim(), accountId: activeAccount.id });
     }
   };

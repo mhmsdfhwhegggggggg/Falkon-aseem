@@ -9,7 +9,10 @@ export function AutoReplyPage() {
   const [keyword, setKeyword] = useState('');
   const [response, setResponse] = useState('');
 
-  const { data: rulesData, isLoading } = trpc.autoReply.list.useQuery();
+  const { data: rulesData, isLoading } = trpc.autoReply.list.useQuery(
+    { accountId: activeAccount?.id ?? '' },
+    { enabled: Boolean(activeAccount) },
+  );
   const rules = rulesData?.rules || [];
 
   const addRuleMut = trpc.autoReply.addRule.useMutation({
@@ -42,7 +45,7 @@ export function AutoReplyPage() {
       return;
     }
     if (!keyword || !response) return;
-    addRuleMut.mutate({ keyword, response, accountId: activeAccount.id });
+    addRuleMut.mutate({ trigger: keyword, response, accountId: activeAccount.id });
   };
 
   return (
@@ -112,27 +115,27 @@ export function AutoReplyPage() {
               ) : (
                 <div className="space-y-4">
                   {rules.map((rule: any) => (
-                    <div key={rule.id} className={`p-4 rounded-xl border transition-colors ${rule.isActive ? 'bg-secondary/30 border-primary/30' : 'bg-background border-border opacity-70'}`}>
+                    <div key={rule.id} className={`p-4 rounded-xl border transition-colors ${rule.enabled ? 'bg-secondary/30 border-primary/30' : 'bg-background border-border opacity-70'}`}>
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded text-sm font-bold border border-primary/20">
-                              {rule.keyword}
+                              {rule.trigger}
                             </span>
-                            {!rule.isActive && <span className="text-xs text-muted-foreground bg-secondary px-2 rounded">معطل</span>}
+                            {!rule.enabled && <span className="text-xs text-muted-foreground bg-secondary px-2 rounded">معطل</span>}
                           </div>
                           <p className="text-sm text-foreground/90 whitespace-pre-wrap">{rule.response}</p>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <button 
-                            onClick={() => toggleRuleMut.mutate({ id: rule.id })}
-                            className={`p-2 rounded-lg transition-colors ${rule.isActive ? 'text-success hover:bg-success/10' : 'text-muted-foreground hover:bg-secondary'}`}
-                            title={rule.isActive ? 'تعطيل' : 'تفعيل'}
+                            onClick={() => activeAccount && toggleRuleMut.mutate({ accountId: activeAccount.id, ruleId: rule.id })}
+                            className={`p-2 rounded-lg transition-colors ${rule.enabled ? 'text-success hover:bg-success/10' : 'text-muted-foreground hover:bg-secondary'}`}
+                            title={rule.enabled ? 'تعطيل' : 'تفعيل'}
                           >
-                            {rule.isActive ? <Power className="w-5 h-5" /> : <PowerOff className="w-5 h-5" />}
+                            {rule.enabled ? <Power className="w-5 h-5" /> : <PowerOff className="w-5 h-5" />}
                           </button>
                           <button 
-                            onClick={() => removeRuleMut.mutate({ id: rule.id })}
+                            onClick={() => activeAccount && removeRuleMut.mutate({ accountId: activeAccount.id, ruleId: rule.id })}
                             className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                             title="حذف"
                           >

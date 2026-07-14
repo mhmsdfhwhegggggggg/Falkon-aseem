@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { trpc, queryClient } from '@/lib/trpc';
-import { getAdminSecret } from '@/lib/auth';
 import { toast } from 'sonner';
 import { Key, Copy, Plus, Loader2, ShieldCheck, XCircle, RefreshCw } from 'lucide-react';
 
 export function LicensesPage() {
-  const adminSecret = getAdminSecret();
-  const { data: licensesData, isLoading } = trpc.admin.listLicenses.useQuery({ adminSecret });
-  const { data: stats } = trpc.admin.stats.useQuery({ adminSecret });
+  const { data: licensesData, isLoading } = trpc.admin.listLicenses.useQuery({});
+  const { data: stats } = trpc.admin.stats.useQuery();
   const licenses = licensesData || [];
 
   const [phone, setPhone] = useState('');
@@ -40,7 +38,7 @@ export function LicensesPage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     createMut.mutate({
-      adminSecret, phone, tier: tier as any,
+      phone, tier: tier as any,
       days: parseInt(days, 10), maxAccounts: parseInt(maxAccounts, 10)
     });
   };
@@ -146,10 +144,10 @@ export function LicensesPage() {
                     <div className="flex gap-2 w-full md:w-auto">
                       {!isRevoked && (
                         <>
-                          <button onClick={() => renewMut.mutate({ adminSecret, licenseKey: lic.licenseKey, days: 30 })} className="flex-1 md:flex-none px-3 py-1.5 bg-background border border-border hover:bg-secondary text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                          <button onClick={() => renewMut.mutate({ licenseKey: lic.licenseKey, days: 30 })} className="flex-1 md:flex-none px-3 py-1.5 bg-background border border-border hover:bg-secondary text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5">
                             <RefreshCw className="w-4 h-4" /> تجديد
                           </button>
-                          <button onClick={() => { if(confirm('هل أنت متأكد من إلغاء الترخيص؟')) revokeMut.mutate({ adminSecret, licenseKey: lic.licenseKey }); }} className="flex-1 md:flex-none px-3 py-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                          <button onClick={() => { if(confirm('هل أنت متأكد من إلغاء الترخيص؟')) revokeMut.mutate({ licenseKey: lic.licenseKey }); }} className="flex-1 md:flex-none px-3 py-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1.5">
                             <XCircle className="w-4 h-4" /> إلغاء
                           </button>
                         </>

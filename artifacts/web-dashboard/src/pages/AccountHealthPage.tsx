@@ -44,9 +44,15 @@ export function AccountHealthPage() {
             لا توجد حسابات مضافة
           </div>
         ) : accounts.map((acc: any) => {
-          // Use actual health data if available, fallback to mock display logic
-          const health = healthStats[acc.id] || { score: 100, state: 'CLOSED', failures: 0, successes: 0 };
-          const isBlocked = health.state === 'OPEN';
+          const health = healthStats[acc.id] || {
+            score: 100,
+            circuitOpen: false,
+            dailyCount: 0,
+            floodCount: 0,
+            peerFloodCount: 0,
+            warmupMode: false,
+          };
+          const isBlocked = health.circuitOpen;
           
           return (
             <div key={acc.id} className={`bg-card border rounded-xl p-6 shadow-sm transition-all ${isBlocked ? 'border-destructive shadow-destructive/10' : 'border-card-border'}`}>
@@ -76,12 +82,12 @@ export function AccountHealthPage() {
 
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                    <span className="block text-xs text-muted-foreground mb-0.5">نجاح</span>
-                    <span className="font-mono text-success">{health.successes}</span>
+                    <span className="block text-xs text-muted-foreground mb-0.5">عمليات اليوم</span>
+                    <span className="font-mono text-success">{health.dailyCount}</span>
                   </div>
                   <div className="bg-secondary/50 rounded-lg p-2 text-center">
-                    <span className="block text-xs text-muted-foreground mb-0.5">أخطاء</span>
-                    <span className="font-mono text-destructive">{health.failures}</span>
+                    <span className="block text-xs text-muted-foreground mb-0.5">أخطاء الحظر</span>
+                    <span className="font-mono text-destructive">{health.floodCount + health.peerFloodCount}</span>
                   </div>
                 </div>
 

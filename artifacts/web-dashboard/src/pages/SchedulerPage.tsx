@@ -40,8 +40,8 @@ export function SchedulerPage() {
     createMut.mutate({
       name,
       taskType,
-      scheduledAt: date.toISOString(),
-      params: {} // In a full implementation, you'd collect specific params per task type
+      scheduledAt: date.getTime(),
+      params: {},
     });
   };
 

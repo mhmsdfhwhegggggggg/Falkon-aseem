@@ -11,6 +11,7 @@
 
 import pg from "pg";
 import { logger } from "../lib/logger.js";
+import { decryptSensitive, encryptSensitive, isEncryptedSensitive } from "../auth/data-crypto.js";
 
 const { Pool } = pg;
 
@@ -74,9 +75,11 @@ export interface StoredAccount {
 function rowToAccount(row: any): StoredAccount {
   return {
     id: row.id, phone: row.phone, firstName: row.first_name, lastName: row.last_name,
-    username: row.username, userId: row.user_id, sessionString: row.session_str,
+    username: row.username, userId: row.user_id, sessionString: decryptSensitive(row.session_str),
     addedAt: row.added_at, isActive: row.is_active,
     dailyAdded: row.daily_added, lastReset: row.last_reset, ownerHwid: row.owner_hwid,
+    apiId: row.api_id ?? undefined,
+    apiHash: row.api_hash ? decryptSensitive(row.api_hash) : undefined,
   };
 }
 
@@ -87,9 +90,32 @@ async function bootLoad() {
   await ensureSchema();
   try {
     const res = await dbPool.query("SELECT * FROM falkon_accounts ORDER BY added_at ASC");
-    for (const row of res.rows) accountsMap.set(row.id, rowToAccount(row));
+    let migratedSecrets = 0;
+    for (const row of res.rows) {
+      try {
+        const encryptedSession = encryptSensitive(row.session_str);
+        const encryptedApiHash = row.api_hash ? encryptSensitive(row.api_hash) : null;
+        const needsMigration =
+          (!isEncryptedSensitive(row.session_str) && encryptedSession !== row.session_str) ||
+          (row.api_hash && !isEncryptedSensitive(row.api_hash) && encryptedApiHash !== row.api_hash);
+        if (needsMigration) {
+          await dbPool.query(
+            "UPDATE falkon_accounts SET session_str = $2, api_hash = $3 WHERE id = $1",
+            [row.id, encryptedSession, encryptedApiHash]
+          );
+          migratedSecrets += 1;
+        }
+        accountsMap.set(row.id, rowToAccount({
+          ...row,
+          session_str: encryptedSession,
+          api_hash: encryptedApiHash,
+        }));
+      } catch (err) {
+        logger.error({ accountId: row.id, err: String(err) }, "session-store: unable to load encrypted account");
+      }
+    }
     cacheReady = true;
-    logger.info({ count: accountsMap.size }, "session-store: loaded from PostgreSQL");
+    logger.info({ count: accountsMap.size, migratedSecrets }, "session-store: loaded from PostgreSQL");
   } catch (err) {
     logger.error({ err: String(err) }, "session-store: boot load failed");
     cacheReady = true;
@@ -109,33 +135,34 @@ export function getAccount(id: string): StoredAccount | undefined {
 }
 
 export async function upsertAccount(account: StoredAccount): Promise<void> {
-  accountsMap.set(account.id, account);
-  dbPool.query(
+  await ensureSchema();
+  await dbPool.query(
     `INSERT INTO falkon_accounts
-       (id, phone, first_name, last_name, username, user_id, session_str, added_at, is_active, daily_added, last_reset, owner_hwid)
+       (id, phone, first_name, last_name, username, user_id, session_str, added_at, is_active, daily_added, last_reset, owner_hwid, api_id, api_hash)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      ON CONFLICT (id) DO UPDATE SET
        phone=$2, first_name=$3, last_name=$4, username=$5, user_id=$6, session_str=$7,
        is_active=$9, daily_added=$10, last_reset=$11, owner_hwid=$12,
        api_id=$13, api_hash=$14`,
     [account.id, account.phone, account.firstName, account.lastName, account.username,
-     account.userId, account.sessionString, account.addedAt, account.isActive,
+     account.userId, encryptSensitive(account.sessionString), account.addedAt, account.isActive,
      account.dailyAdded, account.lastReset, account.ownerHwid ?? "default",
-     account.apiId ?? null, account.apiHash ?? null]
-  ).catch((err) => logger.error({ accountId: account.id, err: String(err) }, "session-store: upsert failed"));
+     account.apiId ?? null, account.apiHash ? encryptSensitive(account.apiHash) : null]
+  );
+  accountsMap.set(account.id, account);
 }
 
 export async function removeAccount(id: string): Promise<void> {
+  await ensureSchema();
+  await dbPool.query("DELETE FROM falkon_accounts WHERE id = $1", [id]);
   accountsMap.delete(id);
-  dbPool.query("DELETE FROM falkon_accounts WHERE id = $1", [id])
-    .catch((err) => logger.error({ accountId: id, err: String(err) }, "session-store: delete failed"));
 }
 
-export function resetDailyCountsIfNeeded(account: StoredAccount): StoredAccount {
+export async function resetDailyCountsIfNeeded(account: StoredAccount): Promise<StoredAccount> {
   const today = new Date().toISOString().split("T")[0]!;
   if (account.lastReset !== today) {
     const updated = { ...account, dailyAdded: 0, lastReset: today };
-    upsertAccount(updated);
+    await upsertAccount(updated);
     return updated;
   }
   return account;

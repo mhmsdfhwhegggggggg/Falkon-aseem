@@ -8,6 +8,7 @@
  */
 
 import { Api } from "telegram";
+import bigInt from "big-integer";
 import { getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job, type MemberRecord } from "./jobs.js";
 import { sleep, parseFloodWait, handleFloodWait, recordError } from "./anti-ban.js";
@@ -40,7 +41,7 @@ export async function runContactsFilter(job: Job) {
 
       const contacts = batch.map((phone, idx) =>
         new Api.InputPhoneContact({
-          clientId: BigInt(i + idx),
+          clientId: bigInt(i + idx),
           phone,
           firstName: `Contact${i + idx}`,
           lastName: "",
@@ -97,7 +98,7 @@ export async function runContactsFilter(job: Job) {
         // Delete imported contacts to stay clean
         const toDelete = users
           .filter((u): u is Api.User => u instanceof Api.User)
-          .map((u) => new Api.InputUser({ userId: u.id, accessHash: u.accessHash ?? BigInt(0) as any }));
+          .map((u) => new Api.InputUser({ userId: u.id, accessHash: u.accessHash ?? bigInt.zero }));
         if (toDelete.length > 0) {
           try {
             await client.invoke(new Api.contacts.DeleteContacts({ id: toDelete }));

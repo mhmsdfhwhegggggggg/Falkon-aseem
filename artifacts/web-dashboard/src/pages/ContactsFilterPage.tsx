@@ -48,7 +48,7 @@ export function ContactsFilterPage() {
   const isDone = statusData?.status === 'completed' || statusData?.status === 'failed';
   const total = statusData?.total || 1;
   const processed = statusData?.progress || 0;
-  const valid = statusData?.validContacts || 0;
+  const valid = statusData?.result?.extracted ?? statusData?.extracted ?? 0;
   const invalid = processed - valid;
 
   return (

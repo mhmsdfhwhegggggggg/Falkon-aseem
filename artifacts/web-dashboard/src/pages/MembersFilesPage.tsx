@@ -9,7 +9,7 @@ export function MembersFilesPage() {
 
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const { data: fileDetail, isLoading: isLoadingDetail } = trpc.membersFiles.get.useQuery(
-    { fileId: selectedFileId! },
+    { id: selectedFileId! },
     { enabled: !!selectedFileId }
   );
 

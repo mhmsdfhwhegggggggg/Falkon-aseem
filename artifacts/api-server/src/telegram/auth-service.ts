@@ -83,7 +83,7 @@ export async function confirmPhoneCode(sessionId: string, code: string, password
       lastReset: today,
     };
 
-    upsertAccount(account);
+    await upsertAccount(account);
     pendingAuth.delete(sessionId);
 
     logger.info({ phone, userId: account.userId }, "Account authenticated");

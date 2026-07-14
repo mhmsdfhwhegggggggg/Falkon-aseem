@@ -244,7 +244,7 @@ export async function runAddMembers(job: Job) {
   updateJob(job.id, { status: "running", startedAt: new Date().toISOString() });
 
   const accountData = loadAccounts().find((a) => a.id === accountId);
-  if (accountData) resetDailyCountsIfNeeded(accountData);
+  if (accountData) await resetDailyCountsIfNeeded(accountData);
 
   const list = await buildList(cfg);
   if (list.length === 0) {

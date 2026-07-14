@@ -22,9 +22,6 @@ timeoutMs = 20000
 [nix]
 channel = "stable-25_05"
 
-[userenv]
-
-[userenv.shared]
-ADMIN_SECRET_KEY = "123456mh785685508"
-TELEGRAM_API_HASH = "d3d1b9095a3d0140f7d4afe61fed4d87"
-TELEGRAM_API_ID = "21380159"
+# Runtime secrets must be configured in the hosting platform's secret manager.
+# Never commit ADMIN_SECRET_KEY, ADMIN_TOKEN_KEY, DATA_ENCRYPTION_KEY,
+# TELEGRAM_API_ID, TELEGRAM_API_HASH, or DATABASE_URL here.

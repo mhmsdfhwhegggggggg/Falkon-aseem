@@ -17,6 +17,7 @@
  */
 
 import { Api } from "telegram";
+import bigInt from "big-integer";
 import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job } from "./jobs.js";
 import { resolveEntity, getCachedEntity, isKnownInvalid, markInvalid } from "./entity-cache.js";
@@ -44,11 +45,9 @@ import { logger } from "../lib/logger.js";
 async function warmupForMessaging(client: any, accountId: string): Promise<void> {
   logger.info({ accountId }, "Warming session for messaging...");
   try {
-    await client.invoke(new Api.account.GetNotifySettings({ peer: new Api.InputNotifyAll() }));
-    await sleep(600 + Math.floor(Math.random() * 1000));
     await client.invoke(new Api.messages.GetDialogs({
       offsetDate: 0, offsetId: 0,
-      offsetPeer: new Api.InputPeerEmpty(), limit: 10, hash: BigInt(0),
+      offsetPeer: new Api.InputPeerEmpty(), limit: 10, hash: bigInt.zero,
     }));
     await sleep(1000 + Math.floor(Math.random() * 1500));
     logger.info({ accountId }, "Messaging session warmed ✓");
@@ -229,7 +228,7 @@ export async function runBulkMessage(job: Job) {
       const msgArgs: any = {
         peer: targetEntity,
         message: personalizedMessage,
-        randomId: BigInt(Math.floor(Math.random() * 1e15)),
+        randomId: bigInt(Math.floor(Math.random() * 1e15)),
         noWebpage: true,
       };
 

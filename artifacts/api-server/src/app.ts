@@ -8,6 +8,7 @@ import router from "./routes/index.js";
 import { logger } from "./lib/logger.js";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { appRouter } from "./telegram/trpc-router.js";
+import { bearerToken } from "./auth/admin-auth.js";
 
 const app: Express = express();
 
@@ -40,10 +41,24 @@ app.use(
   }),
 );
 
-// ─── CORS — open for all origins (mobile APK + web) ──────────────────────────
+// ─── CORS — explicit allow-list for the dashboard and Capacitor app ──────────
+const allowedOrigins = new Set([
+  "http://85.155.190.130",
+  "http://localhost",
+  "https://localhost",
+  "capacitor://localhost",
+  ...(process.env["CORS_ALLOWED_ORIGINS"] ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+]);
+
 app.use(
   cors({
-    origin: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      return callback(new Error("Origin is not allowed by CORS"));
+    },
     credentials: false,
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "x-hwid", "trpc-batch-mode", "authorization"],
@@ -84,6 +99,7 @@ const authLimiter = rateLimit({
 });
 
 app.use(globalLimiter);
+app.use("/api/trpc/auth.login", authLimiter);
 app.use("/api/trpc/accounts.startAuth", authLimiter);
 app.use("/api/trpc/accounts.confirmAuth", authLimiter);
 
@@ -98,7 +114,9 @@ app.use(
   "/api/trpc",
   createExpressMiddleware({
     router: appRouter,
-    createContext: () => ({}),
+    createContext: ({ req }) => ({
+      adminToken: bearerToken(req.header("authorization")),
+    }),
     onError({ error, path }) {
       logger.error({ path, error: error.message }, "tRPC error");
     },

@@ -14,6 +14,7 @@ import { getHealthReport, getDetailedHealth, resetCircuit, resetAllCircuits } fr
 import { getCacheStats as getEntityCacheStats } from "./entity-cache.js";
 import { getPoolMetrics, setAccountProxy } from "./client-manager.js";
 import { logger } from "../lib/logger.js";
+import { assertAdminToken, createAdminToken, verifyAdminPassword } from "../auth/admin-auth.js";
 import {
   createLicense, activateLicense, verifyLicense,
   listLicenses, revokeLicense, renewLicense, getLicenseLogs,
@@ -51,9 +52,29 @@ const ProxyConfigSchema = z.object({
   secret: z.string().optional(),
 }).optional();
 
-const t = initTRPC.create({ transformer: superjson });
+export interface TRPCContext {
+  adminToken?: string;
+}
+
+const t = initTRPC.context<TRPCContext>().create({ transformer: superjson });
 export const router = t.router;
-export const procedure = t.procedure;
+export const publicProcedure = t.procedure;
+export const procedure = publicProcedure.use(({ ctx, next }) => {
+  assertAdminToken(ctx.adminToken);
+  return next({ ctx });
+});
+
+const authRouter = router({
+  login: publicProcedure
+    .input(z.object({ password: z.string().min(1).max(512) }))
+    .mutation(({ input }) => {
+      if (!verifyAdminPassword(input.password)) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid administrator credentials" });
+      }
+      return createAdminToken();
+    }),
+  session: procedure.query(() => ({ authenticated: true })),
+});
 
 const accountsRouter = router({
   list: procedure.query(() => {
@@ -118,7 +139,7 @@ const accountsRouter = router({
   remove: procedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      removeAccount(input.id);
+      await removeAccount(input.id);
       return { success: true };
     }),
 
@@ -129,7 +150,7 @@ const accountsRouter = router({
       const acc = accounts.find((a) => a.id === input.id);
       if (!acc) throw new TRPCError({ code: "NOT_FOUND", message: "Account not found" });
       const { upsertAccount } = await import("./session-store.js");
-      upsertAccount({ ...acc, isActive: input.isActive });
+      await upsertAccount({ ...acc, isActive: input.isActive });
       return { success: true };
     }),
 });
@@ -600,18 +621,10 @@ const proxyRouter = router({
     }),
 });
 
-// ─── Admin auth helper ────────────────────────────────────────────────────────
-const ADMIN_SECRET = process.env["ADMIN_SECRET_KEY"] ?? "";
-
-function requireAdmin(secret: string) {
-  if (!ADMIN_SECRET) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "ADMIN_SECRET_KEY not set" });
-  if (secret !== ADMIN_SECRET)  throw new TRPCError({ code: "UNAUTHORIZED",            message: "Invalid admin secret" });
-}
-
 // ─── License Router (user-facing) ────────────────────────────────────────────
 const licenseRouter = router({
   // Step 1 of onboarding — validate + bind phone + HWID on first use
-  activate: procedure
+  activate: publicProcedure
     .input(z.object({
       licenseKey: z.string().min(10),
       phone:      z.string().min(7),
@@ -625,7 +638,7 @@ const licenseRouter = router({
     }),
 
   // Called on every app startup — fast (60s in-memory cache)
-  verify: procedure
+  verify: publicProcedure
     .input(z.object({
       licenseKey: z.string().min(10),
       hwid:       z.string().min(4),
@@ -638,7 +651,7 @@ const licenseRouter = router({
     }),
 
   // For displaying license info in app settings
-  status: procedure
+  status: publicProcedure
     .input(z.object({ licenseKey: z.string(), hwid: z.string() }))
     .query(async ({ input }) => {
       const { verifyLicense } = await import("./license-service.js");
@@ -650,7 +663,6 @@ const licenseRouter = router({
 const adminRouter = router({
   createLicense: procedure
     .input(z.object({
-      adminSecret: z.string(),
       phone:       z.string().min(7),
       days:        z.number().min(1).max(3650),
       tier:        z.enum(["basic", "pro", "enterprise"]).default("pro"),
@@ -658,7 +670,6 @@ const adminRouter = router({
       notes:       z.string().optional(),
     }))
     .mutation(async ({ input }) => {
-      requireAdmin(input.adminSecret);
       const { createLicense } = await import("./license-service.js");
       const expiresAt = new Date(Date.now() + input.days * 86_400_000);
       const license = await createLicense({
@@ -666,26 +677,23 @@ const adminRouter = router({
         tier: input.tier as any, maxAccounts: input.maxAccounts,
         notes: input.notes, createdBy: "admin",
       });
-      logger.info({ phone: input.phone, key: license.licenseKey }, "Admin created license");
+      logger.info({ phone: input.phone, licenseId: license.id }, "Admin created license");
       return license;
     }),
 
   listLicenses: procedure
     .input(z.object({
-      adminSecret: z.string(),
       status: z.enum(["pending","active","expired","revoked"]).optional(),
       phone:  z.string().optional(),
     }))
     .query(async ({ input }) => {
-      requireAdmin(input.adminSecret);
       const { listLicenses } = await import("./license-service.js");
       return await listLicenses({ status: input.status as any, phone: input.phone });
     }),
 
   revoke: procedure
-    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), reason: z.string().optional() }))
+    .input(z.object({ licenseKey: z.string(), reason: z.string().optional() }))
     .mutation(async ({ input }) => {
-      requireAdmin(input.adminSecret);
       const { revokeLicense } = await import("./license-service.js");
       const ok = await revokeLicense(input.licenseKey, input.reason);
       if (!ok) throw new TRPCError({ code: "NOT_FOUND", message: "License not found" });
@@ -693,9 +701,8 @@ const adminRouter = router({
     }),
 
   renew: procedure
-    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), days: z.number().min(1).max(3650) }))
+    .input(z.object({ licenseKey: z.string(), days: z.number().min(1).max(3650) }))
     .mutation(async ({ input }) => {
-      requireAdmin(input.adminSecret);
       const { renewLicense } = await import("./license-service.js");
       const newExpiry = new Date(Date.now() + input.days * 86_400_000);
       const license = await renewLicense(input.licenseKey, newExpiry);
@@ -704,17 +711,14 @@ const adminRouter = router({
     }),
 
   logs: procedure
-    .input(z.object({ adminSecret: z.string(), licenseKey: z.string(), limit: z.number().min(1).max(200).default(50) }))
+    .input(z.object({ licenseKey: z.string(), limit: z.number().min(1).max(200).default(50) }))
     .query(async ({ input }) => {
-      requireAdmin(input.adminSecret);
       const { getLicenseLogs } = await import("./license-service.js");
       return await getLicenseLogs(input.licenseKey, input.limit);
     }),
 
   stats: procedure
-    .input(z.object({ adminSecret: z.string() }))
-    .query(async ({ input }) => {
-      requireAdmin(input.adminSecret);
+    .query(async () => {
       const { listLicenses } = await import("./license-service.js");
       const [all, active, expired, revoked] = await Promise.all([
         listLicenses(), listLicenses({ status: "active" }),
@@ -1108,6 +1112,7 @@ const apiCredentialsRouter = router({
 });
 
 export const appRouter = router({
+  auth:           authRouter,
   accounts:       accountsRouter,
   extraction:     extractionRouter,
   addMembers:     addMembersRouter,

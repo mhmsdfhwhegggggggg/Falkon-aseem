@@ -11,6 +11,7 @@
  */
 
 import { Api } from "telegram";
+import bigInt from "big-integer";
 import { getClient, getClientFromSession } from "./client-manager.js";
 import { updateJob, type Job } from "./jobs.js";
 import { resolveEntity } from "./entity-cache.js";
@@ -99,7 +100,7 @@ export async function runContentCloner(job: Job) {
       limit,
       maxId: 0,
       minId: 0,
-      hash: BigInt(0),
+      hash: bigInt.zero,
     }));
     messages = (history as any).messages || [];
     if (reverseOrder) messages = [...messages].reverse();
@@ -148,7 +149,7 @@ export async function runContentCloner(job: Job) {
         fromPeer: sourceEntity,
         id: [msg.id],
         toPeer: destEntity,
-        randomId: [BigInt(Math.floor(Math.random() * 1e15))],
+        randomId: [bigInt(Math.floor(Math.random() * 1e15))],
         dropAuthor: false,
         dropMediaCaptions: false,
         noforwards: false,
