@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Falkon Pro — لوحة التحكم"
+version = "1.0.0"
+id = "artifacts/web-dashboard"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19814
+
+[services.development]
+run = "pnpm --filter @workspace/web-dashboard run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/web-dashboard", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/web-dashboard/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19814"
+BASE_PATH = "/"
