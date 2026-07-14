@@ -16,10 +16,9 @@ export const trpcClient = trpc.createClient({
     httpBatchLink({
       url: '/api/trpc',
       transformer: superjson,
-      headers: () => {
-        const token = localStorage.getItem('falkon_admin_token');
-        return token ? { authorization: `Bearer ${token}` } : {};
-      },
+      // No custom headers — the backend uses adminSecret inside the tRPC input body,
+      // not an Authorization header. Sending non-ASCII values in headers causes
+      // "String contains non ISO-8859-1 code point" fetch errors.
     }),
   ],
 });
